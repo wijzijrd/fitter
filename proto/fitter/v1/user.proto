@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+message User {
+  string id = 1;
+  string name = 2;
+  string avatar_url = 3;
+}
+
+message GetCurrentUserRequest {}
+
+message GetCurrentUserResponse {
+  User user = 1;
+}
+
+service UserService {
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+}

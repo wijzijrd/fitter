@@ -1,0 +1,33 @@
+services:
+  svc:
+    build:
+      context: ../app/svc
+    image: fitter-svc
+    volumes:
+      - svc-data:/data
+    environment:
+      PORT: 8081
+      DB_PATH: /data/fitter.db
+      STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID}
+      STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET}
+      STRAVA_WEBHOOK_VERIFY_TOKEN: ${STRAVA_WEBHOOK_VERIFY_TOKEN}
+      JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
+      CORS_ORIGIN: ${FRONTEND_URL}
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ../app/ui
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_BASE_URL}
+    image: fitter-ui
+    ports:
+      - "8080:80"
+    depends_on:
+      - svc
+    restart: unless-stopped
+
+volumes:
+  svc-data:

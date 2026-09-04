@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "fitter/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+message Campaign {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  CampaignMode mode = 4;
+  ActivityMetric metric = 5;
+  double target_value = 6;
+  google.protobuf.Timestamp start_date = 7;
+  google.protobuf.Timestamp end_date = 8;
+  string created_by = 9;
+  google.protobuf.Timestamp created_at = 10;
+  // joined is true if the requesting user is a member.
+  bool joined = 11;
+  int32 member_count = 12;
+}
+
+message CreateCampaignRequest {
+  string name = 1;
+  string description = 2;
+  CampaignMode mode = 3;
+  ActivityMetric metric = 4;
+  double target_value = 5;
+  google.protobuf.Timestamp start_date = 6;
+  google.protobuf.Timestamp end_date = 7;
+}
+
+message CreateCampaignResponse {
+  Campaign campaign = 1;
+}
+
+message ListCampaignsRequest {}
+
+message ListCampaignsResponse {
+  repeated Campaign campaigns = 1;
+}
+
+message GetCampaignRequest {
+  string campaign_id = 1;
+}
+
+message GetCampaignResponse {
+  Campaign campaign = 1;
+}
+
+message JoinCampaignRequest {
+  string campaign_id = 1;
+  // per_member_target_value overrides the campaign default target for this member.
+  // Only meaningful in CAMPAIGN_MODE_PER_MEMBER; ignored otherwise.
+  optional double per_member_target_value = 2;
+}
+
+message JoinCampaignResponse {
+  Campaign campaign = 1;
+}
+
+message LeaveCampaignRequest {
+  string campaign_id = 1;
+}
+
+message LeaveCampaignResponse {}
+
+service CampaignService {
+  rpc CreateCampaign(CreateCampaignRequest) returns (CreateCampaignResponse);
+  rpc ListCampaigns(ListCampaignsRequest) returns (ListCampaignsResponse);
+  rpc GetCampaign(GetCampaignRequest) returns (GetCampaignResponse);
+  rpc JoinCampaign(JoinCampaignRequest) returns (JoinCampaignResponse);
+  rpc LeaveCampaign(LeaveCampaignRequest) returns (LeaveCampaignResponse);
+}

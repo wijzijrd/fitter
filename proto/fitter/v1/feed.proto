@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message FeedActivity {
+  string id = 1;
+  string user_id = 2;
+  string user_name = 3;
+  string user_avatar_url = 4;
+  string type = 5;
+  double distance_m = 6;
+  double elevation_m = 7;
+  int64 moving_time_s = 8;
+  google.protobuf.Timestamp start_date = 9;
+  string name = 10;
+}
+
+message GetCampaignFeedRequest {
+  string campaign_id = 1;
+}
+
+message GetCampaignFeedResponse {
+  repeated FeedActivity activities = 1;
+}
+
+message LeaderboardEntry {
+  string user_id = 1;
+  string user_name = 2;
+  string user_avatar_url = 3;
+  double progress_value = 4;
+  double target_value = 5;
+  double progress_ratio = 6;
+  int32 rank = 7;
+}
+
+message GetCampaignLeaderboardRequest {
+  string campaign_id = 1;
+}
+
+message GetCampaignLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;
+  // pooled_progress_value is set only for CAMPAIGN_MODE_POOLED campaigns.
+  double pooled_progress_value = 2;
+}
+
+message TimelinePoint {
+  google.protobuf.Timestamp date = 1;
+  double cumulative_value = 2;
+}
+
+message TimelineSeries {
+  // user_id is empty for the pooled series in CAMPAIGN_MODE_POOLED campaigns.
+  string user_id = 1;
+  string label = 2;
+  repeated TimelinePoint points = 3;
+}
+
+message GetCampaignTimelineRequest {
+  string campaign_id = 1;
+}
+
+message GetCampaignTimelineResponse {
+  repeated TimelineSeries series = 1;
+  double target_value = 2;
+  google.protobuf.Timestamp start_date = 3;
+  google.protobuf.Timestamp end_date = 4;
+}
+
+service FeedService {
+  rpc GetCampaignFeed(GetCampaignFeedRequest) returns (GetCampaignFeedResponse);
+  rpc GetCampaignLeaderboard(GetCampaignLeaderboardRequest) returns (GetCampaignLeaderboardResponse);
+  rpc GetCampaignTimeline(GetCampaignTimelineRequest) returns (GetCampaignTimelineResponse);
+}

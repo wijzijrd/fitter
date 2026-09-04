@@ -1,0 +1,11 @@
+# Two public sites: the frontend, and the backend (which must be public so
+# Strava can reach /webhooks/strava directly). Set both in .env — see
+# .env.example — as real domains with DNS pointed at this server; Caddy
+# fetches Let's Encrypt certs for each automatically.
+{$CADDY_FRONTEND_HOST} {
+    reverse_proxy ui:80
+}
+
+{$CADDY_BACKEND_HOST} {
+    reverse_proxy svc:8081
+}

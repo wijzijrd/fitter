@@ -1,0 +1,29 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      CADDY_FRONTEND_HOST: ${CADDY_FRONTEND_HOST}
+      CADDY_BACKEND_HOST: ${CADDY_BACKEND_HOST}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - svc
+      - ui
+    restart: unless-stopped
+
+  # Caddy terminates TLS and is the only thing exposed on 80/443 in this mode;
+  # svc and ui no longer need their own host port bindings.
+  svc:
+    ports: []
+
+  ui:
+    ports: []
+
+volumes:
+  caddy-data:
+  caddy-config:

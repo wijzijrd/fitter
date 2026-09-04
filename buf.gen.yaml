@@ -1,0 +1,19 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/fitter/svc/gen
+plugins:
+  - local: protoc-gen-go
+    out: app/svc/gen
+    opt: paths=source_relative
+  - local: protoc-gen-connect-go
+    out: app/svc/gen
+    opt: paths=source_relative
+  # protoc-gen-es v2 alone generates the service descriptors (GenService)
+  # that @connectrpc/connect v2's createClient consumes directly from the
+  # *_pb.ts files — no separate connect-es TS plugin needed.
+  - local: protoc-gen-es
+    out: app/ui/src/gen
+    opt: target=ts

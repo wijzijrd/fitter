@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "fitter/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// Goal is a private, personal fitness target — never shared with other users.
+message Goal {
+  string id = 1;
+  ActivityMetric metric = 2;
+  double target_value = 3;
+  google.protobuf.Timestamp period_start = 4;
+  google.protobuf.Timestamp period_end = 5;
+  double progress_value = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message CreateGoalRequest {
+  ActivityMetric metric = 1;
+  double target_value = 2;
+  google.protobuf.Timestamp period_start = 3;
+  google.protobuf.Timestamp period_end = 4;
+}
+
+message CreateGoalResponse {
+  Goal goal = 1;
+}
+
+message ListGoalsRequest {}
+
+message ListGoalsResponse {
+  repeated Goal goals = 1;
+}
+
+message UpdateGoalRequest {
+  string goal_id = 1;
+  double target_value = 2;
+  google.protobuf.Timestamp period_start = 3;
+  google.protobuf.Timestamp period_end = 4;
+}
+
+message UpdateGoalResponse {
+  Goal goal = 1;
+}
+
+message DeleteGoalRequest {
+  string goal_id = 1;
+}
+
+message DeleteGoalResponse {}
+
+service GoalService {
+  rpc CreateGoal(CreateGoalRequest) returns (CreateGoalResponse);
+  rpc ListGoals(ListGoalsRequest) returns (ListGoalsResponse);
+  rpc UpdateGoal(UpdateGoalRequest) returns (UpdateGoalResponse);
+  rpc DeleteGoal(DeleteGoalRequest) returns (DeleteGoalResponse);
+}

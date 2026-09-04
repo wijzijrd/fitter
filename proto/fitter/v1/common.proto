@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+// ActivityMetric is the quantity a goal or campaign target is measured in.
+enum ActivityMetric {
+  ACTIVITY_METRIC_UNSPECIFIED = 0;
+  ACTIVITY_METRIC_DISTANCE = 1;
+  ACTIVITY_METRIC_ELEVATION = 2;
+  ACTIVITY_METRIC_TIME = 3;
+  ACTIVITY_METRIC_COUNT = 4;
+}
+
+// CampaignMode controls how member progress rolls up to the campaign target.
+enum CampaignMode {
+  CAMPAIGN_MODE_UNSPECIFIED = 0;
+  // CAMPAIGN_MODE_POOLED: every member's matching activity contributes to one shared target.
+  CAMPAIGN_MODE_POOLED = 1;
+  // CAMPAIGN_MODE_PER_MEMBER: each member tracks their own copy of the target independently.
+  CAMPAIGN_MODE_PER_MEMBER = 2;
+}

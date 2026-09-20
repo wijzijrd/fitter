@@ -23,19 +23,24 @@ const (
 )
 
 type FeedActivity struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	UserName      string                 `protobuf:"bytes,3,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	UserAvatarUrl string                 `protobuf:"bytes,4,opt,name=user_avatar_url,json=userAvatarUrl,proto3" json:"user_avatar_url,omitempty"`
-	Type          string                 `protobuf:"bytes,5,opt,name=type,proto3" json:"type,omitempty"`
-	DistanceM     float64                `protobuf:"fixed64,6,opt,name=distance_m,json=distanceM,proto3" json:"distance_m,omitempty"`
-	ElevationM    float64                `protobuf:"fixed64,7,opt,name=elevation_m,json=elevationM,proto3" json:"elevation_m,omitempty"`
-	MovingTimeS   int64                  `protobuf:"varint,8,opt,name=moving_time_s,json=movingTimeS,proto3" json:"moving_time_s,omitempty"`
-	StartDate     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
-	Name          string                 `protobuf:"bytes,10,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	UserId           string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserName         string                 `protobuf:"bytes,3,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	UserAvatarUrl    string                 `protobuf:"bytes,4,opt,name=user_avatar_url,json=userAvatarUrl,proto3" json:"user_avatar_url,omitempty"`
+	Type             string                 `protobuf:"bytes,5,opt,name=type,proto3" json:"type,omitempty"`
+	DistanceM        float64                `protobuf:"fixed64,6,opt,name=distance_m,json=distanceM,proto3" json:"distance_m,omitempty"`
+	ElevationM       float64                `protobuf:"fixed64,7,opt,name=elevation_m,json=elevationM,proto3" json:"elevation_m,omitempty"`
+	MovingTimeS      int64                  `protobuf:"varint,8,opt,name=moving_time_s,json=movingTimeS,proto3" json:"moving_time_s,omitempty"`
+	StartDate        *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	Name             string                 `protobuf:"bytes,10,opt,name=name,proto3" json:"name,omitempty"`
+	StravaActivityId int64                  `protobuf:"varint,11,opt,name=strava_activity_id,json=stravaActivityId,proto3" json:"strava_activity_id,omitempty"` // replaces the old string id — see Task 4's schema note
+	SportType        string                 `protobuf:"bytes,12,opt,name=sport_type,json=sportType,proto3" json:"sport_type,omitempty"`
+	SportGroup       string                 `protobuf:"bytes,13,opt,name=sport_group,json=sportGroup,proto3" json:"sport_group,omitempty"` // resolved server-side via internal/sports
+	AverageHeartrate *float64               `protobuf:"fixed64,14,opt,name=average_heartrate,json=averageHeartrate,proto3,oneof" json:"average_heartrate,omitempty"`
+	AverageWatts     *float64               `protobuf:"fixed64,15,opt,name=average_watts,json=averageWatts,proto3,oneof" json:"average_watts,omitempty"`
+	SufferScore      *float64               `protobuf:"fixed64,16,opt,name=suffer_score,json=sufferScore,proto3,oneof" json:"suffer_score,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *FeedActivity) Reset() {
@@ -66,13 +71,6 @@ func (x *FeedActivity) ProtoReflect() protoreflect.Message {
 // Deprecated: Use FeedActivity.ProtoReflect.Descriptor instead.
 func (*FeedActivity) Descriptor() ([]byte, []int) {
 	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *FeedActivity) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
 }
 
 func (x *FeedActivity) GetUserId() string {
@@ -136,6 +134,48 @@ func (x *FeedActivity) GetName() string {
 		return x.Name
 	}
 	return ""
+}
+
+func (x *FeedActivity) GetStravaActivityId() int64 {
+	if x != nil {
+		return x.StravaActivityId
+	}
+	return 0
+}
+
+func (x *FeedActivity) GetSportType() string {
+	if x != nil {
+		return x.SportType
+	}
+	return ""
+}
+
+func (x *FeedActivity) GetSportGroup() string {
+	if x != nil {
+		return x.SportGroup
+	}
+	return ""
+}
+
+func (x *FeedActivity) GetAverageHeartrate() float64 {
+	if x != nil && x.AverageHeartrate != nil {
+		return *x.AverageHeartrate
+	}
+	return 0
+}
+
+func (x *FeedActivity) GetAverageWatts() float64 {
+	if x != nil && x.AverageWatts != nil {
+		return *x.AverageWatts
+	}
+	return 0
+}
+
+func (x *FeedActivity) GetSufferScore() float64 {
+	if x != nil && x.SufferScore != nil {
+		return *x.SufferScore
+	}
+	return 0
 }
 
 type GetCampaignFeedRequest struct {
@@ -227,16 +267,19 @@ func (x *GetCampaignFeedResponse) GetActivities() []*FeedActivity {
 }
 
 type LeaderboardEntry struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	UserName      string                 `protobuf:"bytes,2,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	UserAvatarUrl string                 `protobuf:"bytes,3,opt,name=user_avatar_url,json=userAvatarUrl,proto3" json:"user_avatar_url,omitempty"`
-	ProgressValue float64                `protobuf:"fixed64,4,opt,name=progress_value,json=progressValue,proto3" json:"progress_value,omitempty"`
-	TargetValue   float64                `protobuf:"fixed64,5,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
-	ProgressRatio float64                `protobuf:"fixed64,6,opt,name=progress_ratio,json=progressRatio,proto3" json:"progress_ratio,omitempty"`
-	Rank          int32                  `protobuf:"varint,7,opt,name=rank,proto3" json:"rank,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	UserId                  string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserName                string                 `protobuf:"bytes,2,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	UserAvatarUrl           string                 `protobuf:"bytes,3,opt,name=user_avatar_url,json=userAvatarUrl,proto3" json:"user_avatar_url,omitempty"`
+	GoalId                  string                 `protobuf:"bytes,4,opt,name=goal_id,json=goalId,proto3" json:"goal_id,omitempty"` // entries are now per-goal, not per-user
+	GoalName                string                 `protobuf:"bytes,5,opt,name=goal_name,json=goalName,proto3" json:"goal_name,omitempty"`
+	ProgressRatio           float64                `protobuf:"fixed64,6,opt,name=progress_ratio,json=progressRatio,proto3" json:"progress_ratio,omitempty"`
+	Satisfied               bool                   `protobuf:"varint,7,opt,name=satisfied,proto3" json:"satisfied,omitempty"`
+	Rank                    int32                  `protobuf:"varint,8,opt,name=rank,proto3" json:"rank,omitempty"` // rank within its LeaderboardGroup
+	Clauses                 []*ClauseProgress      `protobuf:"bytes,9,rep,name=clauses,proto3" json:"clauses,omitempty"`
+	ConsideredActivityCount int32                  `protobuf:"varint,10,opt,name=considered_activity_count,json=consideredActivityCount,proto3" json:"considered_activity_count,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *LeaderboardEntry) Reset() {
@@ -290,18 +333,18 @@ func (x *LeaderboardEntry) GetUserAvatarUrl() string {
 	return ""
 }
 
-func (x *LeaderboardEntry) GetProgressValue() float64 {
+func (x *LeaderboardEntry) GetGoalId() string {
 	if x != nil {
-		return x.ProgressValue
+		return x.GoalId
 	}
-	return 0
+	return ""
 }
 
-func (x *LeaderboardEntry) GetTargetValue() float64 {
+func (x *LeaderboardEntry) GetGoalName() string {
 	if x != nil {
-		return x.TargetValue
+		return x.GoalName
 	}
-	return 0
+	return ""
 }
 
 func (x *LeaderboardEntry) GetProgressRatio() float64 {
@@ -311,11 +354,92 @@ func (x *LeaderboardEntry) GetProgressRatio() float64 {
 	return 0
 }
 
+func (x *LeaderboardEntry) GetSatisfied() bool {
+	if x != nil {
+		return x.Satisfied
+	}
+	return false
+}
+
 func (x *LeaderboardEntry) GetRank() int32 {
 	if x != nil {
 		return x.Rank
 	}
 	return 0
+}
+
+func (x *LeaderboardEntry) GetClauses() []*ClauseProgress {
+	if x != nil {
+		return x.Clauses
+	}
+	return nil
+}
+
+func (x *LeaderboardEntry) GetConsideredActivityCount() int32 {
+	if x != nil {
+		return x.ConsideredActivityCount
+	}
+	return 0
+}
+
+type LeaderboardGroup struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	SportGroup      string                 `protobuf:"bytes,1,opt,name=sport_group,json=sportGroup,proto3" json:"sport_group,omitempty"` // "" = goals with no sport filter ("all sports")
+	SportGroupLabel string                 `protobuf:"bytes,2,opt,name=sport_group_label,json=sportGroupLabel,proto3" json:"sport_group_label,omitempty"`
+	Entries         []*LeaderboardEntry    `protobuf:"bytes,3,rep,name=entries,proto3" json:"entries,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *LeaderboardGroup) Reset() {
+	*x = LeaderboardGroup{}
+	mi := &file_fitter_v1_feed_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LeaderboardGroup) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaderboardGroup) ProtoMessage() {}
+
+func (x *LeaderboardGroup) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_feed_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaderboardGroup.ProtoReflect.Descriptor instead.
+func (*LeaderboardGroup) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *LeaderboardGroup) GetSportGroup() string {
+	if x != nil {
+		return x.SportGroup
+	}
+	return ""
+}
+
+func (x *LeaderboardGroup) GetSportGroupLabel() string {
+	if x != nil {
+		return x.SportGroupLabel
+	}
+	return ""
+}
+
+func (x *LeaderboardGroup) GetEntries() []*LeaderboardEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
 }
 
 type GetCampaignLeaderboardRequest struct {
@@ -327,7 +451,7 @@ type GetCampaignLeaderboardRequest struct {
 
 func (x *GetCampaignLeaderboardRequest) Reset() {
 	*x = GetCampaignLeaderboardRequest{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[4]
+	mi := &file_fitter_v1_feed_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -339,7 +463,7 @@ func (x *GetCampaignLeaderboardRequest) String() string {
 func (*GetCampaignLeaderboardRequest) ProtoMessage() {}
 
 func (x *GetCampaignLeaderboardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[4]
+	mi := &file_fitter_v1_feed_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -352,7 +476,7 @@ func (x *GetCampaignLeaderboardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignLeaderboardRequest.ProtoReflect.Descriptor instead.
 func (*GetCampaignLeaderboardRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{4}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetCampaignLeaderboardRequest) GetCampaignId() string {
@@ -363,17 +487,18 @@ func (x *GetCampaignLeaderboardRequest) GetCampaignId() string {
 }
 
 type GetCampaignLeaderboardResponse struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Entries []*LeaderboardEntry    `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
-	// pooled_progress_value is set only for CAMPAIGN_MODE_POOLED campaigns.
-	PooledProgressValue float64 `protobuf:"fixed64,2,opt,name=pooled_progress_value,json=pooledProgressValue,proto3" json:"pooled_progress_value,omitempty"`
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Groups              []*LeaderboardGroup    `protobuf:"bytes,1,rep,name=groups,proto3" json:"groups,omitempty"`
+	PooledProgressValue *float64               `protobuf:"fixed64,2,opt,name=pooled_progress_value,json=pooledProgressValue,proto3,oneof" json:"pooled_progress_value,omitempty"` // only when the campaign has a target
+	PooledTargetValue   *float64               `protobuf:"fixed64,3,opt,name=pooled_target_value,json=pooledTargetValue,proto3,oneof" json:"pooled_target_value,omitempty"`
+	PooledMetric        *ActivityMetric        `protobuf:"varint,4,opt,name=pooled_metric,json=pooledMetric,proto3,enum=fitter.v1.ActivityMetric,oneof" json:"pooled_metric,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *GetCampaignLeaderboardResponse) Reset() {
 	*x = GetCampaignLeaderboardResponse{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[5]
+	mi := &file_fitter_v1_feed_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -385,7 +510,7 @@ func (x *GetCampaignLeaderboardResponse) String() string {
 func (*GetCampaignLeaderboardResponse) ProtoMessage() {}
 
 func (x *GetCampaignLeaderboardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[5]
+	mi := &file_fitter_v1_feed_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -398,34 +523,48 @@ func (x *GetCampaignLeaderboardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignLeaderboardResponse.ProtoReflect.Descriptor instead.
 func (*GetCampaignLeaderboardResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{5}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *GetCampaignLeaderboardResponse) GetEntries() []*LeaderboardEntry {
+func (x *GetCampaignLeaderboardResponse) GetGroups() []*LeaderboardGroup {
 	if x != nil {
-		return x.Entries
+		return x.Groups
 	}
 	return nil
 }
 
 func (x *GetCampaignLeaderboardResponse) GetPooledProgressValue() float64 {
-	if x != nil {
-		return x.PooledProgressValue
+	if x != nil && x.PooledProgressValue != nil {
+		return *x.PooledProgressValue
 	}
 	return 0
 }
 
+func (x *GetCampaignLeaderboardResponse) GetPooledTargetValue() float64 {
+	if x != nil && x.PooledTargetValue != nil {
+		return *x.PooledTargetValue
+	}
+	return 0
+}
+
+func (x *GetCampaignLeaderboardResponse) GetPooledMetric() ActivityMetric {
+	if x != nil && x.PooledMetric != nil {
+		return *x.PooledMetric
+	}
+	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
+}
+
 type TimelinePoint struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Date            *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	CumulativeValue float64                `protobuf:"fixed64,2,opt,name=cumulative_value,json=cumulativeValue,proto3" json:"cumulative_value,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"` // renamed from cumulative_value — see Task 7, not every aggregation is cumulative
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TimelinePoint) Reset() {
 	*x = TimelinePoint{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[6]
+	mi := &file_fitter_v1_feed_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -437,7 +576,7 @@ func (x *TimelinePoint) String() string {
 func (*TimelinePoint) ProtoMessage() {}
 
 func (x *TimelinePoint) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[6]
+	mi := &file_fitter_v1_feed_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -450,7 +589,7 @@ func (x *TimelinePoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimelinePoint.ProtoReflect.Descriptor instead.
 func (*TimelinePoint) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{6}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TimelinePoint) GetDate() *timestamppb.Timestamp {
@@ -460,26 +599,30 @@ func (x *TimelinePoint) GetDate() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *TimelinePoint) GetCumulativeValue() float64 {
+func (x *TimelinePoint) GetValue() float64 {
 	if x != nil {
-		return x.CumulativeValue
+		return x.Value
 	}
 	return 0
 }
 
 type TimelineSeries struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// user_id is empty for the pooled series in CAMPAIGN_MODE_POOLED campaigns.
-	UserId        string           `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Label         string           `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
-	Points        []*TimelinePoint `protobuf:"bytes,3,rep,name=points,proto3" json:"points,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // "" for the pooled series
+	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	GoalId        string                 `protobuf:"bytes,3,opt,name=goal_id,json=goalId,proto3" json:"goal_id,omitempty"`
+	ClauseId      string                 `protobuf:"bytes,4,opt,name=clause_id,json=clauseId,proto3" json:"clause_id,omitempty"`
+	Metric        ActivityMetric         `protobuf:"varint,5,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
+	Comparator    Comparator             `protobuf:"varint,6,opt,name=comparator,proto3,enum=fitter.v1.Comparator" json:"comparator,omitempty"`
+	TargetValue   float64                `protobuf:"fixed64,7,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	Points        []*TimelinePoint       `protobuf:"bytes,8,rep,name=points,proto3" json:"points,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TimelineSeries) Reset() {
 	*x = TimelineSeries{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[7]
+	mi := &file_fitter_v1_feed_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -491,7 +634,7 @@ func (x *TimelineSeries) String() string {
 func (*TimelineSeries) ProtoMessage() {}
 
 func (x *TimelineSeries) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[7]
+	mi := &file_fitter_v1_feed_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -504,7 +647,7 @@ func (x *TimelineSeries) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimelineSeries.ProtoReflect.Descriptor instead.
 func (*TimelineSeries) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{7}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TimelineSeries) GetUserId() string {
@@ -521,9 +664,104 @@ func (x *TimelineSeries) GetLabel() string {
 	return ""
 }
 
+func (x *TimelineSeries) GetGoalId() string {
+	if x != nil {
+		return x.GoalId
+	}
+	return ""
+}
+
+func (x *TimelineSeries) GetClauseId() string {
+	if x != nil {
+		return x.ClauseId
+	}
+	return ""
+}
+
+func (x *TimelineSeries) GetMetric() ActivityMetric {
+	if x != nil {
+		return x.Metric
+	}
+	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
+}
+
+func (x *TimelineSeries) GetComparator() Comparator {
+	if x != nil {
+		return x.Comparator
+	}
+	return Comparator_COMPARATOR_UNSPECIFIED
+}
+
+func (x *TimelineSeries) GetTargetValue() float64 {
+	if x != nil {
+		return x.TargetValue
+	}
+	return 0
+}
+
 func (x *TimelineSeries) GetPoints() []*TimelinePoint {
 	if x != nil {
 		return x.Points
+	}
+	return nil
+}
+
+type TimelineGroup struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	SportGroup      string                 `protobuf:"bytes,1,opt,name=sport_group,json=sportGroup,proto3" json:"sport_group,omitempty"`
+	SportGroupLabel string                 `protobuf:"bytes,2,opt,name=sport_group_label,json=sportGroupLabel,proto3" json:"sport_group_label,omitempty"`
+	Series          []*TimelineSeries      `protobuf:"bytes,3,rep,name=series,proto3" json:"series,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *TimelineGroup) Reset() {
+	*x = TimelineGroup{}
+	mi := &file_fitter_v1_feed_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TimelineGroup) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TimelineGroup) ProtoMessage() {}
+
+func (x *TimelineGroup) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_feed_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TimelineGroup.ProtoReflect.Descriptor instead.
+func (*TimelineGroup) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *TimelineGroup) GetSportGroup() string {
+	if x != nil {
+		return x.SportGroup
+	}
+	return ""
+}
+
+func (x *TimelineGroup) GetSportGroupLabel() string {
+	if x != nil {
+		return x.SportGroupLabel
+	}
+	return ""
+}
+
+func (x *TimelineGroup) GetSeries() []*TimelineSeries {
+	if x != nil {
+		return x.Series
 	}
 	return nil
 }
@@ -537,7 +775,7 @@ type GetCampaignTimelineRequest struct {
 
 func (x *GetCampaignTimelineRequest) Reset() {
 	*x = GetCampaignTimelineRequest{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[8]
+	mi := &file_fitter_v1_feed_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -549,7 +787,7 @@ func (x *GetCampaignTimelineRequest) String() string {
 func (*GetCampaignTimelineRequest) ProtoMessage() {}
 
 func (x *GetCampaignTimelineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[8]
+	mi := &file_fitter_v1_feed_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -562,7 +800,7 @@ func (x *GetCampaignTimelineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignTimelineRequest.ProtoReflect.Descriptor instead.
 func (*GetCampaignTimelineRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{8}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetCampaignTimelineRequest) GetCampaignId() string {
@@ -574,8 +812,8 @@ func (x *GetCampaignTimelineRequest) GetCampaignId() string {
 
 type GetCampaignTimelineResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Series        []*TimelineSeries      `protobuf:"bytes,1,rep,name=series,proto3" json:"series,omitempty"`
-	TargetValue   float64                `protobuf:"fixed64,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	Groups        []*TimelineGroup       `protobuf:"bytes,1,rep,name=groups,proto3" json:"groups,omitempty"`
+	Pooled        *TimelineSeries        `protobuf:"bytes,2,opt,name=pooled,proto3,oneof" json:"pooled,omitempty"`
 	StartDate     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
 	EndDate       *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -584,7 +822,7 @@ type GetCampaignTimelineResponse struct {
 
 func (x *GetCampaignTimelineResponse) Reset() {
 	*x = GetCampaignTimelineResponse{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[9]
+	mi := &file_fitter_v1_feed_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -596,7 +834,7 @@ func (x *GetCampaignTimelineResponse) String() string {
 func (*GetCampaignTimelineResponse) ProtoMessage() {}
 
 func (x *GetCampaignTimelineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[9]
+	mi := &file_fitter_v1_feed_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -609,21 +847,21 @@ func (x *GetCampaignTimelineResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignTimelineResponse.ProtoReflect.Descriptor instead.
 func (*GetCampaignTimelineResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{9}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *GetCampaignTimelineResponse) GetSeries() []*TimelineSeries {
+func (x *GetCampaignTimelineResponse) GetGroups() []*TimelineGroup {
 	if x != nil {
-		return x.Series
+		return x.Groups
 	}
 	return nil
 }
 
-func (x *GetCampaignTimelineResponse) GetTargetValue() float64 {
+func (x *GetCampaignTimelineResponse) GetPooled() *TimelineSeries {
 	if x != nil {
-		return x.TargetValue
+		return x.Pooled
 	}
-	return 0
+	return nil
 }
 
 func (x *GetCampaignTimelineResponse) GetStartDate() *timestamppb.Timestamp {
@@ -644,9 +882,8 @@ var File_fitter_v1_feed_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\n" +
-	"\x14fitter/v1/feed.proto\x12\tfitter.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc3\x02\n" +
-	"\fFeedActivity\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\x14fitter/v1/feed.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x14fitter/v1/goal.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x04\n" +
+	"\fFeedActivity\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tuser_name\x18\x03 \x01(\tR\buserName\x12&\n" +
 	"\x0fuser_avatar_url\x18\x04 \x01(\tR\ruserAvatarUrl\x12\x12\n" +
@@ -659,44 +896,82 @@ const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\n" +
 	"start_date\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x12\x12\n" +
 	"\x04name\x18\n" +
-	" \x01(\tR\x04name\"9\n" +
+	" \x01(\tR\x04name\x12,\n" +
+	"\x12strava_activity_id\x18\v \x01(\x03R\x10stravaActivityId\x12\x1d\n" +
+	"\n" +
+	"sport_type\x18\f \x01(\tR\tsportType\x12\x1f\n" +
+	"\vsport_group\x18\r \x01(\tR\n" +
+	"sportGroup\x120\n" +
+	"\x11average_heartrate\x18\x0e \x01(\x01H\x00R\x10averageHeartrate\x88\x01\x01\x12(\n" +
+	"\raverage_watts\x18\x0f \x01(\x01H\x01R\faverageWatts\x88\x01\x01\x12&\n" +
+	"\fsuffer_score\x18\x10 \x01(\x01H\x02R\vsufferScore\x88\x01\x01B\x14\n" +
+	"\x12_average_heartrateB\x10\n" +
+	"\x0e_average_wattsB\x0f\n" +
+	"\r_suffer_scoreJ\x04\b\x01\x10\x02R\x02id\"9\n" +
 	"\x16GetCampaignFeedRequest\x12\x1f\n" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
 	"campaignId\"R\n" +
 	"\x17GetCampaignFeedResponse\x127\n" +
 	"\n" +
 	"activities\x18\x01 \x03(\v2\x17.fitter.v1.FeedActivityR\n" +
-	"activities\"\xf5\x01\n" +
+	"activities\"\xf0\x02\n" +
 	"\x10LeaderboardEntry\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tuser_name\x18\x02 \x01(\tR\buserName\x12&\n" +
-	"\x0fuser_avatar_url\x18\x03 \x01(\tR\ruserAvatarUrl\x12%\n" +
-	"\x0eprogress_value\x18\x04 \x01(\x01R\rprogressValue\x12!\n" +
-	"\ftarget_value\x18\x05 \x01(\x01R\vtargetValue\x12%\n" +
-	"\x0eprogress_ratio\x18\x06 \x01(\x01R\rprogressRatio\x12\x12\n" +
-	"\x04rank\x18\a \x01(\x05R\x04rank\"@\n" +
+	"\x0fuser_avatar_url\x18\x03 \x01(\tR\ruserAvatarUrl\x12\x17\n" +
+	"\agoal_id\x18\x04 \x01(\tR\x06goalId\x12\x1b\n" +
+	"\tgoal_name\x18\x05 \x01(\tR\bgoalName\x12%\n" +
+	"\x0eprogress_ratio\x18\x06 \x01(\x01R\rprogressRatio\x12\x1c\n" +
+	"\tsatisfied\x18\a \x01(\bR\tsatisfied\x12\x12\n" +
+	"\x04rank\x18\b \x01(\x05R\x04rank\x123\n" +
+	"\aclauses\x18\t \x03(\v2\x19.fitter.v1.ClauseProgressR\aclauses\x12:\n" +
+	"\x19considered_activity_count\x18\n" +
+	" \x01(\x05R\x17consideredActivityCount\"\x96\x01\n" +
+	"\x10LeaderboardGroup\x12\x1f\n" +
+	"\vsport_group\x18\x01 \x01(\tR\n" +
+	"sportGroup\x12*\n" +
+	"\x11sport_group_label\x18\x02 \x01(\tR\x0fsportGroupLabel\x125\n" +
+	"\aentries\x18\x03 \x03(\v2\x1b.fitter.v1.LeaderboardEntryR\aentries\"@\n" +
 	"\x1dGetCampaignLeaderboardRequest\x12\x1f\n" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
-	"campaignId\"\x8b\x01\n" +
-	"\x1eGetCampaignLeaderboardResponse\x125\n" +
-	"\aentries\x18\x01 \x03(\v2\x1b.fitter.v1.LeaderboardEntryR\aentries\x122\n" +
-	"\x15pooled_progress_value\x18\x02 \x01(\x01R\x13pooledProgressValue\"j\n" +
+	"campaignId\"\xcc\x02\n" +
+	"\x1eGetCampaignLeaderboardResponse\x123\n" +
+	"\x06groups\x18\x01 \x03(\v2\x1b.fitter.v1.LeaderboardGroupR\x06groups\x127\n" +
+	"\x15pooled_progress_value\x18\x02 \x01(\x01H\x00R\x13pooledProgressValue\x88\x01\x01\x123\n" +
+	"\x13pooled_target_value\x18\x03 \x01(\x01H\x01R\x11pooledTargetValue\x88\x01\x01\x12C\n" +
+	"\rpooled_metric\x18\x04 \x01(\x0e2\x19.fitter.v1.ActivityMetricH\x02R\fpooledMetric\x88\x01\x01B\x18\n" +
+	"\x16_pooled_progress_valueB\x16\n" +
+	"\x14_pooled_target_valueB\x10\n" +
+	"\x0e_pooled_metric\"U\n" +
 	"\rTimelinePoint\x12.\n" +
-	"\x04date\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x04date\x12)\n" +
-	"\x10cumulative_value\x18\x02 \x01(\x01R\x0fcumulativeValue\"q\n" +
+	"\x04date\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x04date\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value\"\xb4\x02\n" +
 	"\x0eTimelineSeries\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\x120\n" +
-	"\x06points\x18\x03 \x03(\v2\x18.fitter.v1.TimelinePointR\x06points\"=\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\x17\n" +
+	"\agoal_id\x18\x03 \x01(\tR\x06goalId\x12\x1b\n" +
+	"\tclause_id\x18\x04 \x01(\tR\bclauseId\x121\n" +
+	"\x06metric\x18\x05 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x125\n" +
+	"\n" +
+	"comparator\x18\x06 \x01(\x0e2\x15.fitter.v1.ComparatorR\n" +
+	"comparator\x12!\n" +
+	"\ftarget_value\x18\a \x01(\x01R\vtargetValue\x120\n" +
+	"\x06points\x18\b \x03(\v2\x18.fitter.v1.TimelinePointR\x06points\"\x8f\x01\n" +
+	"\rTimelineGroup\x12\x1f\n" +
+	"\vsport_group\x18\x01 \x01(\tR\n" +
+	"sportGroup\x12*\n" +
+	"\x11sport_group_label\x18\x02 \x01(\tR\x0fsportGroupLabel\x121\n" +
+	"\x06series\x18\x03 \x03(\v2\x19.fitter.v1.TimelineSeriesR\x06series\"=\n" +
 	"\x1aGetCampaignTimelineRequest\x12\x1f\n" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
-	"campaignId\"\xe5\x01\n" +
-	"\x1bGetCampaignTimelineResponse\x121\n" +
-	"\x06series\x18\x01 \x03(\v2\x19.fitter.v1.TimelineSeriesR\x06series\x12!\n" +
-	"\ftarget_value\x18\x02 \x01(\x01R\vtargetValue\x129\n" +
+	"campaignId\"\x98\x02\n" +
+	"\x1bGetCampaignTimelineResponse\x120\n" +
+	"\x06groups\x18\x01 \x03(\v2\x18.fitter.v1.TimelineGroupR\x06groups\x126\n" +
+	"\x06pooled\x18\x02 \x01(\v2\x19.fitter.v1.TimelineSeriesH\x00R\x06pooled\x88\x01\x01\x129\n" +
 	"\n" +
 	"start_date\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
-	"\bend_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate2\xbc\x02\n" +
+	"\bend_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendDateB\t\n" +
+	"\a_pooledJ\x04\b\x05\x10\x06R\ftarget_value2\xbc\x02\n" +
 	"\vFeedService\x12X\n" +
 	"\x0fGetCampaignFeed\x12!.fitter.v1.GetCampaignFeedRequest\x1a\".fitter.v1.GetCampaignFeedResponse\x12m\n" +
 	"\x16GetCampaignLeaderboard\x12(.fitter.v1.GetCampaignLeaderboardRequest\x1a).fitter.v1.GetCampaignLeaderboardResponse\x12d\n" +
@@ -716,40 +991,52 @@ func file_fitter_v1_feed_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_feed_proto_rawDescData
 }
 
-var file_fitter_v1_feed_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_fitter_v1_feed_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_fitter_v1_feed_proto_goTypes = []any{
 	(*FeedActivity)(nil),                   // 0: fitter.v1.FeedActivity
 	(*GetCampaignFeedRequest)(nil),         // 1: fitter.v1.GetCampaignFeedRequest
 	(*GetCampaignFeedResponse)(nil),        // 2: fitter.v1.GetCampaignFeedResponse
 	(*LeaderboardEntry)(nil),               // 3: fitter.v1.LeaderboardEntry
-	(*GetCampaignLeaderboardRequest)(nil),  // 4: fitter.v1.GetCampaignLeaderboardRequest
-	(*GetCampaignLeaderboardResponse)(nil), // 5: fitter.v1.GetCampaignLeaderboardResponse
-	(*TimelinePoint)(nil),                  // 6: fitter.v1.TimelinePoint
-	(*TimelineSeries)(nil),                 // 7: fitter.v1.TimelineSeries
-	(*GetCampaignTimelineRequest)(nil),     // 8: fitter.v1.GetCampaignTimelineRequest
-	(*GetCampaignTimelineResponse)(nil),    // 9: fitter.v1.GetCampaignTimelineResponse
-	(*timestamppb.Timestamp)(nil),          // 10: google.protobuf.Timestamp
+	(*LeaderboardGroup)(nil),               // 4: fitter.v1.LeaderboardGroup
+	(*GetCampaignLeaderboardRequest)(nil),  // 5: fitter.v1.GetCampaignLeaderboardRequest
+	(*GetCampaignLeaderboardResponse)(nil), // 6: fitter.v1.GetCampaignLeaderboardResponse
+	(*TimelinePoint)(nil),                  // 7: fitter.v1.TimelinePoint
+	(*TimelineSeries)(nil),                 // 8: fitter.v1.TimelineSeries
+	(*TimelineGroup)(nil),                  // 9: fitter.v1.TimelineGroup
+	(*GetCampaignTimelineRequest)(nil),     // 10: fitter.v1.GetCampaignTimelineRequest
+	(*GetCampaignTimelineResponse)(nil),    // 11: fitter.v1.GetCampaignTimelineResponse
+	(*timestamppb.Timestamp)(nil),          // 12: google.protobuf.Timestamp
+	(*ClauseProgress)(nil),                 // 13: fitter.v1.ClauseProgress
+	(ActivityMetric)(0),                    // 14: fitter.v1.ActivityMetric
+	(Comparator)(0),                        // 15: fitter.v1.Comparator
 }
 var file_fitter_v1_feed_proto_depIdxs = []int32{
-	10, // 0: fitter.v1.FeedActivity.start_date:type_name -> google.protobuf.Timestamp
+	12, // 0: fitter.v1.FeedActivity.start_date:type_name -> google.protobuf.Timestamp
 	0,  // 1: fitter.v1.GetCampaignFeedResponse.activities:type_name -> fitter.v1.FeedActivity
-	3,  // 2: fitter.v1.GetCampaignLeaderboardResponse.entries:type_name -> fitter.v1.LeaderboardEntry
-	10, // 3: fitter.v1.TimelinePoint.date:type_name -> google.protobuf.Timestamp
-	6,  // 4: fitter.v1.TimelineSeries.points:type_name -> fitter.v1.TimelinePoint
-	7,  // 5: fitter.v1.GetCampaignTimelineResponse.series:type_name -> fitter.v1.TimelineSeries
-	10, // 6: fitter.v1.GetCampaignTimelineResponse.start_date:type_name -> google.protobuf.Timestamp
-	10, // 7: fitter.v1.GetCampaignTimelineResponse.end_date:type_name -> google.protobuf.Timestamp
-	1,  // 8: fitter.v1.FeedService.GetCampaignFeed:input_type -> fitter.v1.GetCampaignFeedRequest
-	4,  // 9: fitter.v1.FeedService.GetCampaignLeaderboard:input_type -> fitter.v1.GetCampaignLeaderboardRequest
-	8,  // 10: fitter.v1.FeedService.GetCampaignTimeline:input_type -> fitter.v1.GetCampaignTimelineRequest
-	2,  // 11: fitter.v1.FeedService.GetCampaignFeed:output_type -> fitter.v1.GetCampaignFeedResponse
-	5,  // 12: fitter.v1.FeedService.GetCampaignLeaderboard:output_type -> fitter.v1.GetCampaignLeaderboardResponse
-	9,  // 13: fitter.v1.FeedService.GetCampaignTimeline:output_type -> fitter.v1.GetCampaignTimelineResponse
-	11, // [11:14] is the sub-list for method output_type
-	8,  // [8:11] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	13, // 2: fitter.v1.LeaderboardEntry.clauses:type_name -> fitter.v1.ClauseProgress
+	3,  // 3: fitter.v1.LeaderboardGroup.entries:type_name -> fitter.v1.LeaderboardEntry
+	4,  // 4: fitter.v1.GetCampaignLeaderboardResponse.groups:type_name -> fitter.v1.LeaderboardGroup
+	14, // 5: fitter.v1.GetCampaignLeaderboardResponse.pooled_metric:type_name -> fitter.v1.ActivityMetric
+	12, // 6: fitter.v1.TimelinePoint.date:type_name -> google.protobuf.Timestamp
+	14, // 7: fitter.v1.TimelineSeries.metric:type_name -> fitter.v1.ActivityMetric
+	15, // 8: fitter.v1.TimelineSeries.comparator:type_name -> fitter.v1.Comparator
+	7,  // 9: fitter.v1.TimelineSeries.points:type_name -> fitter.v1.TimelinePoint
+	8,  // 10: fitter.v1.TimelineGroup.series:type_name -> fitter.v1.TimelineSeries
+	9,  // 11: fitter.v1.GetCampaignTimelineResponse.groups:type_name -> fitter.v1.TimelineGroup
+	8,  // 12: fitter.v1.GetCampaignTimelineResponse.pooled:type_name -> fitter.v1.TimelineSeries
+	12, // 13: fitter.v1.GetCampaignTimelineResponse.start_date:type_name -> google.protobuf.Timestamp
+	12, // 14: fitter.v1.GetCampaignTimelineResponse.end_date:type_name -> google.protobuf.Timestamp
+	1,  // 15: fitter.v1.FeedService.GetCampaignFeed:input_type -> fitter.v1.GetCampaignFeedRequest
+	5,  // 16: fitter.v1.FeedService.GetCampaignLeaderboard:input_type -> fitter.v1.GetCampaignLeaderboardRequest
+	10, // 17: fitter.v1.FeedService.GetCampaignTimeline:input_type -> fitter.v1.GetCampaignTimelineRequest
+	2,  // 18: fitter.v1.FeedService.GetCampaignFeed:output_type -> fitter.v1.GetCampaignFeedResponse
+	6,  // 19: fitter.v1.FeedService.GetCampaignLeaderboard:output_type -> fitter.v1.GetCampaignLeaderboardResponse
+	11, // 20: fitter.v1.FeedService.GetCampaignTimeline:output_type -> fitter.v1.GetCampaignTimelineResponse
+	18, // [18:21] is the sub-list for method output_type
+	15, // [15:18] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_feed_proto_init() }
@@ -757,13 +1044,18 @@ func file_fitter_v1_feed_proto_init() {
 	if File_fitter_v1_feed_proto != nil {
 		return
 	}
+	file_fitter_v1_common_proto_init()
+	file_fitter_v1_goal_proto_init()
+	file_fitter_v1_feed_proto_msgTypes[0].OneofWrappers = []any{}
+	file_fitter_v1_feed_proto_msgTypes[6].OneofWrappers = []any{}
+	file_fitter_v1_feed_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_feed_proto_rawDesc), len(file_fitter_v1_feed_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

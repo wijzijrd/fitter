@@ -22,23 +22,295 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Goal is a private, personal fitness target — never shared with other users.
+type GoalClause struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // ignored on create; server-assigned
+	Position      int32                  `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
+	Scope         ClauseScope            `protobuf:"varint,3,opt,name=scope,proto3,enum=fitter.v1.ClauseScope" json:"scope,omitempty"`
+	Metric        ActivityMetric         `protobuf:"varint,4,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
+	Comparator    Comparator             `protobuf:"varint,5,opt,name=comparator,proto3,enum=fitter.v1.Comparator" json:"comparator,omitempty"`
+	Value         float64                `protobuf:"fixed64,6,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GoalClause) Reset() {
+	*x = GoalClause{}
+	mi := &file_fitter_v1_goal_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GoalClause) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GoalClause) ProtoMessage() {}
+
+func (x *GoalClause) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_goal_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GoalClause.ProtoReflect.Descriptor instead.
+func (*GoalClause) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GoalClause) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GoalClause) GetPosition() int32 {
+	if x != nil {
+		return x.Position
+	}
+	return 0
+}
+
+func (x *GoalClause) GetScope() ClauseScope {
+	if x != nil {
+		return x.Scope
+	}
+	return ClauseScope_CLAUSE_SCOPE_UNSPECIFIED
+}
+
+func (x *GoalClause) GetMetric() ActivityMetric {
+	if x != nil {
+		return x.Metric
+	}
+	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
+}
+
+func (x *GoalClause) GetComparator() Comparator {
+	if x != nil {
+		return x.Comparator
+	}
+	return Comparator_COMPARATOR_UNSPECIFIED
+}
+
+func (x *GoalClause) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+type ClauseProgress struct {
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	ClauseId                string                 `protobuf:"bytes,1,opt,name=clause_id,json=clauseId,proto3" json:"clause_id,omitempty"`
+	Position                int32                  `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
+	CurrentValue            float64                `protobuf:"fixed64,3,opt,name=current_value,json=currentValue,proto3" json:"current_value,omitempty"`
+	HasValue                bool                   `protobuf:"varint,4,opt,name=has_value,json=hasValue,proto3" json:"has_value,omitempty"`
+	Satisfied               bool                   `protobuf:"varint,5,opt,name=satisfied,proto3" json:"satisfied,omitempty"`
+	ProgressRatio           float64                `protobuf:"fixed64,6,opt,name=progress_ratio,json=progressRatio,proto3" json:"progress_ratio,omitempty"`
+	ConsideredActivityCount int32                  `protobuf:"varint,7,opt,name=considered_activity_count,json=consideredActivityCount,proto3" json:"considered_activity_count,omitempty"`
+	CountedActivityCount    int32                  `protobuf:"varint,8,opt,name=counted_activity_count,json=countedActivityCount,proto3" json:"counted_activity_count,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *ClauseProgress) Reset() {
+	*x = ClauseProgress{}
+	mi := &file_fitter_v1_goal_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClauseProgress) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClauseProgress) ProtoMessage() {}
+
+func (x *ClauseProgress) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_goal_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClauseProgress.ProtoReflect.Descriptor instead.
+func (*ClauseProgress) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ClauseProgress) GetClauseId() string {
+	if x != nil {
+		return x.ClauseId
+	}
+	return ""
+}
+
+func (x *ClauseProgress) GetPosition() int32 {
+	if x != nil {
+		return x.Position
+	}
+	return 0
+}
+
+func (x *ClauseProgress) GetCurrentValue() float64 {
+	if x != nil {
+		return x.CurrentValue
+	}
+	return 0
+}
+
+func (x *ClauseProgress) GetHasValue() bool {
+	if x != nil {
+		return x.HasValue
+	}
+	return false
+}
+
+func (x *ClauseProgress) GetSatisfied() bool {
+	if x != nil {
+		return x.Satisfied
+	}
+	return false
+}
+
+func (x *ClauseProgress) GetProgressRatio() float64 {
+	if x != nil {
+		return x.ProgressRatio
+	}
+	return 0
+}
+
+func (x *ClauseProgress) GetConsideredActivityCount() int32 {
+	if x != nil {
+		return x.ConsideredActivityCount
+	}
+	return 0
+}
+
+func (x *ClauseProgress) GetCountedActivityCount() int32 {
+	if x != nil {
+		return x.CountedActivityCount
+	}
+	return 0
+}
+
+type GoalProgress struct {
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	Satisfied               bool                   `protobuf:"varint,1,opt,name=satisfied,proto3" json:"satisfied,omitempty"`
+	ProgressRatio           float64                `protobuf:"fixed64,2,opt,name=progress_ratio,json=progressRatio,proto3" json:"progress_ratio,omitempty"` // min over clause ratios
+	Clauses                 []*ClauseProgress      `protobuf:"bytes,3,rep,name=clauses,proto3" json:"clauses,omitempty"`
+	ConsideredActivityCount int32                  `protobuf:"varint,4,opt,name=considered_activity_count,json=consideredActivityCount,proto3" json:"considered_activity_count,omitempty"`
+	QualifyingActivityId    *int64                 `protobuf:"varint,5,opt,name=qualifying_activity_id,json=qualifyingActivityId,proto3,oneof" json:"qualifying_activity_id,omitempty"`
+	BestAttemptActivityId   *int64                 `protobuf:"varint,6,opt,name=best_attempt_activity_id,json=bestAttemptActivityId,proto3,oneof" json:"best_attempt_activity_id,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *GoalProgress) Reset() {
+	*x = GoalProgress{}
+	mi := &file_fitter_v1_goal_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GoalProgress) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GoalProgress) ProtoMessage() {}
+
+func (x *GoalProgress) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_goal_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GoalProgress.ProtoReflect.Descriptor instead.
+func (*GoalProgress) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GoalProgress) GetSatisfied() bool {
+	if x != nil {
+		return x.Satisfied
+	}
+	return false
+}
+
+func (x *GoalProgress) GetProgressRatio() float64 {
+	if x != nil {
+		return x.ProgressRatio
+	}
+	return 0
+}
+
+func (x *GoalProgress) GetClauses() []*ClauseProgress {
+	if x != nil {
+		return x.Clauses
+	}
+	return nil
+}
+
+func (x *GoalProgress) GetConsideredActivityCount() int32 {
+	if x != nil {
+		return x.ConsideredActivityCount
+	}
+	return 0
+}
+
+func (x *GoalProgress) GetQualifyingActivityId() int64 {
+	if x != nil && x.QualifyingActivityId != nil {
+		return *x.QualifyingActivityId
+	}
+	return 0
+}
+
+func (x *GoalProgress) GetBestAttemptActivityId() int64 {
+	if x != nil && x.BestAttemptActivityId != nil {
+		return *x.BestAttemptActivityId
+	}
+	return 0
+}
+
+// Goal is a private, personal fitness target — never shared with other
+// users — unless it belongs to a campaign, in which case it becomes one of
+// that campaign's shared goals.
 type Goal struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Metric        ActivityMetric         `protobuf:"varint,2,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
-	TargetValue   float64                `protobuf:"fixed64,3,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
-	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
-	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
-	ProgressValue float64                `protobuf:"fixed64,6,opt,name=progress_value,json=progressValue,proto3" json:"progress_value,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CampaignId    *string                `protobuf:"bytes,2,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Sport         *SportSelector         `protobuf:"bytes,4,opt,name=sport,proto3" json:"sport,omitempty"` // unset = all sports
+	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Clauses       []*GoalClause          `protobuf:"bytes,7,rep,name=clauses,proto3" json:"clauses,omitempty"`
+	Progress      *GoalProgress          `protobuf:"bytes,8,opt,name=progress,proto3" json:"progress,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Goal) Reset() {
 	*x = Goal{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[0]
+	mi := &file_fitter_v1_goal_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -50,7 +322,7 @@ func (x *Goal) String() string {
 func (*Goal) ProtoMessage() {}
 
 func (x *Goal) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[0]
+	mi := &file_fitter_v1_goal_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63,7 +335,7 @@ func (x *Goal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Goal.ProtoReflect.Descriptor instead.
 func (*Goal) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{0}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Goal) GetId() string {
@@ -73,18 +345,25 @@ func (x *Goal) GetId() string {
 	return ""
 }
 
-func (x *Goal) GetMetric() ActivityMetric {
-	if x != nil {
-		return x.Metric
+func (x *Goal) GetCampaignId() string {
+	if x != nil && x.CampaignId != nil {
+		return *x.CampaignId
 	}
-	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
+	return ""
 }
 
-func (x *Goal) GetTargetValue() float64 {
+func (x *Goal) GetName() string {
 	if x != nil {
-		return x.TargetValue
+		return x.Name
 	}
-	return 0
+	return ""
+}
+
+func (x *Goal) GetSport() *SportSelector {
+	if x != nil {
+		return x.Sport
+	}
+	return nil
 }
 
 func (x *Goal) GetPeriodStart() *timestamppb.Timestamp {
@@ -101,11 +380,18 @@ func (x *Goal) GetPeriodEnd() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Goal) GetProgressValue() float64 {
+func (x *Goal) GetClauses() []*GoalClause {
 	if x != nil {
-		return x.ProgressValue
+		return x.Clauses
 	}
-	return 0
+	return nil
+}
+
+func (x *Goal) GetProgress() *GoalProgress {
+	if x != nil {
+		return x.Progress
+	}
+	return nil
 }
 
 func (x *Goal) GetCreatedAt() *timestamppb.Timestamp {
@@ -117,17 +403,19 @@ func (x *Goal) GetCreatedAt() *timestamppb.Timestamp {
 
 type CreateGoalRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metric        ActivityMetric         `protobuf:"varint,1,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
-	TargetValue   float64                `protobuf:"fixed64,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
-	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
-	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	CampaignId    *string                `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"` // period is forced to the campaign window when set (see Global Constraints)
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Sport         *SportSelector         `protobuf:"bytes,3,opt,name=sport,proto3" json:"sport,omitempty"`
+	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Clauses       []*GoalClause          `protobuf:"bytes,6,rep,name=clauses,proto3" json:"clauses,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateGoalRequest) Reset() {
 	*x = CreateGoalRequest{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[1]
+	mi := &file_fitter_v1_goal_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +427,7 @@ func (x *CreateGoalRequest) String() string {
 func (*CreateGoalRequest) ProtoMessage() {}
 
 func (x *CreateGoalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[1]
+	mi := &file_fitter_v1_goal_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,21 +440,28 @@ func (x *CreateGoalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateGoalRequest.ProtoReflect.Descriptor instead.
 func (*CreateGoalRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{1}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *CreateGoalRequest) GetMetric() ActivityMetric {
-	if x != nil {
-		return x.Metric
+func (x *CreateGoalRequest) GetCampaignId() string {
+	if x != nil && x.CampaignId != nil {
+		return *x.CampaignId
 	}
-	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
+	return ""
 }
 
-func (x *CreateGoalRequest) GetTargetValue() float64 {
+func (x *CreateGoalRequest) GetName() string {
 	if x != nil {
-		return x.TargetValue
+		return x.Name
 	}
-	return 0
+	return ""
+}
+
+func (x *CreateGoalRequest) GetSport() *SportSelector {
+	if x != nil {
+		return x.Sport
+	}
+	return nil
 }
 
 func (x *CreateGoalRequest) GetPeriodStart() *timestamppb.Timestamp {
@@ -183,6 +478,13 @@ func (x *CreateGoalRequest) GetPeriodEnd() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *CreateGoalRequest) GetClauses() []*GoalClause {
+	if x != nil {
+		return x.Clauses
+	}
+	return nil
+}
+
 type CreateGoalResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Goal          *Goal                  `protobuf:"bytes,1,opt,name=goal,proto3" json:"goal,omitempty"`
@@ -192,7 +494,7 @@ type CreateGoalResponse struct {
 
 func (x *CreateGoalResponse) Reset() {
 	*x = CreateGoalResponse{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[2]
+	mi := &file_fitter_v1_goal_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -204,7 +506,7 @@ func (x *CreateGoalResponse) String() string {
 func (*CreateGoalResponse) ProtoMessage() {}
 
 func (x *CreateGoalResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[2]
+	mi := &file_fitter_v1_goal_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -217,7 +519,7 @@ func (x *CreateGoalResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateGoalResponse.ProtoReflect.Descriptor instead.
 func (*CreateGoalResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{2}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateGoalResponse) GetGoal() *Goal {
@@ -229,13 +531,14 @@ func (x *CreateGoalResponse) GetGoal() *Goal {
 
 type ListGoalsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	CampaignId    *string                `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"` // unset = personal goals only
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListGoalsRequest) Reset() {
 	*x = ListGoalsRequest{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[3]
+	mi := &file_fitter_v1_goal_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -247,7 +550,7 @@ func (x *ListGoalsRequest) String() string {
 func (*ListGoalsRequest) ProtoMessage() {}
 
 func (x *ListGoalsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[3]
+	mi := &file_fitter_v1_goal_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -260,7 +563,14 @@ func (x *ListGoalsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGoalsRequest.ProtoReflect.Descriptor instead.
 func (*ListGoalsRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{3}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListGoalsRequest) GetCampaignId() string {
+	if x != nil && x.CampaignId != nil {
+		return *x.CampaignId
+	}
+	return ""
 }
 
 type ListGoalsResponse struct {
@@ -272,7 +582,7 @@ type ListGoalsResponse struct {
 
 func (x *ListGoalsResponse) Reset() {
 	*x = ListGoalsResponse{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[4]
+	mi := &file_fitter_v1_goal_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -284,7 +594,7 @@ func (x *ListGoalsResponse) String() string {
 func (*ListGoalsResponse) ProtoMessage() {}
 
 func (x *ListGoalsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[4]
+	mi := &file_fitter_v1_goal_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -297,7 +607,7 @@ func (x *ListGoalsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGoalsResponse.ProtoReflect.Descriptor instead.
 func (*ListGoalsResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{4}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListGoalsResponse) GetGoals() []*Goal {
@@ -310,16 +620,18 @@ func (x *ListGoalsResponse) GetGoals() []*Goal {
 type UpdateGoalRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GoalId        string                 `protobuf:"bytes,1,opt,name=goal_id,json=goalId,proto3" json:"goal_id,omitempty"`
-	TargetValue   float64                `protobuf:"fixed64,2,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
-	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
-	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Sport         *SportSelector         `protobuf:"bytes,3,opt,name=sport,proto3" json:"sport,omitempty"`
+	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Clauses       []*GoalClause          `protobuf:"bytes,6,rep,name=clauses,proto3" json:"clauses,omitempty"` // full replacement, not a patch
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateGoalRequest) Reset() {
 	*x = UpdateGoalRequest{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[5]
+	mi := &file_fitter_v1_goal_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -331,7 +643,7 @@ func (x *UpdateGoalRequest) String() string {
 func (*UpdateGoalRequest) ProtoMessage() {}
 
 func (x *UpdateGoalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[5]
+	mi := &file_fitter_v1_goal_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -344,7 +656,7 @@ func (x *UpdateGoalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateGoalRequest.ProtoReflect.Descriptor instead.
 func (*UpdateGoalRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{5}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateGoalRequest) GetGoalId() string {
@@ -354,11 +666,18 @@ func (x *UpdateGoalRequest) GetGoalId() string {
 	return ""
 }
 
-func (x *UpdateGoalRequest) GetTargetValue() float64 {
+func (x *UpdateGoalRequest) GetName() string {
 	if x != nil {
-		return x.TargetValue
+		return x.Name
 	}
-	return 0
+	return ""
+}
+
+func (x *UpdateGoalRequest) GetSport() *SportSelector {
+	if x != nil {
+		return x.Sport
+	}
+	return nil
 }
 
 func (x *UpdateGoalRequest) GetPeriodStart() *timestamppb.Timestamp {
@@ -375,6 +694,13 @@ func (x *UpdateGoalRequest) GetPeriodEnd() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *UpdateGoalRequest) GetClauses() []*GoalClause {
+	if x != nil {
+		return x.Clauses
+	}
+	return nil
+}
+
 type UpdateGoalResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Goal          *Goal                  `protobuf:"bytes,1,opt,name=goal,proto3" json:"goal,omitempty"`
@@ -384,7 +710,7 @@ type UpdateGoalResponse struct {
 
 func (x *UpdateGoalResponse) Reset() {
 	*x = UpdateGoalResponse{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[6]
+	mi := &file_fitter_v1_goal_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -396,7 +722,7 @@ func (x *UpdateGoalResponse) String() string {
 func (*UpdateGoalResponse) ProtoMessage() {}
 
 func (x *UpdateGoalResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[6]
+	mi := &file_fitter_v1_goal_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -409,7 +735,7 @@ func (x *UpdateGoalResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateGoalResponse.ProtoReflect.Descriptor instead.
 func (*UpdateGoalResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{6}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateGoalResponse) GetGoal() *Goal {
@@ -428,7 +754,7 @@ type DeleteGoalRequest struct {
 
 func (x *DeleteGoalRequest) Reset() {
 	*x = DeleteGoalRequest{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[7]
+	mi := &file_fitter_v1_goal_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -440,7 +766,7 @@ func (x *DeleteGoalRequest) String() string {
 func (*DeleteGoalRequest) ProtoMessage() {}
 
 func (x *DeleteGoalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[7]
+	mi := &file_fitter_v1_goal_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -453,7 +779,7 @@ func (x *DeleteGoalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGoalRequest.ProtoReflect.Descriptor instead.
 func (*DeleteGoalRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{7}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteGoalRequest) GetGoalId() string {
@@ -471,7 +797,7 @@ type DeleteGoalResponse struct {
 
 func (x *DeleteGoalResponse) Reset() {
 	*x = DeleteGoalResponse{}
-	mi := &file_fitter_v1_goal_proto_msgTypes[8]
+	mi := &file_fitter_v1_goal_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -483,7 +809,7 @@ func (x *DeleteGoalResponse) String() string {
 func (*DeleteGoalResponse) ProtoMessage() {}
 
 func (x *DeleteGoalResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_goal_proto_msgTypes[8]
+	mi := &file_fitter_v1_goal_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -496,41 +822,82 @@ func (x *DeleteGoalResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGoalResponse.ProtoReflect.Descriptor instead.
 func (*DeleteGoalResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{8}
+	return file_fitter_v1_goal_proto_rawDescGZIP(), []int{11}
 }
 
 var File_fitter_v1_goal_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\n" +
-	"\x14fitter/v1/goal.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc8\x02\n" +
+	"\x14fitter/v1/goal.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe6\x01\n" +
+	"\n" +
+	"GoalClause\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\bposition\x18\x02 \x01(\x05R\bposition\x12,\n" +
+	"\x05scope\x18\x03 \x01(\x0e2\x16.fitter.v1.ClauseScopeR\x05scope\x121\n" +
+	"\x06metric\x18\x04 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x125\n" +
+	"\n" +
+	"comparator\x18\x05 \x01(\x0e2\x15.fitter.v1.ComparatorR\n" +
+	"comparator\x12\x14\n" +
+	"\x05value\x18\x06 \x01(\x01R\x05value\"\xc2\x02\n" +
+	"\x0eClauseProgress\x12\x1b\n" +
+	"\tclause_id\x18\x01 \x01(\tR\bclauseId\x12\x1a\n" +
+	"\bposition\x18\x02 \x01(\x05R\bposition\x12#\n" +
+	"\rcurrent_value\x18\x03 \x01(\x01R\fcurrentValue\x12\x1b\n" +
+	"\thas_value\x18\x04 \x01(\bR\bhasValue\x12\x1c\n" +
+	"\tsatisfied\x18\x05 \x01(\bR\tsatisfied\x12%\n" +
+	"\x0eprogress_ratio\x18\x06 \x01(\x01R\rprogressRatio\x12:\n" +
+	"\x19considered_activity_count\x18\a \x01(\x05R\x17consideredActivityCount\x124\n" +
+	"\x16counted_activity_count\x18\b \x01(\x05R\x14countedActivityCount\"\xf5\x02\n" +
+	"\fGoalProgress\x12\x1c\n" +
+	"\tsatisfied\x18\x01 \x01(\bR\tsatisfied\x12%\n" +
+	"\x0eprogress_ratio\x18\x02 \x01(\x01R\rprogressRatio\x123\n" +
+	"\aclauses\x18\x03 \x03(\v2\x19.fitter.v1.ClauseProgressR\aclauses\x12:\n" +
+	"\x19considered_activity_count\x18\x04 \x01(\x05R\x17consideredActivityCount\x129\n" +
+	"\x16qualifying_activity_id\x18\x05 \x01(\x03H\x00R\x14qualifyingActivityId\x88\x01\x01\x12<\n" +
+	"\x18best_attempt_activity_id\x18\x06 \x01(\x03H\x01R\x15bestAttemptActivityId\x88\x01\x01B\x19\n" +
+	"\x17_qualifying_activity_idB\x1b\n" +
+	"\x19_best_attempt_activity_id\"\xab\x03\n" +
 	"\x04Goal\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x121\n" +
-	"\x06metric\x18\x02 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x12!\n" +
-	"\ftarget_value\x18\x03 \x01(\x01R\vtargetValue\x12=\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
+	"\vcampaign_id\x18\x02 \x01(\tH\x00R\n" +
+	"campaignId\x88\x01\x01\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12.\n" +
+	"\x05sport\x18\x04 \x01(\v2\x18.fitter.v1.SportSelectorR\x05sport\x12=\n" +
+	"\fperiod_start\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
+	"\n" +
+	"period_end\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12/\n" +
+	"\aclauses\x18\a \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\x123\n" +
+	"\bprogress\x18\b \x01(\v2\x17.fitter.v1.GoalProgressR\bprogress\x129\n" +
+	"\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\x0e\n" +
+	"\f_campaign_id\"\xb8\x02\n" +
+	"\x11CreateGoalRequest\x12$\n" +
+	"\vcampaign_id\x18\x01 \x01(\tH\x00R\n" +
+	"campaignId\x88\x01\x01\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12.\n" +
+	"\x05sport\x18\x03 \x01(\v2\x18.fitter.v1.SportSelectorR\x05sport\x12=\n" +
 	"\fperiod_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
 	"\n" +
-	"period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12%\n" +
-	"\x0eprogress_value\x18\x06 \x01(\x01R\rprogressValue\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xe3\x01\n" +
-	"\x11CreateGoalRequest\x121\n" +
-	"\x06metric\x18\x01 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x12!\n" +
-	"\ftarget_value\x18\x02 \x01(\x01R\vtargetValue\x12=\n" +
-	"\fperiod_start\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
-	"\n" +
-	"period_end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\"9\n" +
+	"period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12/\n" +
+	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclausesB\x0e\n" +
+	"\f_campaign_id\"9\n" +
 	"\x12CreateGoalResponse\x12#\n" +
-	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\"\x12\n" +
-	"\x10ListGoalsRequest\":\n" +
+	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\"H\n" +
+	"\x10ListGoalsRequest\x12$\n" +
+	"\vcampaign_id\x18\x01 \x01(\tH\x00R\n" +
+	"campaignId\x88\x01\x01B\x0e\n" +
+	"\f_campaign_id\":\n" +
 	"\x11ListGoalsResponse\x12%\n" +
-	"\x05goals\x18\x01 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"\xc9\x01\n" +
+	"\x05goals\x18\x01 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"\x9b\x02\n" +
 	"\x11UpdateGoalRequest\x12\x17\n" +
-	"\agoal_id\x18\x01 \x01(\tR\x06goalId\x12!\n" +
-	"\ftarget_value\x18\x02 \x01(\x01R\vtargetValue\x12=\n" +
-	"\fperiod_start\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
+	"\agoal_id\x18\x01 \x01(\tR\x06goalId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12.\n" +
+	"\x05sport\x18\x03 \x01(\v2\x18.fitter.v1.SportSelectorR\x05sport\x12=\n" +
+	"\fperiod_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
 	"\n" +
-	"period_end\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\"9\n" +
+	"period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12/\n" +
+	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\"9\n" +
 	"\x12UpdateGoalResponse\x12#\n" +
 	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\",\n" +
 	"\x11DeleteGoalRequest\x12\x17\n" +
@@ -559,46 +926,61 @@ func file_fitter_v1_goal_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_goal_proto_rawDescData
 }
 
-var file_fitter_v1_goal_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_fitter_v1_goal_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_fitter_v1_goal_proto_goTypes = []any{
-	(*Goal)(nil),                  // 0: fitter.v1.Goal
-	(*CreateGoalRequest)(nil),     // 1: fitter.v1.CreateGoalRequest
-	(*CreateGoalResponse)(nil),    // 2: fitter.v1.CreateGoalResponse
-	(*ListGoalsRequest)(nil),      // 3: fitter.v1.ListGoalsRequest
-	(*ListGoalsResponse)(nil),     // 4: fitter.v1.ListGoalsResponse
-	(*UpdateGoalRequest)(nil),     // 5: fitter.v1.UpdateGoalRequest
-	(*UpdateGoalResponse)(nil),    // 6: fitter.v1.UpdateGoalResponse
-	(*DeleteGoalRequest)(nil),     // 7: fitter.v1.DeleteGoalRequest
-	(*DeleteGoalResponse)(nil),    // 8: fitter.v1.DeleteGoalResponse
-	(ActivityMetric)(0),           // 9: fitter.v1.ActivityMetric
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(*GoalClause)(nil),            // 0: fitter.v1.GoalClause
+	(*ClauseProgress)(nil),        // 1: fitter.v1.ClauseProgress
+	(*GoalProgress)(nil),          // 2: fitter.v1.GoalProgress
+	(*Goal)(nil),                  // 3: fitter.v1.Goal
+	(*CreateGoalRequest)(nil),     // 4: fitter.v1.CreateGoalRequest
+	(*CreateGoalResponse)(nil),    // 5: fitter.v1.CreateGoalResponse
+	(*ListGoalsRequest)(nil),      // 6: fitter.v1.ListGoalsRequest
+	(*ListGoalsResponse)(nil),     // 7: fitter.v1.ListGoalsResponse
+	(*UpdateGoalRequest)(nil),     // 8: fitter.v1.UpdateGoalRequest
+	(*UpdateGoalResponse)(nil),    // 9: fitter.v1.UpdateGoalResponse
+	(*DeleteGoalRequest)(nil),     // 10: fitter.v1.DeleteGoalRequest
+	(*DeleteGoalResponse)(nil),    // 11: fitter.v1.DeleteGoalResponse
+	(ClauseScope)(0),              // 12: fitter.v1.ClauseScope
+	(ActivityMetric)(0),           // 13: fitter.v1.ActivityMetric
+	(Comparator)(0),               // 14: fitter.v1.Comparator
+	(*SportSelector)(nil),         // 15: fitter.v1.SportSelector
+	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
 }
 var file_fitter_v1_goal_proto_depIdxs = []int32{
-	9,  // 0: fitter.v1.Goal.metric:type_name -> fitter.v1.ActivityMetric
-	10, // 1: fitter.v1.Goal.period_start:type_name -> google.protobuf.Timestamp
-	10, // 2: fitter.v1.Goal.period_end:type_name -> google.protobuf.Timestamp
-	10, // 3: fitter.v1.Goal.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 4: fitter.v1.CreateGoalRequest.metric:type_name -> fitter.v1.ActivityMetric
-	10, // 5: fitter.v1.CreateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
-	10, // 6: fitter.v1.CreateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
-	0,  // 7: fitter.v1.CreateGoalResponse.goal:type_name -> fitter.v1.Goal
-	0,  // 8: fitter.v1.ListGoalsResponse.goals:type_name -> fitter.v1.Goal
-	10, // 9: fitter.v1.UpdateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
-	10, // 10: fitter.v1.UpdateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
-	0,  // 11: fitter.v1.UpdateGoalResponse.goal:type_name -> fitter.v1.Goal
-	1,  // 12: fitter.v1.GoalService.CreateGoal:input_type -> fitter.v1.CreateGoalRequest
-	3,  // 13: fitter.v1.GoalService.ListGoals:input_type -> fitter.v1.ListGoalsRequest
-	5,  // 14: fitter.v1.GoalService.UpdateGoal:input_type -> fitter.v1.UpdateGoalRequest
-	7,  // 15: fitter.v1.GoalService.DeleteGoal:input_type -> fitter.v1.DeleteGoalRequest
-	2,  // 16: fitter.v1.GoalService.CreateGoal:output_type -> fitter.v1.CreateGoalResponse
-	4,  // 17: fitter.v1.GoalService.ListGoals:output_type -> fitter.v1.ListGoalsResponse
-	6,  // 18: fitter.v1.GoalService.UpdateGoal:output_type -> fitter.v1.UpdateGoalResponse
-	8,  // 19: fitter.v1.GoalService.DeleteGoal:output_type -> fitter.v1.DeleteGoalResponse
-	16, // [16:20] is the sub-list for method output_type
-	12, // [12:16] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	12, // 0: fitter.v1.GoalClause.scope:type_name -> fitter.v1.ClauseScope
+	13, // 1: fitter.v1.GoalClause.metric:type_name -> fitter.v1.ActivityMetric
+	14, // 2: fitter.v1.GoalClause.comparator:type_name -> fitter.v1.Comparator
+	1,  // 3: fitter.v1.GoalProgress.clauses:type_name -> fitter.v1.ClauseProgress
+	15, // 4: fitter.v1.Goal.sport:type_name -> fitter.v1.SportSelector
+	16, // 5: fitter.v1.Goal.period_start:type_name -> google.protobuf.Timestamp
+	16, // 6: fitter.v1.Goal.period_end:type_name -> google.protobuf.Timestamp
+	0,  // 7: fitter.v1.Goal.clauses:type_name -> fitter.v1.GoalClause
+	2,  // 8: fitter.v1.Goal.progress:type_name -> fitter.v1.GoalProgress
+	16, // 9: fitter.v1.Goal.created_at:type_name -> google.protobuf.Timestamp
+	15, // 10: fitter.v1.CreateGoalRequest.sport:type_name -> fitter.v1.SportSelector
+	16, // 11: fitter.v1.CreateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
+	16, // 12: fitter.v1.CreateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
+	0,  // 13: fitter.v1.CreateGoalRequest.clauses:type_name -> fitter.v1.GoalClause
+	3,  // 14: fitter.v1.CreateGoalResponse.goal:type_name -> fitter.v1.Goal
+	3,  // 15: fitter.v1.ListGoalsResponse.goals:type_name -> fitter.v1.Goal
+	15, // 16: fitter.v1.UpdateGoalRequest.sport:type_name -> fitter.v1.SportSelector
+	16, // 17: fitter.v1.UpdateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
+	16, // 18: fitter.v1.UpdateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
+	0,  // 19: fitter.v1.UpdateGoalRequest.clauses:type_name -> fitter.v1.GoalClause
+	3,  // 20: fitter.v1.UpdateGoalResponse.goal:type_name -> fitter.v1.Goal
+	4,  // 21: fitter.v1.GoalService.CreateGoal:input_type -> fitter.v1.CreateGoalRequest
+	6,  // 22: fitter.v1.GoalService.ListGoals:input_type -> fitter.v1.ListGoalsRequest
+	8,  // 23: fitter.v1.GoalService.UpdateGoal:input_type -> fitter.v1.UpdateGoalRequest
+	10, // 24: fitter.v1.GoalService.DeleteGoal:input_type -> fitter.v1.DeleteGoalRequest
+	5,  // 25: fitter.v1.GoalService.CreateGoal:output_type -> fitter.v1.CreateGoalResponse
+	7,  // 26: fitter.v1.GoalService.ListGoals:output_type -> fitter.v1.ListGoalsResponse
+	9,  // 27: fitter.v1.GoalService.UpdateGoal:output_type -> fitter.v1.UpdateGoalResponse
+	11, // 28: fitter.v1.GoalService.DeleteGoal:output_type -> fitter.v1.DeleteGoalResponse
+	25, // [25:29] is the sub-list for method output_type
+	21, // [21:25] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_goal_proto_init() }
@@ -607,13 +989,17 @@ func file_fitter_v1_goal_proto_init() {
 		return
 	}
 	file_fitter_v1_common_proto_init()
+	file_fitter_v1_goal_proto_msgTypes[2].OneofWrappers = []any{}
+	file_fitter_v1_goal_proto_msgTypes[3].OneofWrappers = []any{}
+	file_fitter_v1_goal_proto_msgTypes[4].OneofWrappers = []any{}
+	file_fitter_v1_goal_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_goal_proto_rawDesc), len(file_fitter_v1_goal_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

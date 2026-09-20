@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "fitter/v1/common.proto";
+
+// MetricInfo describes one entry in the internal/metrics taxonomy, so the
+// clause editor can know a metric's unit/aggregation/nullability without a
+// hand-maintained TypeScript copy.
+message MetricInfo {
+  ActivityMetric metric = 1;
+  string key = 2;   // the internal/metrics.Key string, e.g. "average_heartrate"
+  string label = 3; // "Average heart rate"
+  MetricUnit unit = 4;
+  MetricAggregation aggregation = 5;
+  bool nullable = 6;
+  bool supports_single_scope = 7;
+  bool supports_aggregate_scope = 8;
+  bool lower_is_better = 9;
+}
+
+message SportGroupInfo {
+  string group = 1;
+  string label = 2;
+  repeated string sport_types = 3;
+}
+
+message ListMetricsRequest {}
+
+message ListMetricsResponse {
+  repeated MetricInfo metrics = 1;
+}
+
+message ListSportsRequest {}
+
+message ListSportsResponse {
+  repeated SportGroupInfo groups = 1;
+}
+
+service CatalogService {
+  rpc ListMetrics(ListMetricsRequest) returns (ListMetricsResponse);
+  rpc ListSports(ListSportsRequest) returns (ListSportsResponse);
+}

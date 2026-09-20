@@ -21,32 +21,72 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ActivityMetric is the quantity a goal or campaign target is measured in.
+// ActivityMetric is the quantity a goal clause or campaign target is
+// measured in.
 type ActivityMetric int32
 
 const (
-	ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED ActivityMetric = 0
-	ActivityMetric_ACTIVITY_METRIC_DISTANCE    ActivityMetric = 1
-	ActivityMetric_ACTIVITY_METRIC_ELEVATION   ActivityMetric = 2
-	ActivityMetric_ACTIVITY_METRIC_TIME        ActivityMetric = 3
-	ActivityMetric_ACTIVITY_METRIC_COUNT       ActivityMetric = 4
+	ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED            ActivityMetric = 0
+	ActivityMetric_ACTIVITY_METRIC_DISTANCE               ActivityMetric = 1
+	ActivityMetric_ACTIVITY_METRIC_ELEVATION_GAIN         ActivityMetric = 2
+	ActivityMetric_ACTIVITY_METRIC_MOVING_TIME            ActivityMetric = 3
+	ActivityMetric_ACTIVITY_METRIC_ACTIVITY_COUNT         ActivityMetric = 4
+	ActivityMetric_ACTIVITY_METRIC_ELAPSED_TIME           ActivityMetric = 5
+	ActivityMetric_ACTIVITY_METRIC_AVERAGE_SPEED          ActivityMetric = 6
+	ActivityMetric_ACTIVITY_METRIC_MAX_SPEED              ActivityMetric = 7
+	ActivityMetric_ACTIVITY_METRIC_PACE                   ActivityMetric = 8
+	ActivityMetric_ACTIVITY_METRIC_AVERAGE_HEARTRATE      ActivityMetric = 9
+	ActivityMetric_ACTIVITY_METRIC_MAX_HEARTRATE          ActivityMetric = 10
+	ActivityMetric_ACTIVITY_METRIC_AVERAGE_WATTS          ActivityMetric = 11
+	ActivityMetric_ACTIVITY_METRIC_WEIGHTED_AVERAGE_WATTS ActivityMetric = 12
+	ActivityMetric_ACTIVITY_METRIC_MAX_WATTS              ActivityMetric = 13
+	ActivityMetric_ACTIVITY_METRIC_KILOJOULES             ActivityMetric = 14
+	ActivityMetric_ACTIVITY_METRIC_CALORIES               ActivityMetric = 15
+	ActivityMetric_ACTIVITY_METRIC_AVERAGE_CADENCE        ActivityMetric = 16
+	ActivityMetric_ACTIVITY_METRIC_SUFFER_SCORE           ActivityMetric = 17
 )
 
 // Enum value maps for ActivityMetric.
 var (
 	ActivityMetric_name = map[int32]string{
-		0: "ACTIVITY_METRIC_UNSPECIFIED",
-		1: "ACTIVITY_METRIC_DISTANCE",
-		2: "ACTIVITY_METRIC_ELEVATION",
-		3: "ACTIVITY_METRIC_TIME",
-		4: "ACTIVITY_METRIC_COUNT",
+		0:  "ACTIVITY_METRIC_UNSPECIFIED",
+		1:  "ACTIVITY_METRIC_DISTANCE",
+		2:  "ACTIVITY_METRIC_ELEVATION_GAIN",
+		3:  "ACTIVITY_METRIC_MOVING_TIME",
+		4:  "ACTIVITY_METRIC_ACTIVITY_COUNT",
+		5:  "ACTIVITY_METRIC_ELAPSED_TIME",
+		6:  "ACTIVITY_METRIC_AVERAGE_SPEED",
+		7:  "ACTIVITY_METRIC_MAX_SPEED",
+		8:  "ACTIVITY_METRIC_PACE",
+		9:  "ACTIVITY_METRIC_AVERAGE_HEARTRATE",
+		10: "ACTIVITY_METRIC_MAX_HEARTRATE",
+		11: "ACTIVITY_METRIC_AVERAGE_WATTS",
+		12: "ACTIVITY_METRIC_WEIGHTED_AVERAGE_WATTS",
+		13: "ACTIVITY_METRIC_MAX_WATTS",
+		14: "ACTIVITY_METRIC_KILOJOULES",
+		15: "ACTIVITY_METRIC_CALORIES",
+		16: "ACTIVITY_METRIC_AVERAGE_CADENCE",
+		17: "ACTIVITY_METRIC_SUFFER_SCORE",
 	}
 	ActivityMetric_value = map[string]int32{
-		"ACTIVITY_METRIC_UNSPECIFIED": 0,
-		"ACTIVITY_METRIC_DISTANCE":    1,
-		"ACTIVITY_METRIC_ELEVATION":   2,
-		"ACTIVITY_METRIC_TIME":        3,
-		"ACTIVITY_METRIC_COUNT":       4,
+		"ACTIVITY_METRIC_UNSPECIFIED":            0,
+		"ACTIVITY_METRIC_DISTANCE":               1,
+		"ACTIVITY_METRIC_ELEVATION_GAIN":         2,
+		"ACTIVITY_METRIC_MOVING_TIME":            3,
+		"ACTIVITY_METRIC_ACTIVITY_COUNT":         4,
+		"ACTIVITY_METRIC_ELAPSED_TIME":           5,
+		"ACTIVITY_METRIC_AVERAGE_SPEED":          6,
+		"ACTIVITY_METRIC_MAX_SPEED":              7,
+		"ACTIVITY_METRIC_PACE":                   8,
+		"ACTIVITY_METRIC_AVERAGE_HEARTRATE":      9,
+		"ACTIVITY_METRIC_MAX_HEARTRATE":          10,
+		"ACTIVITY_METRIC_AVERAGE_WATTS":          11,
+		"ACTIVITY_METRIC_WEIGHTED_AVERAGE_WATTS": 12,
+		"ACTIVITY_METRIC_MAX_WATTS":              13,
+		"ACTIVITY_METRIC_KILOJOULES":             14,
+		"ACTIVITY_METRIC_CALORIES":               15,
+		"ACTIVITY_METRIC_AVERAGE_CADENCE":        16,
+		"ACTIVITY_METRIC_SUFFER_SCORE":           17,
 	}
 )
 
@@ -77,73 +117,391 @@ func (ActivityMetric) EnumDescriptor() ([]byte, []int) {
 	return file_fitter_v1_common_proto_rawDescGZIP(), []int{0}
 }
 
-// CampaignMode controls how member progress rolls up to the campaign target.
-type CampaignMode int32
+// ClauseScope controls whether a goal clause is evaluated per-activity or
+// over the aggregate of all matching activities in the period.
+type ClauseScope int32
 
 const (
-	CampaignMode_CAMPAIGN_MODE_UNSPECIFIED CampaignMode = 0
-	// CAMPAIGN_MODE_POOLED: every member's matching activity contributes to one shared target.
-	CampaignMode_CAMPAIGN_MODE_POOLED CampaignMode = 1
-	// CAMPAIGN_MODE_PER_MEMBER: each member tracks their own copy of the target independently.
-	CampaignMode_CAMPAIGN_MODE_PER_MEMBER CampaignMode = 2
+	ClauseScope_CLAUSE_SCOPE_UNSPECIFIED ClauseScope = 0
+	ClauseScope_CLAUSE_SCOPE_AGGREGATE   ClauseScope = 1
+	ClauseScope_CLAUSE_SCOPE_SINGLE      ClauseScope = 2
 )
 
-// Enum value maps for CampaignMode.
+// Enum value maps for ClauseScope.
 var (
-	CampaignMode_name = map[int32]string{
-		0: "CAMPAIGN_MODE_UNSPECIFIED",
-		1: "CAMPAIGN_MODE_POOLED",
-		2: "CAMPAIGN_MODE_PER_MEMBER",
+	ClauseScope_name = map[int32]string{
+		0: "CLAUSE_SCOPE_UNSPECIFIED",
+		1: "CLAUSE_SCOPE_AGGREGATE",
+		2: "CLAUSE_SCOPE_SINGLE",
 	}
-	CampaignMode_value = map[string]int32{
-		"CAMPAIGN_MODE_UNSPECIFIED": 0,
-		"CAMPAIGN_MODE_POOLED":      1,
-		"CAMPAIGN_MODE_PER_MEMBER":  2,
+	ClauseScope_value = map[string]int32{
+		"CLAUSE_SCOPE_UNSPECIFIED": 0,
+		"CLAUSE_SCOPE_AGGREGATE":   1,
+		"CLAUSE_SCOPE_SINGLE":      2,
 	}
 )
 
-func (x CampaignMode) Enum() *CampaignMode {
-	p := new(CampaignMode)
+func (x ClauseScope) Enum() *ClauseScope {
+	p := new(ClauseScope)
 	*p = x
 	return p
 }
 
-func (x CampaignMode) String() string {
+func (x ClauseScope) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (CampaignMode) Descriptor() protoreflect.EnumDescriptor {
+func (ClauseScope) Descriptor() protoreflect.EnumDescriptor {
 	return file_fitter_v1_common_proto_enumTypes[1].Descriptor()
 }
 
-func (CampaignMode) Type() protoreflect.EnumType {
+func (ClauseScope) Type() protoreflect.EnumType {
 	return &file_fitter_v1_common_proto_enumTypes[1]
 }
 
-func (x CampaignMode) Number() protoreflect.EnumNumber {
+func (x ClauseScope) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use CampaignMode.Descriptor instead.
-func (CampaignMode) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use ClauseScope.Descriptor instead.
+func (ClauseScope) EnumDescriptor() ([]byte, []int) {
 	return file_fitter_v1_common_proto_rawDescGZIP(), []int{1}
 }
+
+// Comparator is how a clause's current value is checked against its target.
+type Comparator int32
+
+const (
+	Comparator_COMPARATOR_UNSPECIFIED Comparator = 0
+	Comparator_COMPARATOR_GTE         Comparator = 1
+	Comparator_COMPARATOR_LTE         Comparator = 2
+)
+
+// Enum value maps for Comparator.
+var (
+	Comparator_name = map[int32]string{
+		0: "COMPARATOR_UNSPECIFIED",
+		1: "COMPARATOR_GTE",
+		2: "COMPARATOR_LTE",
+	}
+	Comparator_value = map[string]int32{
+		"COMPARATOR_UNSPECIFIED": 0,
+		"COMPARATOR_GTE":         1,
+		"COMPARATOR_LTE":         2,
+	}
+)
+
+func (x Comparator) Enum() *Comparator {
+	p := new(Comparator)
+	*p = x
+	return p
+}
+
+func (x Comparator) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Comparator) Descriptor() protoreflect.EnumDescriptor {
+	return file_fitter_v1_common_proto_enumTypes[2].Descriptor()
+}
+
+func (Comparator) Type() protoreflect.EnumType {
+	return &file_fitter_v1_common_proto_enumTypes[2]
+}
+
+func (x Comparator) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Comparator.Descriptor instead.
+func (Comparator) EnumDescriptor() ([]byte, []int) {
+	return file_fitter_v1_common_proto_rawDescGZIP(), []int{2}
+}
+
+// MetricAggregation identifies how an ActivityMetric combines multiple
+// activities into one value.
+type MetricAggregation int32
+
+const (
+	MetricAggregation_METRIC_AGGREGATION_UNSPECIFIED MetricAggregation = 0
+	MetricAggregation_METRIC_AGGREGATION_SUM         MetricAggregation = 1
+	MetricAggregation_METRIC_AGGREGATION_AVERAGE     MetricAggregation = 2 // duration-weighted
+	MetricAggregation_METRIC_AGGREGATION_MAX         MetricAggregation = 3
+	MetricAggregation_METRIC_AGGREGATION_COUNT       MetricAggregation = 4
+	MetricAggregation_METRIC_AGGREGATION_DERIVED     MetricAggregation = 5 // pace
+)
+
+// Enum value maps for MetricAggregation.
+var (
+	MetricAggregation_name = map[int32]string{
+		0: "METRIC_AGGREGATION_UNSPECIFIED",
+		1: "METRIC_AGGREGATION_SUM",
+		2: "METRIC_AGGREGATION_AVERAGE",
+		3: "METRIC_AGGREGATION_MAX",
+		4: "METRIC_AGGREGATION_COUNT",
+		5: "METRIC_AGGREGATION_DERIVED",
+	}
+	MetricAggregation_value = map[string]int32{
+		"METRIC_AGGREGATION_UNSPECIFIED": 0,
+		"METRIC_AGGREGATION_SUM":         1,
+		"METRIC_AGGREGATION_AVERAGE":     2,
+		"METRIC_AGGREGATION_MAX":         3,
+		"METRIC_AGGREGATION_COUNT":       4,
+		"METRIC_AGGREGATION_DERIVED":     5,
+	}
+)
+
+func (x MetricAggregation) Enum() *MetricAggregation {
+	p := new(MetricAggregation)
+	*p = x
+	return p
+}
+
+func (x MetricAggregation) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MetricAggregation) Descriptor() protoreflect.EnumDescriptor {
+	return file_fitter_v1_common_proto_enumTypes[3].Descriptor()
+}
+
+func (MetricAggregation) Type() protoreflect.EnumType {
+	return &file_fitter_v1_common_proto_enumTypes[3]
+}
+
+func (x MetricAggregation) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MetricAggregation.Descriptor instead.
+func (MetricAggregation) EnumDescriptor() ([]byte, []int) {
+	return file_fitter_v1_common_proto_rawDescGZIP(), []int{3}
+}
+
+// MetricUnit identifies how a metric's numeric value should be interpreted
+// and formatted.
+type MetricUnit int32
+
+const (
+	MetricUnit_METRIC_UNIT_UNSPECIFIED       MetricUnit = 0
+	MetricUnit_METRIC_UNIT_METERS            MetricUnit = 1
+	MetricUnit_METRIC_UNIT_SECONDS           MetricUnit = 2
+	MetricUnit_METRIC_UNIT_METERS_PER_SECOND MetricUnit = 3
+	MetricUnit_METRIC_UNIT_SECONDS_PER_KM    MetricUnit = 4
+	MetricUnit_METRIC_UNIT_BPM               MetricUnit = 5
+	MetricUnit_METRIC_UNIT_WATTS             MetricUnit = 6
+	MetricUnit_METRIC_UNIT_KILOJOULES        MetricUnit = 7
+	MetricUnit_METRIC_UNIT_KILOCALORIES      MetricUnit = 8
+	MetricUnit_METRIC_UNIT_RPM               MetricUnit = 9
+	MetricUnit_METRIC_UNIT_COUNT             MetricUnit = 10
+	MetricUnit_METRIC_UNIT_SCORE             MetricUnit = 11
+)
+
+// Enum value maps for MetricUnit.
+var (
+	MetricUnit_name = map[int32]string{
+		0:  "METRIC_UNIT_UNSPECIFIED",
+		1:  "METRIC_UNIT_METERS",
+		2:  "METRIC_UNIT_SECONDS",
+		3:  "METRIC_UNIT_METERS_PER_SECOND",
+		4:  "METRIC_UNIT_SECONDS_PER_KM",
+		5:  "METRIC_UNIT_BPM",
+		6:  "METRIC_UNIT_WATTS",
+		7:  "METRIC_UNIT_KILOJOULES",
+		8:  "METRIC_UNIT_KILOCALORIES",
+		9:  "METRIC_UNIT_RPM",
+		10: "METRIC_UNIT_COUNT",
+		11: "METRIC_UNIT_SCORE",
+	}
+	MetricUnit_value = map[string]int32{
+		"METRIC_UNIT_UNSPECIFIED":       0,
+		"METRIC_UNIT_METERS":            1,
+		"METRIC_UNIT_SECONDS":           2,
+		"METRIC_UNIT_METERS_PER_SECOND": 3,
+		"METRIC_UNIT_SECONDS_PER_KM":    4,
+		"METRIC_UNIT_BPM":               5,
+		"METRIC_UNIT_WATTS":             6,
+		"METRIC_UNIT_KILOJOULES":        7,
+		"METRIC_UNIT_KILOCALORIES":      8,
+		"METRIC_UNIT_RPM":               9,
+		"METRIC_UNIT_COUNT":             10,
+		"METRIC_UNIT_SCORE":             11,
+	}
+)
+
+func (x MetricUnit) Enum() *MetricUnit {
+	p := new(MetricUnit)
+	*p = x
+	return p
+}
+
+func (x MetricUnit) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MetricUnit) Descriptor() protoreflect.EnumDescriptor {
+	return file_fitter_v1_common_proto_enumTypes[4].Descriptor()
+}
+
+func (MetricUnit) Type() protoreflect.EnumType {
+	return &file_fitter_v1_common_proto_enumTypes[4]
+}
+
+func (x MetricUnit) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MetricUnit.Descriptor instead.
+func (MetricUnit) EnumDescriptor() ([]byte, []int) {
+	return file_fitter_v1_common_proto_rawDescGZIP(), []int{4}
+}
+
+// SportSelector: an entirely unset message (neither oneof branch present)
+// means "all sports".
+type SportSelector struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Selector:
+	//
+	//	*SportSelector_Group
+	//	*SportSelector_SportType
+	Selector      isSportSelector_Selector `protobuf_oneof:"selector"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SportSelector) Reset() {
+	*x = SportSelector{}
+	mi := &file_fitter_v1_common_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SportSelector) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SportSelector) ProtoMessage() {}
+
+func (x *SportSelector) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_common_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SportSelector.ProtoReflect.Descriptor instead.
+func (*SportSelector) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_common_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *SportSelector) GetSelector() isSportSelector_Selector {
+	if x != nil {
+		return x.Selector
+	}
+	return nil
+}
+
+func (x *SportSelector) GetGroup() string {
+	if x != nil {
+		if x, ok := x.Selector.(*SportSelector_Group); ok {
+			return x.Group
+		}
+	}
+	return ""
+}
+
+func (x *SportSelector) GetSportType() string {
+	if x != nil {
+		if x, ok := x.Selector.(*SportSelector_SportType); ok {
+			return x.SportType
+		}
+	}
+	return ""
+}
+
+type isSportSelector_Selector interface {
+	isSportSelector_Selector()
+}
+
+type SportSelector_Group struct {
+	Group string `protobuf:"bytes,1,opt,name=group,proto3,oneof"` // a curated group key from CatalogService.ListSports
+}
+
+type SportSelector_SportType struct {
+	SportType string `protobuf:"bytes,2,opt,name=sport_type,json=sportType,proto3,oneof"` // an exact Strava sport_type string
+}
+
+func (*SportSelector_Group) isSportSelector_Selector() {}
+
+func (*SportSelector_SportType) isSportSelector_Selector() {}
 
 var File_fitter_v1_common_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_common_proto_rawDesc = "" +
 	"\n" +
-	"\x16fitter/v1/common.proto\x12\tfitter.v1*\xa3\x01\n" +
+	"\x16fitter/v1/common.proto\x12\tfitter.v1\"T\n" +
+	"\rSportSelector\x12\x16\n" +
+	"\x05group\x18\x01 \x01(\tH\x00R\x05group\x12\x1f\n" +
+	"\n" +
+	"sport_type\x18\x02 \x01(\tH\x00R\tsportTypeB\n" +
+	"\n" +
+	"\bselector*\xf3\x04\n" +
 	"\x0eActivityMetric\x12\x1f\n" +
 	"\x1bACTIVITY_METRIC_UNSPECIFIED\x10\x00\x12\x1c\n" +
-	"\x18ACTIVITY_METRIC_DISTANCE\x10\x01\x12\x1d\n" +
-	"\x19ACTIVITY_METRIC_ELEVATION\x10\x02\x12\x18\n" +
-	"\x14ACTIVITY_METRIC_TIME\x10\x03\x12\x19\n" +
-	"\x15ACTIVITY_METRIC_COUNT\x10\x04*e\n" +
-	"\fCampaignMode\x12\x1d\n" +
-	"\x19CAMPAIGN_MODE_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14CAMPAIGN_MODE_POOLED\x10\x01\x12\x1c\n" +
-	"\x18CAMPAIGN_MODE_PER_MEMBER\x10\x02B\x8f\x01\n" +
+	"\x18ACTIVITY_METRIC_DISTANCE\x10\x01\x12\"\n" +
+	"\x1eACTIVITY_METRIC_ELEVATION_GAIN\x10\x02\x12\x1f\n" +
+	"\x1bACTIVITY_METRIC_MOVING_TIME\x10\x03\x12\"\n" +
+	"\x1eACTIVITY_METRIC_ACTIVITY_COUNT\x10\x04\x12 \n" +
+	"\x1cACTIVITY_METRIC_ELAPSED_TIME\x10\x05\x12!\n" +
+	"\x1dACTIVITY_METRIC_AVERAGE_SPEED\x10\x06\x12\x1d\n" +
+	"\x19ACTIVITY_METRIC_MAX_SPEED\x10\a\x12\x18\n" +
+	"\x14ACTIVITY_METRIC_PACE\x10\b\x12%\n" +
+	"!ACTIVITY_METRIC_AVERAGE_HEARTRATE\x10\t\x12!\n" +
+	"\x1dACTIVITY_METRIC_MAX_HEARTRATE\x10\n" +
+	"\x12!\n" +
+	"\x1dACTIVITY_METRIC_AVERAGE_WATTS\x10\v\x12*\n" +
+	"&ACTIVITY_METRIC_WEIGHTED_AVERAGE_WATTS\x10\f\x12\x1d\n" +
+	"\x19ACTIVITY_METRIC_MAX_WATTS\x10\r\x12\x1e\n" +
+	"\x1aACTIVITY_METRIC_KILOJOULES\x10\x0e\x12\x1c\n" +
+	"\x18ACTIVITY_METRIC_CALORIES\x10\x0f\x12#\n" +
+	"\x1fACTIVITY_METRIC_AVERAGE_CADENCE\x10\x10\x12 \n" +
+	"\x1cACTIVITY_METRIC_SUFFER_SCORE\x10\x11*`\n" +
+	"\vClauseScope\x12\x1c\n" +
+	"\x18CLAUSE_SCOPE_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16CLAUSE_SCOPE_AGGREGATE\x10\x01\x12\x17\n" +
+	"\x13CLAUSE_SCOPE_SINGLE\x10\x02*P\n" +
+	"\n" +
+	"Comparator\x12\x1a\n" +
+	"\x16COMPARATOR_UNSPECIFIED\x10\x00\x12\x12\n" +
+	"\x0eCOMPARATOR_GTE\x10\x01\x12\x12\n" +
+	"\x0eCOMPARATOR_LTE\x10\x02*\xcd\x01\n" +
+	"\x11MetricAggregation\x12\"\n" +
+	"\x1eMETRIC_AGGREGATION_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16METRIC_AGGREGATION_SUM\x10\x01\x12\x1e\n" +
+	"\x1aMETRIC_AGGREGATION_AVERAGE\x10\x02\x12\x1a\n" +
+	"\x16METRIC_AGGREGATION_MAX\x10\x03\x12\x1c\n" +
+	"\x18METRIC_AGGREGATION_COUNT\x10\x04\x12\x1e\n" +
+	"\x1aMETRIC_AGGREGATION_DERIVED\x10\x05*\xc6\x02\n" +
+	"\n" +
+	"MetricUnit\x12\x1b\n" +
+	"\x17METRIC_UNIT_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12METRIC_UNIT_METERS\x10\x01\x12\x17\n" +
+	"\x13METRIC_UNIT_SECONDS\x10\x02\x12!\n" +
+	"\x1dMETRIC_UNIT_METERS_PER_SECOND\x10\x03\x12\x1e\n" +
+	"\x1aMETRIC_UNIT_SECONDS_PER_KM\x10\x04\x12\x13\n" +
+	"\x0fMETRIC_UNIT_BPM\x10\x05\x12\x15\n" +
+	"\x11METRIC_UNIT_WATTS\x10\x06\x12\x1a\n" +
+	"\x16METRIC_UNIT_KILOJOULES\x10\a\x12\x1c\n" +
+	"\x18METRIC_UNIT_KILOCALORIES\x10\b\x12\x13\n" +
+	"\x0fMETRIC_UNIT_RPM\x10\t\x12\x15\n" +
+	"\x11METRIC_UNIT_COUNT\x10\n" +
+	"\x12\x15\n" +
+	"\x11METRIC_UNIT_SCORE\x10\vB\x8f\x01\n" +
 	"\rcom.fitter.v1B\vCommonProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
 
@@ -159,10 +517,15 @@ func file_fitter_v1_common_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_common_proto_rawDescData
 }
 
-var file_fitter_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_fitter_v1_common_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_fitter_v1_common_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_fitter_v1_common_proto_goTypes = []any{
-	(ActivityMetric)(0), // 0: fitter.v1.ActivityMetric
-	(CampaignMode)(0),   // 1: fitter.v1.CampaignMode
+	(ActivityMetric)(0),    // 0: fitter.v1.ActivityMetric
+	(ClauseScope)(0),       // 1: fitter.v1.ClauseScope
+	(Comparator)(0),        // 2: fitter.v1.Comparator
+	(MetricAggregation)(0), // 3: fitter.v1.MetricAggregation
+	(MetricUnit)(0),        // 4: fitter.v1.MetricUnit
+	(*SportSelector)(nil),  // 5: fitter.v1.SportSelector
 }
 var file_fitter_v1_common_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -177,19 +540,24 @@ func file_fitter_v1_common_proto_init() {
 	if File_fitter_v1_common_proto != nil {
 		return
 	}
+	file_fitter_v1_common_proto_msgTypes[0].OneofWrappers = []any{
+		(*SportSelector_Group)(nil),
+		(*SportSelector_SportType)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_common_proto_rawDesc), len(file_fitter_v1_common_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   0,
+			NumEnums:      5,
+			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_fitter_v1_common_proto_goTypes,
 		DependencyIndexes: file_fitter_v1_common_proto_depIdxs,
 		EnumInfos:         file_fitter_v1_common_proto_enumTypes,
+		MessageInfos:      file_fitter_v1_common_proto_msgTypes,
 	}.Build()
 	File_fitter_v1_common_proto = out.File
 	file_fitter_v1_common_proto_goTypes = nil

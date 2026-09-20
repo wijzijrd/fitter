@@ -2,17 +2,55 @@
 // @generated from file fitter/v1/common.proto (package fitter.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file fitter/v1/common.proto.
  */
 export const file_fitter_v1_common: GenFile = /*@__PURE__*/
-  fileDesc("ChZmaXR0ZXIvdjEvY29tbW9uLnByb3RvEglmaXR0ZXIudjEqowEKDkFjdGl2aXR5TWV0cmljEh8KG0FDVElWSVRZX01FVFJJQ19VTlNQRUNJRklFRBAAEhwKGEFDVElWSVRZX01FVFJJQ19ESVNUQU5DRRABEh0KGUFDVElWSVRZX01FVFJJQ19FTEVWQVRJT04QAhIYChRBQ1RJVklUWV9NRVRSSUNfVElNRRADEhkKFUFDVElWSVRZX01FVFJJQ19DT1VOVBAEKmUKDENhbXBhaWduTW9kZRIdChlDQU1QQUlHTl9NT0RFX1VOU1BFQ0lGSUVEEAASGAoUQ0FNUEFJR05fTU9ERV9QT09MRUQQARIcChhDQU1QQUlHTl9NT0RFX1BFUl9NRU1CRVIQAkKPAQoNY29tLmZpdHRlci52MUILQ29tbW9uUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM");
+  fileDesc("ChZmaXR0ZXIvdjEvY29tbW9uLnByb3RvEglmaXR0ZXIudjEiQgoNU3BvcnRTZWxlY3RvchIPCgVncm91cBgBIAEoCUgAEhQKCnNwb3J0X3R5cGUYAiABKAlIAEIKCghzZWxlY3RvcirzBAoOQWN0aXZpdHlNZXRyaWMSHwobQUNUSVZJVFlfTUVUUklDX1VOU1BFQ0lGSUVEEAASHAoYQUNUSVZJVFlfTUVUUklDX0RJU1RBTkNFEAESIgoeQUNUSVZJVFlfTUVUUklDX0VMRVZBVElPTl9HQUlOEAISHwobQUNUSVZJVFlfTUVUUklDX01PVklOR19USU1FEAMSIgoeQUNUSVZJVFlfTUVUUklDX0FDVElWSVRZX0NPVU5UEAQSIAocQUNUSVZJVFlfTUVUUklDX0VMQVBTRURfVElNRRAFEiEKHUFDVElWSVRZX01FVFJJQ19BVkVSQUdFX1NQRUVEEAYSHQoZQUNUSVZJVFlfTUVUUklDX01BWF9TUEVFRBAHEhgKFEFDVElWSVRZX01FVFJJQ19QQUNFEAgSJQohQUNUSVZJVFlfTUVUUklDX0FWRVJBR0VfSEVBUlRSQVRFEAkSIQodQUNUSVZJVFlfTUVUUklDX01BWF9IRUFSVFJBVEUQChIhCh1BQ1RJVklUWV9NRVRSSUNfQVZFUkFHRV9XQVRUUxALEioKJkFDVElWSVRZX01FVFJJQ19XRUlHSFRFRF9BVkVSQUdFX1dBVFRTEAwSHQoZQUNUSVZJVFlfTUVUUklDX01BWF9XQVRUUxANEh4KGkFDVElWSVRZX01FVFJJQ19LSUxPSk9VTEVTEA4SHAoYQUNUSVZJVFlfTUVUUklDX0NBTE9SSUVTEA8SIwofQUNUSVZJVFlfTUVUUklDX0FWRVJBR0VfQ0FERU5DRRAQEiAKHEFDVElWSVRZX01FVFJJQ19TVUZGRVJfU0NPUkUQESpgCgtDbGF1c2VTY29wZRIcChhDTEFVU0VfU0NPUEVfVU5TUEVDSUZJRUQQABIaChZDTEFVU0VfU0NPUEVfQUdHUkVHQVRFEAESFwoTQ0xBVVNFX1NDT1BFX1NJTkdMRRACKlAKCkNvbXBhcmF0b3ISGgoWQ09NUEFSQVRPUl9VTlNQRUNJRklFRBAAEhIKDkNPTVBBUkFUT1JfR1RFEAESEgoOQ09NUEFSQVRPUl9MVEUQAirNAQoRTWV0cmljQWdncmVnYXRpb24SIgoeTUVUUklDX0FHR1JFR0FUSU9OX1VOU1BFQ0lGSUVEEAASGgoWTUVUUklDX0FHR1JFR0FUSU9OX1NVTRABEh4KGk1FVFJJQ19BR0dSRUdBVElPTl9BVkVSQUdFEAISGgoWTUVUUklDX0FHR1JFR0FUSU9OX01BWBADEhwKGE1FVFJJQ19BR0dSRUdBVElPTl9DT1VOVBAEEh4KGk1FVFJJQ19BR0dSRUdBVElPTl9ERVJJVkVEEAUqxgIKCk1ldHJpY1VuaXQSGwoXTUVUUklDX1VOSVRfVU5TUEVDSUZJRUQQABIWChJNRVRSSUNfVU5JVF9NRVRFUlMQARIXChNNRVRSSUNfVU5JVF9TRUNPTkRTEAISIQodTUVUUklDX1VOSVRfTUVURVJTX1BFUl9TRUNPTkQQAxIeChpNRVRSSUNfVU5JVF9TRUNPTkRTX1BFUl9LTRAEEhMKD01FVFJJQ19VTklUX0JQTRAFEhUKEU1FVFJJQ19VTklUX1dBVFRTEAYSGgoWTUVUUklDX1VOSVRfS0lMT0pPVUxFUxAHEhwKGE1FVFJJQ19VTklUX0tJTE9DQUxPUklFUxAIEhMKD01FVFJJQ19VTklUX1JQTRAJEhUKEU1FVFJJQ19VTklUX0NPVU5UEAoSFQoRTUVUUklDX1VOSVRfU0NPUkUQC0KPAQoNY29tLmZpdHRlci52MUILQ29tbW9uUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM");
 
 /**
- * ActivityMetric is the quantity a goal or campaign target is measured in.
+ * SportSelector: an entirely unset message (neither oneof branch present)
+ * means "all sports".
+ *
+ * @generated from message fitter.v1.SportSelector
+ */
+export type SportSelector = Message<"fitter.v1.SportSelector"> & {
+  /**
+   * @generated from oneof fitter.v1.SportSelector.selector
+   */
+  selector: {
+    /**
+     * a curated group key from CatalogService.ListSports
+     *
+     * @generated from field: string group = 1;
+     */
+    value: string;
+    case: "group";
+  } | {
+    /**
+     * an exact Strava sport_type string
+     *
+     * @generated from field: string sport_type = 2;
+     */
+    value: string;
+    case: "sportType";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message fitter.v1.SportSelector.
+ * Use `create(SportSelectorSchema)` to create a new message.
+ */
+export const SportSelectorSchema: GenMessage<SportSelector> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_common, 0);
+
+/**
+ * ActivityMetric is the quantity a goal clause or campaign target is
+ * measured in.
  *
  * @generated from enum fitter.v1.ActivityMetric
  */
@@ -28,19 +66,84 @@ export enum ActivityMetric {
   DISTANCE = 1,
 
   /**
-   * @generated from enum value: ACTIVITY_METRIC_ELEVATION = 2;
+   * @generated from enum value: ACTIVITY_METRIC_ELEVATION_GAIN = 2;
    */
-  ELEVATION = 2,
+  ELEVATION_GAIN = 2,
 
   /**
-   * @generated from enum value: ACTIVITY_METRIC_TIME = 3;
+   * @generated from enum value: ACTIVITY_METRIC_MOVING_TIME = 3;
    */
-  TIME = 3,
+  MOVING_TIME = 3,
 
   /**
-   * @generated from enum value: ACTIVITY_METRIC_COUNT = 4;
+   * @generated from enum value: ACTIVITY_METRIC_ACTIVITY_COUNT = 4;
    */
-  COUNT = 4,
+  ACTIVITY_COUNT = 4,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_ELAPSED_TIME = 5;
+   */
+  ELAPSED_TIME = 5,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_AVERAGE_SPEED = 6;
+   */
+  AVERAGE_SPEED = 6,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_MAX_SPEED = 7;
+   */
+  MAX_SPEED = 7,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_PACE = 8;
+   */
+  PACE = 8,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_AVERAGE_HEARTRATE = 9;
+   */
+  AVERAGE_HEARTRATE = 9,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_MAX_HEARTRATE = 10;
+   */
+  MAX_HEARTRATE = 10,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_AVERAGE_WATTS = 11;
+   */
+  AVERAGE_WATTS = 11,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_WEIGHTED_AVERAGE_WATTS = 12;
+   */
+  WEIGHTED_AVERAGE_WATTS = 12,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_MAX_WATTS = 13;
+   */
+  MAX_WATTS = 13,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_KILOJOULES = 14;
+   */
+  KILOJOULES = 14,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_CALORIES = 15;
+   */
+  CALORIES = 15,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_AVERAGE_CADENCE = 16;
+   */
+  AVERAGE_CADENCE = 16,
+
+  /**
+   * @generated from enum value: ACTIVITY_METRIC_SUFFER_SCORE = 17;
+   */
+  SUFFER_SCORE = 17,
 }
 
 /**
@@ -50,34 +153,181 @@ export const ActivityMetricSchema: GenEnum<ActivityMetric> = /*@__PURE__*/
   enumDesc(file_fitter_v1_common, 0);
 
 /**
- * CampaignMode controls how member progress rolls up to the campaign target.
+ * ClauseScope controls whether a goal clause is evaluated per-activity or
+ * over the aggregate of all matching activities in the period.
  *
- * @generated from enum fitter.v1.CampaignMode
+ * @generated from enum fitter.v1.ClauseScope
  */
-export enum CampaignMode {
+export enum ClauseScope {
   /**
-   * @generated from enum value: CAMPAIGN_MODE_UNSPECIFIED = 0;
+   * @generated from enum value: CLAUSE_SCOPE_UNSPECIFIED = 0;
    */
   UNSPECIFIED = 0,
 
   /**
-   * CAMPAIGN_MODE_POOLED: every member's matching activity contributes to one shared target.
-   *
-   * @generated from enum value: CAMPAIGN_MODE_POOLED = 1;
+   * @generated from enum value: CLAUSE_SCOPE_AGGREGATE = 1;
    */
-  POOLED = 1,
+  AGGREGATE = 1,
 
   /**
-   * CAMPAIGN_MODE_PER_MEMBER: each member tracks their own copy of the target independently.
-   *
-   * @generated from enum value: CAMPAIGN_MODE_PER_MEMBER = 2;
+   * @generated from enum value: CLAUSE_SCOPE_SINGLE = 2;
    */
-  PER_MEMBER = 2,
+  SINGLE = 2,
 }
 
 /**
- * Describes the enum fitter.v1.CampaignMode.
+ * Describes the enum fitter.v1.ClauseScope.
  */
-export const CampaignModeSchema: GenEnum<CampaignMode> = /*@__PURE__*/
+export const ClauseScopeSchema: GenEnum<ClauseScope> = /*@__PURE__*/
   enumDesc(file_fitter_v1_common, 1);
+
+/**
+ * Comparator is how a clause's current value is checked against its target.
+ *
+ * @generated from enum fitter.v1.Comparator
+ */
+export enum Comparator {
+  /**
+   * @generated from enum value: COMPARATOR_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: COMPARATOR_GTE = 1;
+   */
+  GTE = 1,
+
+  /**
+   * @generated from enum value: COMPARATOR_LTE = 2;
+   */
+  LTE = 2,
+}
+
+/**
+ * Describes the enum fitter.v1.Comparator.
+ */
+export const ComparatorSchema: GenEnum<Comparator> = /*@__PURE__*/
+  enumDesc(file_fitter_v1_common, 2);
+
+/**
+ * MetricAggregation identifies how an ActivityMetric combines multiple
+ * activities into one value.
+ *
+ * @generated from enum fitter.v1.MetricAggregation
+ */
+export enum MetricAggregation {
+  /**
+   * @generated from enum value: METRIC_AGGREGATION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: METRIC_AGGREGATION_SUM = 1;
+   */
+  SUM = 1,
+
+  /**
+   * duration-weighted
+   *
+   * @generated from enum value: METRIC_AGGREGATION_AVERAGE = 2;
+   */
+  AVERAGE = 2,
+
+  /**
+   * @generated from enum value: METRIC_AGGREGATION_MAX = 3;
+   */
+  MAX = 3,
+
+  /**
+   * @generated from enum value: METRIC_AGGREGATION_COUNT = 4;
+   */
+  COUNT = 4,
+
+  /**
+   * pace
+   *
+   * @generated from enum value: METRIC_AGGREGATION_DERIVED = 5;
+   */
+  DERIVED = 5,
+}
+
+/**
+ * Describes the enum fitter.v1.MetricAggregation.
+ */
+export const MetricAggregationSchema: GenEnum<MetricAggregation> = /*@__PURE__*/
+  enumDesc(file_fitter_v1_common, 3);
+
+/**
+ * MetricUnit identifies how a metric's numeric value should be interpreted
+ * and formatted.
+ *
+ * @generated from enum fitter.v1.MetricUnit
+ */
+export enum MetricUnit {
+  /**
+   * @generated from enum value: METRIC_UNIT_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_METERS = 1;
+   */
+  METERS = 1,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_SECONDS = 2;
+   */
+  SECONDS = 2,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_METERS_PER_SECOND = 3;
+   */
+  METERS_PER_SECOND = 3,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_SECONDS_PER_KM = 4;
+   */
+  SECONDS_PER_KM = 4,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_BPM = 5;
+   */
+  BPM = 5,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_WATTS = 6;
+   */
+  WATTS = 6,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_KILOJOULES = 7;
+   */
+  KILOJOULES = 7,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_KILOCALORIES = 8;
+   */
+  KILOCALORIES = 8,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_RPM = 9;
+   */
+  RPM = 9,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_COUNT = 10;
+   */
+  COUNT = 10,
+
+  /**
+   * @generated from enum value: METRIC_UNIT_SCORE = 11;
+   */
+  SCORE = 11,
+}
+
+/**
+ * Describes the enum fitter.v1.MetricUnit.
+ */
+export const MetricUnitSchema: GenEnum<MetricUnit> = /*@__PURE__*/
+  enumDesc(file_fitter_v1_common, 4);
 

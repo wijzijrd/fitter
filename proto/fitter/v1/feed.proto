@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package fitter.v1;
 
+import "fitter/v1/common.proto";
+import "fitter/v1/goal.proto";
 import "google/protobuf/timestamp.proto";
 
 message FeedActivity {
-  string id = 1;
+  reserved 1;
+  reserved "id";
   string user_id = 2;
   string user_name = 3;
   string user_avatar_url = 4;
@@ -15,6 +18,12 @@ message FeedActivity {
   int64 moving_time_s = 8;
   google.protobuf.Timestamp start_date = 9;
   string name = 10;
+  int64 strava_activity_id = 11; // replaces the old string id — see Task 4's schema note
+  string sport_type = 12;
+  string sport_group = 13; // resolved server-side via internal/sports
+  optional double average_heartrate = 14;
+  optional double average_watts = 15;
+  optional double suffer_score = 16;
 }
 
 message GetCampaignFeedRequest {
@@ -29,10 +38,19 @@ message LeaderboardEntry {
   string user_id = 1;
   string user_name = 2;
   string user_avatar_url = 3;
-  double progress_value = 4;
-  double target_value = 5;
+  string goal_id = 4; // entries are now per-goal, not per-user
+  string goal_name = 5;
   double progress_ratio = 6;
-  int32 rank = 7;
+  bool satisfied = 7;
+  int32 rank = 8; // rank within its LeaderboardGroup
+  repeated ClauseProgress clauses = 9;
+  int32 considered_activity_count = 10;
+}
+
+message LeaderboardGroup {
+  string sport_group = 1; // "" = goals with no sport filter ("all sports")
+  string sport_group_label = 2;
+  repeated LeaderboardEntry entries = 3;
 }
 
 message GetCampaignLeaderboardRequest {
@@ -40,21 +58,32 @@ message GetCampaignLeaderboardRequest {
 }
 
 message GetCampaignLeaderboardResponse {
-  repeated LeaderboardEntry entries = 1;
-  // pooled_progress_value is set only for CAMPAIGN_MODE_POOLED campaigns.
-  double pooled_progress_value = 2;
+  repeated LeaderboardGroup groups = 1;
+  optional double pooled_progress_value = 2; // only when the campaign has a target
+  optional double pooled_target_value = 3;
+  optional ActivityMetric pooled_metric = 4;
 }
 
 message TimelinePoint {
   google.protobuf.Timestamp date = 1;
-  double cumulative_value = 2;
+  double value = 2; // renamed from cumulative_value — see Task 7, not every aggregation is cumulative
 }
 
 message TimelineSeries {
-  // user_id is empty for the pooled series in CAMPAIGN_MODE_POOLED campaigns.
-  string user_id = 1;
+  string user_id = 1; // "" for the pooled series
   string label = 2;
-  repeated TimelinePoint points = 3;
+  string goal_id = 3;
+  string clause_id = 4;
+  ActivityMetric metric = 5;
+  Comparator comparator = 6;
+  double target_value = 7;
+  repeated TimelinePoint points = 8;
+}
+
+message TimelineGroup {
+  string sport_group = 1;
+  string sport_group_label = 2;
+  repeated TimelineSeries series = 3;
 }
 
 message GetCampaignTimelineRequest {
@@ -62,10 +91,12 @@ message GetCampaignTimelineRequest {
 }
 
 message GetCampaignTimelineResponse {
-  repeated TimelineSeries series = 1;
-  double target_value = 2;
+  repeated TimelineGroup groups = 1;
+  optional TimelineSeries pooled = 2;
   google.protobuf.Timestamp start_date = 3;
   google.protobuf.Timestamp end_date = 4;
+  reserved 5;
+  reserved "target_value";
 }
 
 service FeedService {

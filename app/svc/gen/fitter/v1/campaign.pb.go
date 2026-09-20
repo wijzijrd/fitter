@@ -27,9 +27,8 @@ type Campaign struct {
 	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name        string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Mode        CampaignMode           `protobuf:"varint,4,opt,name=mode,proto3,enum=fitter.v1.CampaignMode" json:"mode,omitempty"`
-	Metric      ActivityMetric         `protobuf:"varint,5,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
-	TargetValue float64                `protobuf:"fixed64,6,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	Metric      *ActivityMetric        `protobuf:"varint,5,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric,oneof" json:"metric,omitempty"` // unset = no pooled target
+	TargetValue *float64               `protobuf:"fixed64,6,opt,name=target_value,json=targetValue,proto3,oneof" json:"target_value,omitempty"`
 	StartDate   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
 	EndDate     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 	CreatedBy   string                 `protobuf:"bytes,9,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
@@ -37,6 +36,7 @@ type Campaign struct {
 	// joined is true if the requesting user is a member.
 	Joined        bool  `protobuf:"varint,11,opt,name=joined,proto3" json:"joined,omitempty"`
 	MemberCount   int32 `protobuf:"varint,12,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
+	GoalCount     int32 `protobuf:"varint,13,opt,name=goal_count,json=goalCount,proto3" json:"goal_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -92,23 +92,16 @@ func (x *Campaign) GetDescription() string {
 	return ""
 }
 
-func (x *Campaign) GetMode() CampaignMode {
-	if x != nil {
-		return x.Mode
-	}
-	return CampaignMode_CAMPAIGN_MODE_UNSPECIFIED
-}
-
 func (x *Campaign) GetMetric() ActivityMetric {
-	if x != nil {
-		return x.Metric
+	if x != nil && x.Metric != nil {
+		return *x.Metric
 	}
 	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
 }
 
 func (x *Campaign) GetTargetValue() float64 {
-	if x != nil {
-		return x.TargetValue
+	if x != nil && x.TargetValue != nil {
+		return *x.TargetValue
 	}
 	return 0
 }
@@ -155,13 +148,19 @@ func (x *Campaign) GetMemberCount() int32 {
 	return 0
 }
 
+func (x *Campaign) GetGoalCount() int32 {
+	if x != nil {
+		return x.GoalCount
+	}
+	return 0
+}
+
 type CreateCampaignRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Mode          CampaignMode           `protobuf:"varint,3,opt,name=mode,proto3,enum=fitter.v1.CampaignMode" json:"mode,omitempty"`
-	Metric        ActivityMetric         `protobuf:"varint,4,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
-	TargetValue   float64                `protobuf:"fixed64,5,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	Metric        *ActivityMetric        `protobuf:"varint,4,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric,oneof" json:"metric,omitempty"` // both set or both unset — enforced in Task 7
+	TargetValue   *float64               `protobuf:"fixed64,5,opt,name=target_value,json=targetValue,proto3,oneof" json:"target_value,omitempty"`
 	StartDate     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
 	EndDate       *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -212,23 +211,16 @@ func (x *CreateCampaignRequest) GetDescription() string {
 	return ""
 }
 
-func (x *CreateCampaignRequest) GetMode() CampaignMode {
-	if x != nil {
-		return x.Mode
-	}
-	return CampaignMode_CAMPAIGN_MODE_UNSPECIFIED
-}
-
 func (x *CreateCampaignRequest) GetMetric() ActivityMetric {
-	if x != nil {
-		return x.Metric
+	if x != nil && x.Metric != nil {
+		return *x.Metric
 	}
 	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
 }
 
 func (x *CreateCampaignRequest) GetTargetValue() float64 {
-	if x != nil {
-		return x.TargetValue
+	if x != nil && x.TargetValue != nil {
+		return *x.TargetValue
 	}
 	return 0
 }
@@ -460,13 +452,11 @@ func (x *GetCampaignResponse) GetCampaign() *Campaign {
 }
 
 type JoinCampaignRequest struct {
-	state      protoimpl.MessageState `protogen:"open.v1"`
-	CampaignId string                 `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3" json:"campaign_id,omitempty"`
-	// per_member_target_value overrides the campaign default target for this member.
-	// Only meaningful in CAMPAIGN_MODE_PER_MEMBER; ignored otherwise.
-	PerMemberTargetValue *float64 `protobuf:"fixed64,2,opt,name=per_member_target_value,json=perMemberTargetValue,proto3,oneof" json:"per_member_target_value,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CampaignId    string                 `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3" json:"campaign_id,omitempty"`
+	Goals         []*CreateGoalRequest   `protobuf:"bytes,3,rep,name=goals,proto3" json:"goals,omitempty"` // campaign_id on each is ignored, overwritten server-side
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *JoinCampaignRequest) Reset() {
@@ -506,16 +496,17 @@ func (x *JoinCampaignRequest) GetCampaignId() string {
 	return ""
 }
 
-func (x *JoinCampaignRequest) GetPerMemberTargetValue() float64 {
-	if x != nil && x.PerMemberTargetValue != nil {
-		return *x.PerMemberTargetValue
+func (x *JoinCampaignRequest) GetGoals() []*CreateGoalRequest {
+	if x != nil {
+		return x.Goals
 	}
-	return 0
+	return nil
 }
 
 type JoinCampaignResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Campaign      *Campaign              `protobuf:"bytes,1,opt,name=campaign,proto3" json:"campaign,omitempty"`
+	Goals         []*Goal                `protobuf:"bytes,2,rep,name=goals,proto3" json:"goals,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -553,6 +544,13 @@ func (*JoinCampaignResponse) Descriptor() ([]byte, []int) {
 func (x *JoinCampaignResponse) GetCampaign() *Campaign {
 	if x != nil {
 		return x.Campaign
+	}
+	return nil
+}
+
+func (x *JoinCampaignResponse) GetGoals() []*Goal {
+	if x != nil {
+		return x.Goals
 	}
 	return nil
 }
@@ -641,14 +639,13 @@ var File_fitter_v1_campaign_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_campaign_proto_rawDesc = "" +
 	"\n" +
-	"\x18fitter/v1/campaign.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x03\n" +
+	"\x18fitter/v1/campaign.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x14fitter/v1/goal.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfe\x03\n" +
 	"\bCampaign\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12+\n" +
-	"\x04mode\x18\x04 \x01(\x0e2\x17.fitter.v1.CampaignModeR\x04mode\x121\n" +
-	"\x06metric\x18\x05 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x12!\n" +
-	"\ftarget_value\x18\x06 \x01(\x01R\vtargetValue\x129\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x126\n" +
+	"\x06metric\x18\x05 \x01(\x0e2\x19.fitter.v1.ActivityMetricH\x00R\x06metric\x88\x01\x01\x12&\n" +
+	"\ftarget_value\x18\x06 \x01(\x01H\x01R\vtargetValue\x88\x01\x01\x129\n" +
 	"\n" +
 	"start_date\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
 	"\bend_date\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\x12\x1d\n" +
@@ -658,16 +655,21 @@ const file_fitter_v1_campaign_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x16\n" +
 	"\x06joined\x18\v \x01(\bR\x06joined\x12!\n" +
-	"\fmember_count\x18\f \x01(\x05R\vmemberCount\"\xc2\x02\n" +
+	"\fmember_count\x18\f \x01(\x05R\vmemberCount\x12\x1d\n" +
+	"\n" +
+	"goal_count\x18\r \x01(\x05R\tgoalCountB\t\n" +
+	"\a_metricB\x0f\n" +
+	"\r_target_valueJ\x04\b\x04\x10\x05R\x04mode\"\xc7\x02\n" +
 	"\x15CreateCampaignRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12+\n" +
-	"\x04mode\x18\x03 \x01(\x0e2\x17.fitter.v1.CampaignModeR\x04mode\x121\n" +
-	"\x06metric\x18\x04 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x12!\n" +
-	"\ftarget_value\x18\x05 \x01(\x01R\vtargetValue\x129\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x126\n" +
+	"\x06metric\x18\x04 \x01(\x0e2\x19.fitter.v1.ActivityMetricH\x00R\x06metric\x88\x01\x01\x12&\n" +
+	"\ftarget_value\x18\x05 \x01(\x01H\x01R\vtargetValue\x88\x01\x01\x129\n" +
 	"\n" +
 	"start_date\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
-	"\bend_date\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\"I\n" +
+	"\bend_date\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\aendDateB\t\n" +
+	"\a_metricB\x0f\n" +
+	"\r_target_valueJ\x04\b\x03\x10\x04R\x04mode\"I\n" +
 	"\x16CreateCampaignResponse\x12/\n" +
 	"\bcampaign\x18\x01 \x01(\v2\x13.fitter.v1.CampaignR\bcampaign\"\x16\n" +
 	"\x14ListCampaignsRequest\"J\n" +
@@ -677,14 +679,14 @@ const file_fitter_v1_campaign_proto_rawDesc = "" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
 	"campaignId\"F\n" +
 	"\x13GetCampaignResponse\x12/\n" +
-	"\bcampaign\x18\x01 \x01(\v2\x13.fitter.v1.CampaignR\bcampaign\"\x8e\x01\n" +
+	"\bcampaign\x18\x01 \x01(\v2\x13.fitter.v1.CampaignR\bcampaign\"\x89\x01\n" +
 	"\x13JoinCampaignRequest\x12\x1f\n" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
-	"campaignId\x12:\n" +
-	"\x17per_member_target_value\x18\x02 \x01(\x01H\x00R\x14perMemberTargetValue\x88\x01\x01B\x1a\n" +
-	"\x18_per_member_target_value\"G\n" +
+	"campaignId\x122\n" +
+	"\x05goals\x18\x03 \x03(\v2\x1c.fitter.v1.CreateGoalRequestR\x05goalsJ\x04\b\x02\x10\x03R\x17per_member_target_value\"n\n" +
 	"\x14JoinCampaignResponse\x12/\n" +
-	"\bcampaign\x18\x01 \x01(\v2\x13.fitter.v1.CampaignR\bcampaign\"7\n" +
+	"\bcampaign\x18\x01 \x01(\v2\x13.fitter.v1.CampaignR\bcampaign\x12%\n" +
+	"\x05goals\x18\x02 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"7\n" +
 	"\x14LeaveCampaignRequest\x12\x1f\n" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
 	"campaignId\"\x17\n" +
@@ -723,24 +725,25 @@ var file_fitter_v1_campaign_proto_goTypes = []any{
 	(*JoinCampaignResponse)(nil),   // 8: fitter.v1.JoinCampaignResponse
 	(*LeaveCampaignRequest)(nil),   // 9: fitter.v1.LeaveCampaignRequest
 	(*LeaveCampaignResponse)(nil),  // 10: fitter.v1.LeaveCampaignResponse
-	(CampaignMode)(0),              // 11: fitter.v1.CampaignMode
-	(ActivityMetric)(0),            // 12: fitter.v1.ActivityMetric
-	(*timestamppb.Timestamp)(nil),  // 13: google.protobuf.Timestamp
+	(ActivityMetric)(0),            // 11: fitter.v1.ActivityMetric
+	(*timestamppb.Timestamp)(nil),  // 12: google.protobuf.Timestamp
+	(*CreateGoalRequest)(nil),      // 13: fitter.v1.CreateGoalRequest
+	(*Goal)(nil),                   // 14: fitter.v1.Goal
 }
 var file_fitter_v1_campaign_proto_depIdxs = []int32{
-	11, // 0: fitter.v1.Campaign.mode:type_name -> fitter.v1.CampaignMode
-	12, // 1: fitter.v1.Campaign.metric:type_name -> fitter.v1.ActivityMetric
-	13, // 2: fitter.v1.Campaign.start_date:type_name -> google.protobuf.Timestamp
-	13, // 3: fitter.v1.Campaign.end_date:type_name -> google.protobuf.Timestamp
-	13, // 4: fitter.v1.Campaign.created_at:type_name -> google.protobuf.Timestamp
-	11, // 5: fitter.v1.CreateCampaignRequest.mode:type_name -> fitter.v1.CampaignMode
-	12, // 6: fitter.v1.CreateCampaignRequest.metric:type_name -> fitter.v1.ActivityMetric
-	13, // 7: fitter.v1.CreateCampaignRequest.start_date:type_name -> google.protobuf.Timestamp
-	13, // 8: fitter.v1.CreateCampaignRequest.end_date:type_name -> google.protobuf.Timestamp
-	0,  // 9: fitter.v1.CreateCampaignResponse.campaign:type_name -> fitter.v1.Campaign
-	0,  // 10: fitter.v1.ListCampaignsResponse.campaigns:type_name -> fitter.v1.Campaign
-	0,  // 11: fitter.v1.GetCampaignResponse.campaign:type_name -> fitter.v1.Campaign
-	0,  // 12: fitter.v1.JoinCampaignResponse.campaign:type_name -> fitter.v1.Campaign
+	11, // 0: fitter.v1.Campaign.metric:type_name -> fitter.v1.ActivityMetric
+	12, // 1: fitter.v1.Campaign.start_date:type_name -> google.protobuf.Timestamp
+	12, // 2: fitter.v1.Campaign.end_date:type_name -> google.protobuf.Timestamp
+	12, // 3: fitter.v1.Campaign.created_at:type_name -> google.protobuf.Timestamp
+	11, // 4: fitter.v1.CreateCampaignRequest.metric:type_name -> fitter.v1.ActivityMetric
+	12, // 5: fitter.v1.CreateCampaignRequest.start_date:type_name -> google.protobuf.Timestamp
+	12, // 6: fitter.v1.CreateCampaignRequest.end_date:type_name -> google.protobuf.Timestamp
+	0,  // 7: fitter.v1.CreateCampaignResponse.campaign:type_name -> fitter.v1.Campaign
+	0,  // 8: fitter.v1.ListCampaignsResponse.campaigns:type_name -> fitter.v1.Campaign
+	0,  // 9: fitter.v1.GetCampaignResponse.campaign:type_name -> fitter.v1.Campaign
+	13, // 10: fitter.v1.JoinCampaignRequest.goals:type_name -> fitter.v1.CreateGoalRequest
+	0,  // 11: fitter.v1.JoinCampaignResponse.campaign:type_name -> fitter.v1.Campaign
+	14, // 12: fitter.v1.JoinCampaignResponse.goals:type_name -> fitter.v1.Goal
 	1,  // 13: fitter.v1.CampaignService.CreateCampaign:input_type -> fitter.v1.CreateCampaignRequest
 	3,  // 14: fitter.v1.CampaignService.ListCampaigns:input_type -> fitter.v1.ListCampaignsRequest
 	5,  // 15: fitter.v1.CampaignService.GetCampaign:input_type -> fitter.v1.GetCampaignRequest
@@ -764,7 +767,9 @@ func file_fitter_v1_campaign_proto_init() {
 		return
 	}
 	file_fitter_v1_common_proto_init()
-	file_fitter_v1_campaign_proto_msgTypes[7].OneofWrappers = []any{}
+	file_fitter_v1_goal_proto_init()
+	file_fitter_v1_campaign_proto_msgTypes[0].OneofWrappers = []any{}
+	file_fitter_v1_campaign_proto_msgTypes[1].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

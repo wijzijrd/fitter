@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { ActivityMetric } from "./common_pb";
+import type { ActivityMetric, ClauseScope, Comparator, SportSelector } from "./common_pb";
 import { file_fitter_v1_common } from "./common_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
@@ -14,10 +14,152 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/goal.proto.
  */
 export const file_fitter_v1_goal: GenFile = /*@__PURE__*/
-  fileDesc("ChRmaXR0ZXIvdjEvZ29hbC5wcm90bxIJZml0dGVyLnYxIv0BCgRHb2FsEgoKAmlkGAEgASgJEikKBm1ldHJpYxgCIAEoDjIZLmZpdHRlci52MS5BY3Rpdml0eU1ldHJpYxIUCgx0YXJnZXRfdmFsdWUYAyABKAESMAoMcGVyaW9kX3N0YXJ0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpwZXJpb2RfZW5kGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIWCg5wcm9ncmVzc192YWx1ZRgGIAEoARIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK2AQoRQ3JlYXRlR29hbFJlcXVlc3QSKQoGbWV0cmljGAEgASgOMhkuZml0dGVyLnYxLkFjdGl2aXR5TWV0cmljEhQKDHRhcmdldF92YWx1ZRgCIAEoARIwCgxwZXJpb2Rfc3RhcnQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnBlcmlvZF9lbmQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjMKEkNyZWF0ZUdvYWxSZXNwb25zZRIdCgRnb2FsGAEgASgLMg8uZml0dGVyLnYxLkdvYWwiEgoQTGlzdEdvYWxzUmVxdWVzdCIzChFMaXN0R29hbHNSZXNwb25zZRIeCgVnb2FscxgBIAMoCzIPLmZpdHRlci52MS5Hb2FsIpwBChFVcGRhdGVHb2FsUmVxdWVzdBIPCgdnb2FsX2lkGAEgASgJEhQKDHRhcmdldF92YWx1ZRgCIAEoARIwCgxwZXJpb2Rfc3RhcnQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnBlcmlvZF9lbmQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjMKElVwZGF0ZUdvYWxSZXNwb25zZRIdCgRnb2FsGAEgASgLMg8uZml0dGVyLnYxLkdvYWwiJAoRRGVsZXRlR29hbFJlcXVlc3QSDwoHZ29hbF9pZBgBIAEoCSIUChJEZWxldGVHb2FsUmVzcG9uc2UytgIKC0dvYWxTZXJ2aWNlEkkKCkNyZWF0ZUdvYWwSHC5maXR0ZXIudjEuQ3JlYXRlR29hbFJlcXVlc3QaHS5maXR0ZXIudjEuQ3JlYXRlR29hbFJlc3BvbnNlEkYKCUxpc3RHb2FscxIbLmZpdHRlci52MS5MaXN0R29hbHNSZXF1ZXN0GhwuZml0dGVyLnYxLkxpc3RHb2Fsc1Jlc3BvbnNlEkkKClVwZGF0ZUdvYWwSHC5maXR0ZXIudjEuVXBkYXRlR29hbFJlcXVlc3QaHS5maXR0ZXIudjEuVXBkYXRlR29hbFJlc3BvbnNlEkkKCkRlbGV0ZUdvYWwSHC5maXR0ZXIudjEuRGVsZXRlR29hbFJlcXVlc3QaHS5maXR0ZXIudjEuRGVsZXRlR29hbFJlc3BvbnNlQo0BCg1jb20uZml0dGVyLnYxQglHb2FsUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM", [file_fitter_v1_common, file_google_protobuf_timestamp]);
+  fileDesc("ChRmaXR0ZXIvdjEvZ29hbC5wcm90bxIJZml0dGVyLnYxIrYBCgpHb2FsQ2xhdXNlEgoKAmlkGAEgASgJEhAKCHBvc2l0aW9uGAIgASgFEiUKBXNjb3BlGAMgASgOMhYuZml0dGVyLnYxLkNsYXVzZVNjb3BlEikKBm1ldHJpYxgEIAEoDjIZLmZpdHRlci52MS5BY3Rpdml0eU1ldHJpYxIpCgpjb21wYXJhdG9yGAUgASgOMhUuZml0dGVyLnYxLkNvbXBhcmF0b3ISDQoFdmFsdWUYBiABKAEizQEKDkNsYXVzZVByb2dyZXNzEhEKCWNsYXVzZV9pZBgBIAEoCRIQCghwb3NpdGlvbhgCIAEoBRIVCg1jdXJyZW50X3ZhbHVlGAMgASgBEhEKCWhhc192YWx1ZRgEIAEoCBIRCglzYXRpc2ZpZWQYBSABKAgSFgoOcHJvZ3Jlc3NfcmF0aW8YBiABKAESIQoZY29uc2lkZXJlZF9hY3Rpdml0eV9jb3VudBgHIAEoBRIeChZjb3VudGVkX2FjdGl2aXR5X2NvdW50GAggASgFIowCCgxHb2FsUHJvZ3Jlc3MSEQoJc2F0aXNmaWVkGAEgASgIEhYKDnByb2dyZXNzX3JhdGlvGAIgASgBEioKB2NsYXVzZXMYAyADKAsyGS5maXR0ZXIudjEuQ2xhdXNlUHJvZ3Jlc3MSIQoZY29uc2lkZXJlZF9hY3Rpdml0eV9jb3VudBgEIAEoBRIjChZxdWFsaWZ5aW5nX2FjdGl2aXR5X2lkGAUgASgDSACIAQESJQoYYmVzdF9hdHRlbXB0X2FjdGl2aXR5X2lkGAYgASgDSAGIAQFCGQoXX3F1YWxpZnlpbmdfYWN0aXZpdHlfaWRCGwoZX2Jlc3RfYXR0ZW1wdF9hY3Rpdml0eV9pZCLYAgoER29hbBIKCgJpZBgBIAEoCRIYCgtjYW1wYWlnbl9pZBgCIAEoCUgAiAEBEgwKBG5hbWUYAyABKAkSJwoFc3BvcnQYBCABKAsyGC5maXR0ZXIudjEuU3BvcnRTZWxlY3RvchIwCgxwZXJpb2Rfc3RhcnQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnBlcmlvZF9lbmQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiYKB2NsYXVzZXMYByADKAsyFS5maXR0ZXIudjEuR29hbENsYXVzZRIpCghwcm9ncmVzcxgIIAEoCzIXLmZpdHRlci52MS5Hb2FsUHJvZ3Jlc3MSLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCDgoMX2NhbXBhaWduX2lkIv4BChFDcmVhdGVHb2FsUmVxdWVzdBIYCgtjYW1wYWlnbl9pZBgBIAEoCUgAiAEBEgwKBG5hbWUYAiABKAkSJwoFc3BvcnQYAyABKAsyGC5maXR0ZXIudjEuU3BvcnRTZWxlY3RvchIwCgxwZXJpb2Rfc3RhcnQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnBlcmlvZF9lbmQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiYKB2NsYXVzZXMYBiADKAsyFS5maXR0ZXIudjEuR29hbENsYXVzZUIOCgxfY2FtcGFpZ25faWQiMwoSQ3JlYXRlR29hbFJlc3BvbnNlEh0KBGdvYWwYASABKAsyDy5maXR0ZXIudjEuR29hbCI8ChBMaXN0R29hbHNSZXF1ZXN0EhgKC2NhbXBhaWduX2lkGAEgASgJSACIAQFCDgoMX2NhbXBhaWduX2lkIjMKEUxpc3RHb2Fsc1Jlc3BvbnNlEh4KBWdvYWxzGAEgAygLMg8uZml0dGVyLnYxLkdvYWwi5QEKEVVwZGF0ZUdvYWxSZXF1ZXN0Eg8KB2dvYWxfaWQYASABKAkSDAoEbmFtZRgCIAEoCRInCgVzcG9ydBgDIAEoCzIYLmZpdHRlci52MS5TcG9ydFNlbGVjdG9yEjAKDHBlcmlvZF9zdGFydBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKcGVyaW9kX2VuZBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASJgoHY2xhdXNlcxgGIAMoCzIVLmZpdHRlci52MS5Hb2FsQ2xhdXNlIjMKElVwZGF0ZUdvYWxSZXNwb25zZRIdCgRnb2FsGAEgASgLMg8uZml0dGVyLnYxLkdvYWwiJAoRRGVsZXRlR29hbFJlcXVlc3QSDwoHZ29hbF9pZBgBIAEoCSIUChJEZWxldGVHb2FsUmVzcG9uc2UytgIKC0dvYWxTZXJ2aWNlEkkKCkNyZWF0ZUdvYWwSHC5maXR0ZXIudjEuQ3JlYXRlR29hbFJlcXVlc3QaHS5maXR0ZXIudjEuQ3JlYXRlR29hbFJlc3BvbnNlEkYKCUxpc3RHb2FscxIbLmZpdHRlci52MS5MaXN0R29hbHNSZXF1ZXN0GhwuZml0dGVyLnYxLkxpc3RHb2Fsc1Jlc3BvbnNlEkkKClVwZGF0ZUdvYWwSHC5maXR0ZXIudjEuVXBkYXRlR29hbFJlcXVlc3QaHS5maXR0ZXIudjEuVXBkYXRlR29hbFJlc3BvbnNlEkkKCkRlbGV0ZUdvYWwSHC5maXR0ZXIudjEuRGVsZXRlR29hbFJlcXVlc3QaHS5maXR0ZXIudjEuRGVsZXRlR29hbFJlc3BvbnNlQo0BCg1jb20uZml0dGVyLnYxQglHb2FsUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM", [file_fitter_v1_common, file_google_protobuf_timestamp]);
 
 /**
- * Goal is a private, personal fitness target — never shared with other users.
+ * @generated from message fitter.v1.GoalClause
+ */
+export type GoalClause = Message<"fitter.v1.GoalClause"> & {
+  /**
+   * ignored on create; server-assigned
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: int32 position = 2;
+   */
+  position: number;
+
+  /**
+   * @generated from field: fitter.v1.ClauseScope scope = 3;
+   */
+  scope: ClauseScope;
+
+  /**
+   * @generated from field: fitter.v1.ActivityMetric metric = 4;
+   */
+  metric: ActivityMetric;
+
+  /**
+   * @generated from field: fitter.v1.Comparator comparator = 5;
+   */
+  comparator: Comparator;
+
+  /**
+   * @generated from field: double value = 6;
+   */
+  value: number;
+};
+
+/**
+ * Describes the message fitter.v1.GoalClause.
+ * Use `create(GoalClauseSchema)` to create a new message.
+ */
+export const GoalClauseSchema: GenMessage<GoalClause> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_goal, 0);
+
+/**
+ * @generated from message fitter.v1.ClauseProgress
+ */
+export type ClauseProgress = Message<"fitter.v1.ClauseProgress"> & {
+  /**
+   * @generated from field: string clause_id = 1;
+   */
+  clauseId: string;
+
+  /**
+   * @generated from field: int32 position = 2;
+   */
+  position: number;
+
+  /**
+   * @generated from field: double current_value = 3;
+   */
+  currentValue: number;
+
+  /**
+   * @generated from field: bool has_value = 4;
+   */
+  hasValue: boolean;
+
+  /**
+   * @generated from field: bool satisfied = 5;
+   */
+  satisfied: boolean;
+
+  /**
+   * @generated from field: double progress_ratio = 6;
+   */
+  progressRatio: number;
+
+  /**
+   * @generated from field: int32 considered_activity_count = 7;
+   */
+  consideredActivityCount: number;
+
+  /**
+   * @generated from field: int32 counted_activity_count = 8;
+   */
+  countedActivityCount: number;
+};
+
+/**
+ * Describes the message fitter.v1.ClauseProgress.
+ * Use `create(ClauseProgressSchema)` to create a new message.
+ */
+export const ClauseProgressSchema: GenMessage<ClauseProgress> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_goal, 1);
+
+/**
+ * @generated from message fitter.v1.GoalProgress
+ */
+export type GoalProgress = Message<"fitter.v1.GoalProgress"> & {
+  /**
+   * @generated from field: bool satisfied = 1;
+   */
+  satisfied: boolean;
+
+  /**
+   * min over clause ratios
+   *
+   * @generated from field: double progress_ratio = 2;
+   */
+  progressRatio: number;
+
+  /**
+   * @generated from field: repeated fitter.v1.ClauseProgress clauses = 3;
+   */
+  clauses: ClauseProgress[];
+
+  /**
+   * @generated from field: int32 considered_activity_count = 4;
+   */
+  consideredActivityCount: number;
+
+  /**
+   * @generated from field: optional int64 qualifying_activity_id = 5;
+   */
+  qualifyingActivityId?: bigint | undefined;
+
+  /**
+   * @generated from field: optional int64 best_attempt_activity_id = 6;
+   */
+  bestAttemptActivityId?: bigint | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.GoalProgress.
+ * Use `create(GoalProgressSchema)` to create a new message.
+ */
+export const GoalProgressSchema: GenMessage<GoalProgress> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_goal, 2);
+
+/**
+ * Goal is a private, personal fitness target — never shared with other
+ * users — unless it belongs to a campaign, in which case it becomes one of
+ * that campaign's shared goals.
  *
  * @generated from message fitter.v1.Goal
  */
@@ -28,14 +170,75 @@ export type Goal = Message<"fitter.v1.Goal"> & {
   id: string;
 
   /**
-   * @generated from field: fitter.v1.ActivityMetric metric = 2;
+   * @generated from field: optional string campaign_id = 2;
    */
-  metric: ActivityMetric;
+  campaignId?: string | undefined;
 
   /**
-   * @generated from field: double target_value = 3;
+   * @generated from field: string name = 3;
    */
-  targetValue: number;
+  name: string;
+
+  /**
+   * unset = all sports
+   *
+   * @generated from field: fitter.v1.SportSelector sport = 4;
+   */
+  sport?: SportSelector | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp period_start = 5;
+   */
+  periodStart?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp period_end = 6;
+   */
+  periodEnd?: Timestamp | undefined;
+
+  /**
+   * @generated from field: repeated fitter.v1.GoalClause clauses = 7;
+   */
+  clauses: GoalClause[];
+
+  /**
+   * @generated from field: fitter.v1.GoalProgress progress = 8;
+   */
+  progress?: GoalProgress | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 9;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.Goal.
+ * Use `create(GoalSchema)` to create a new message.
+ */
+export const GoalSchema: GenMessage<Goal> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_goal, 3);
+
+/**
+ * @generated from message fitter.v1.CreateGoalRequest
+ */
+export type CreateGoalRequest = Message<"fitter.v1.CreateGoalRequest"> & {
+  /**
+   * period is forced to the campaign window when set (see Global Constraints)
+   *
+   * @generated from field: optional string campaign_id = 1;
+   */
+  campaignId?: string | undefined;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: fitter.v1.SportSelector sport = 3;
+   */
+  sport?: SportSelector | undefined;
 
   /**
    * @generated from field: google.protobuf.Timestamp period_start = 4;
@@ -48,46 +251,9 @@ export type Goal = Message<"fitter.v1.Goal"> & {
   periodEnd?: Timestamp | undefined;
 
   /**
-   * @generated from field: double progress_value = 6;
+   * @generated from field: repeated fitter.v1.GoalClause clauses = 6;
    */
-  progressValue: number;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 7;
-   */
-  createdAt?: Timestamp | undefined;
-};
-
-/**
- * Describes the message fitter.v1.Goal.
- * Use `create(GoalSchema)` to create a new message.
- */
-export const GoalSchema: GenMessage<Goal> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 0);
-
-/**
- * @generated from message fitter.v1.CreateGoalRequest
- */
-export type CreateGoalRequest = Message<"fitter.v1.CreateGoalRequest"> & {
-  /**
-   * @generated from field: fitter.v1.ActivityMetric metric = 1;
-   */
-  metric: ActivityMetric;
-
-  /**
-   * @generated from field: double target_value = 2;
-   */
-  targetValue: number;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp period_start = 3;
-   */
-  periodStart?: Timestamp | undefined;
-
-  /**
-   * @generated from field: google.protobuf.Timestamp period_end = 4;
-   */
-  periodEnd?: Timestamp | undefined;
+  clauses: GoalClause[];
 };
 
 /**
@@ -95,7 +261,7 @@ export type CreateGoalRequest = Message<"fitter.v1.CreateGoalRequest"> & {
  * Use `create(CreateGoalRequestSchema)` to create a new message.
  */
 export const CreateGoalRequestSchema: GenMessage<CreateGoalRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 1);
+  messageDesc(file_fitter_v1_goal, 4);
 
 /**
  * @generated from message fitter.v1.CreateGoalResponse
@@ -112,12 +278,18 @@ export type CreateGoalResponse = Message<"fitter.v1.CreateGoalResponse"> & {
  * Use `create(CreateGoalResponseSchema)` to create a new message.
  */
 export const CreateGoalResponseSchema: GenMessage<CreateGoalResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 2);
+  messageDesc(file_fitter_v1_goal, 5);
 
 /**
  * @generated from message fitter.v1.ListGoalsRequest
  */
 export type ListGoalsRequest = Message<"fitter.v1.ListGoalsRequest"> & {
+  /**
+   * unset = personal goals only
+   *
+   * @generated from field: optional string campaign_id = 1;
+   */
+  campaignId?: string | undefined;
 };
 
 /**
@@ -125,7 +297,7 @@ export type ListGoalsRequest = Message<"fitter.v1.ListGoalsRequest"> & {
  * Use `create(ListGoalsRequestSchema)` to create a new message.
  */
 export const ListGoalsRequestSchema: GenMessage<ListGoalsRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 3);
+  messageDesc(file_fitter_v1_goal, 6);
 
 /**
  * @generated from message fitter.v1.ListGoalsResponse
@@ -142,7 +314,7 @@ export type ListGoalsResponse = Message<"fitter.v1.ListGoalsResponse"> & {
  * Use `create(ListGoalsResponseSchema)` to create a new message.
  */
 export const ListGoalsResponseSchema: GenMessage<ListGoalsResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 4);
+  messageDesc(file_fitter_v1_goal, 7);
 
 /**
  * @generated from message fitter.v1.UpdateGoalRequest
@@ -154,19 +326,31 @@ export type UpdateGoalRequest = Message<"fitter.v1.UpdateGoalRequest"> & {
   goalId: string;
 
   /**
-   * @generated from field: double target_value = 2;
+   * @generated from field: string name = 2;
    */
-  targetValue: number;
+  name: string;
 
   /**
-   * @generated from field: google.protobuf.Timestamp period_start = 3;
+   * @generated from field: fitter.v1.SportSelector sport = 3;
+   */
+  sport?: SportSelector | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp period_start = 4;
    */
   periodStart?: Timestamp | undefined;
 
   /**
-   * @generated from field: google.protobuf.Timestamp period_end = 4;
+   * @generated from field: google.protobuf.Timestamp period_end = 5;
    */
   periodEnd?: Timestamp | undefined;
+
+  /**
+   * full replacement, not a patch
+   *
+   * @generated from field: repeated fitter.v1.GoalClause clauses = 6;
+   */
+  clauses: GoalClause[];
 };
 
 /**
@@ -174,7 +358,7 @@ export type UpdateGoalRequest = Message<"fitter.v1.UpdateGoalRequest"> & {
  * Use `create(UpdateGoalRequestSchema)` to create a new message.
  */
 export const UpdateGoalRequestSchema: GenMessage<UpdateGoalRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 5);
+  messageDesc(file_fitter_v1_goal, 8);
 
 /**
  * @generated from message fitter.v1.UpdateGoalResponse
@@ -191,7 +375,7 @@ export type UpdateGoalResponse = Message<"fitter.v1.UpdateGoalResponse"> & {
  * Use `create(UpdateGoalResponseSchema)` to create a new message.
  */
 export const UpdateGoalResponseSchema: GenMessage<UpdateGoalResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 6);
+  messageDesc(file_fitter_v1_goal, 9);
 
 /**
  * @generated from message fitter.v1.DeleteGoalRequest
@@ -208,7 +392,7 @@ export type DeleteGoalRequest = Message<"fitter.v1.DeleteGoalRequest"> & {
  * Use `create(DeleteGoalRequestSchema)` to create a new message.
  */
 export const DeleteGoalRequestSchema: GenMessage<DeleteGoalRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 7);
+  messageDesc(file_fitter_v1_goal, 10);
 
 /**
  * @generated from message fitter.v1.DeleteGoalResponse
@@ -221,7 +405,7 @@ export type DeleteGoalResponse = Message<"fitter.v1.DeleteGoalResponse"> & {
  * Use `create(DeleteGoalResponseSchema)` to create a new message.
  */
 export const DeleteGoalResponseSchema: GenMessage<DeleteGoalResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_goal, 8);
+  messageDesc(file_fitter_v1_goal, 11);
 
 /**
  * @generated from service fitter.v1.GoalService

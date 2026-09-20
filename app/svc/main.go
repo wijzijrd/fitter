@@ -2,13 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"embed"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
 	"connectrpc.com/connect"
+	dbfs "github.com/fitter/svc/db"
 	"github.com/fitter/svc/gen/fitter/v1/fitterv1connect"
 	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
@@ -21,9 +21,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed db/migrations/*.sql
-var migrationsFS embed.FS
-
 func main() {
 	cfg := loadConfig()
 
@@ -34,12 +31,12 @@ func main() {
 	}
 	defer sqlDB.Close()
 
-	goose.SetBaseFS(migrationsFS)
+	goose.SetBaseFS(dbfs.FS)
 	if err := goose.SetDialect("sqlite3"); err != nil {
 		slog.Error("goose set dialect failed", "err", err)
 		os.Exit(1)
 	}
-	if err := goose.Up(sqlDB, "db/migrations"); err != nil {
+	if err := goose.Up(sqlDB, "migrations"); err != nil {
 		slog.Error("run migrations failed", "err", err)
 		os.Exit(1)
 	}

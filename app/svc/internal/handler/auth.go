@@ -10,7 +10,7 @@ import (
 
 	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
-	"github.com/fitter/svc/internal/strava"
+	"github.com/fitter/svc/internal/ingest"
 	"github.com/google/uuid"
 )
 
@@ -91,53 +91,20 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, d.FrontendURL+"/auth/callback#token="+jwtToken, http.StatusFound)
 }
 
-// backfillActivities pulls recent history for a newly (re-)authorized user.
-// Runs detached from the request so the OAuth redirect isn't held up by
-// however many pages Strava takes to page through.
+// backfillActivities pulls recent history for a newly (re-)authorized user
+// via internal/ingest.Backfill — the single Strava write path. Runs detached
+// from the request so the OAuth redirect isn't held up by however many pages
+// Strava takes to page through.
 func (d *Deps) backfillActivities(u db.User) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
-	const perPage = 50
-	const maxPages = 4 // ~200 most recent activities
-	for page := 1; page <= maxPages; page++ {
-		activities, err := d.Strava.ListActivities(ctx, u.AccessToken, strava.ListOptions{Page: page, PerPage: perPage})
-		if err != nil {
-			slog.Error("backfill list activities failed", "user_id", u.ID, "page", page, "err", err)
-			return
-		}
-		if len(activities) == 0 {
-			return
-		}
-		for _, a := range activities {
-			if err := upsertStravaActivity(ctx, d.Queries, u.ID, a); err != nil {
-				slog.Error("backfill upsert activity failed", "user_id", u.ID, "activity_id", a.ID, "err", err)
-			}
-		}
-		if len(activities) < perPage {
-			return
-		}
-	}
-}
-
-func upsertStravaActivity(ctx context.Context, q *db.Queries, userID string, a strava.Activity) error {
-	startDate, err := time.Parse(time.RFC3339, a.StartDate)
+	count, err := ingest.Backfill(ctx, d.Queries, d.Strava, u, 0)
 	if err != nil {
-		startDate = time.Now()
+		slog.Error("backfill activities failed", "user_id", u.ID, "err", err)
+		return
 	}
-	_, err = q.UpsertActivity(ctx, db.UpsertActivityParams{
-		ID:               uuid.NewString(),
-		UserID:           userID,
-		StravaActivityID: a.ID,
-		Type:             a.Type,
-		DistanceM:        a.Distance,
-		ElevationM:       a.TotalElevationGain,
-		MovingTimeS:      a.MovingTime,
-		StartDate:        startDate.Unix(),
-		Name:             a.Name,
-		CreatedAt:        time.Now().Unix(),
-	})
-	return err
+	slog.Info("backfill activities complete", "user_id", u.ID, "count", count)
 }
 
 func randomState() string {

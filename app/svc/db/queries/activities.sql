@@ -61,4 +61,4 @@ ORDER BY a.start_date DESC
 LIMIT 100;
 
 -- name: GetLatestActivityStartDateForUser :one
-SELECT COALESCE(MAX(start_date), 0) FROM activities WHERE user_id = ?;
+SELECT CAST(COALESCE(MAX(start_date), 0) AS INTEGER) FROM activities WHERE user_id = ?;

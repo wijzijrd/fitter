@@ -21,14 +21,14 @@ func (q *Queries) DeleteActivityByStravaID(ctx context.Context, stravaActivityID
 }
 
 const getLatestActivityStartDateForUser = `-- name: GetLatestActivityStartDateForUser :one
-SELECT COALESCE(MAX(start_date), 0) FROM activities WHERE user_id = ?
+SELECT CAST(COALESCE(MAX(start_date), 0) AS INTEGER) FROM activities WHERE user_id = ?
 `
 
-func (q *Queries) GetLatestActivityStartDateForUser(ctx context.Context, userID string) (interface{}, error) {
+func (q *Queries) GetLatestActivityStartDateForUser(ctx context.Context, userID string) (int64, error) {
 	row := q.db.QueryRowContext(ctx, getLatestActivityStartDateForUser, userID)
-	var coalesce interface{}
-	err := row.Scan(&coalesce)
-	return coalesce, err
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const listActivitiesForUserInRange = `-- name: ListActivitiesForUserInRange :many

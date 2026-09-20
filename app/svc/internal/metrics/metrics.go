@@ -100,9 +100,13 @@ const (
 type Accumulator interface {
 	Add(a Activity)
 	// Result returns the aggregate value, how many activities actually
-	// supplied it, and whether the result is meaningful at all (false only
-	// when a nullable metric had zero contributing activities, or a
-	// derived metric like pace has no distance).
+	// supplied it, and whether the result is meaningful at all. ok is
+	// false when: (a) a nullable metric had zero contributing activities,
+	// (b) a derived metric like pace has no distance to divide by, or (c)
+	// an AVERAGE or MAX aggregation had zero contributing activities at
+	// all — this last case holds regardless of nullability, since an
+	// average or max of nothing is undefined, unlike SUM/COUNT where zero
+	// contributing activities is a real, meaningful value of 0.
 	Result() (value float64, counted int, ok bool)
 }
 

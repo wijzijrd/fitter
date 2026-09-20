@@ -101,7 +101,7 @@ func (d *Deps) backfillActivities(u db.User) {
 	const perPage = 50
 	const maxPages = 4 // ~200 most recent activities
 	for page := 1; page <= maxPages; page++ {
-		activities, err := d.Strava.ListActivities(ctx, u.AccessToken, page, perPage)
+		activities, err := d.Strava.ListActivities(ctx, u.AccessToken, strava.ListOptions{Page: page, PerPage: perPage})
 		if err != nil {
 			slog.Error("backfill list activities failed", "user_id", u.ID, "page", page, "err", err)
 			return

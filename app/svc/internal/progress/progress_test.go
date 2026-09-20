@@ -577,6 +577,45 @@ func TestDeterminism_MostRecentCandidateChosen(t *testing.T) {
 	}
 }
 
+// --- Case 15b: unrecognized Scope (including the zero value) fails closed ---
+
+func TestUnrecognizedScope_FailsClosed(t *testing.T) {
+	g := progress.Goal{
+		ID:          "g15b",
+		PeriodStart: 0,
+		PeriodEnd:   100000,
+		Clauses: []progress.Clause{
+			// Scope left at its zero value: not ScopeAggregate, not
+			// ScopeSingle. This is reachable from an unspecified proto enum
+			// once Task 5/7 wire this up, and must never be silently
+			// dropped — see progress.Evaluate's Scope switch.
+			{ID: "bad-scope", Position: 0, Scope: progress.Scope(0), Metric: metrics.Distance, Comparator: progress.GTE, Value: 10000},
+		},
+	}
+
+	res := progress.Evaluate(g, []metrics.Activity{act(1, "Run", 1000, 999999, 3600)})
+
+	if res.Satisfied {
+		t.Fatal("Result.Satisfied = true, want false — an unrecognized Scope must fail closed, not be silently dropped")
+	}
+	if len(res.Clauses) != 1 {
+		t.Fatalf("len(Clauses) = %d, want 1 (every clause, recognized or not, produces exactly one ClauseResult)", len(res.Clauses))
+	}
+	cr := res.Clauses[0]
+	if cr.ClauseID != "bad-scope" {
+		t.Fatalf("Clauses[0].ClauseID = %q, want %q", cr.ClauseID, "bad-scope")
+	}
+	if cr.Position != 0 {
+		t.Fatalf("Clauses[0].Position = %d, want 0", cr.Position)
+	}
+	if cr.Satisfied {
+		t.Fatal("clause Satisfied = true, want false")
+	}
+	if res.Ratio != 0 {
+		t.Fatalf("Result.Ratio = %v, want 0 (the unrecognized-scope clause's ratio must count toward the min)", res.Ratio)
+	}
+}
+
 // --- Case 15: empty activity slice overall ---
 
 func TestEmptyActivitySlice(t *testing.T) {

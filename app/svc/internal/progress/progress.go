@@ -86,6 +86,10 @@ type Result struct {
 // activity set for this goal's user — sport and period filtering happen
 // HERE, inside Evaluate, which is what makes this function pure and
 // independent of how the caller fetched the activities.
+//
+// A Goal with zero clauses evaluates to Satisfied=true (vacuous truth). This
+// is an accepted, documented assumption: Task 7's CreateGoal will require at
+// least one clause, so this package does not guard against it.
 func Evaluate(g Goal, acts []metrics.Activity) Result {
 	filtered := make([]metrics.Activity, 0, len(acts))
 	for _, a := range acts {
@@ -112,6 +116,15 @@ func Evaluate(g Goal, acts []metrics.Activity) Result {
 			results = append(results, cr)
 		case ScopeSingle:
 			singleClauses = append(singleClauses, c)
+		default:
+			// Defensive only: Clause.Scope is validated upstream (Task 7).
+			// An unrecognized scope (including the zero value) must never be
+			// silently dropped — that would let it fail open (falsify
+			// nothing, contribute no ratio). Report it as unsatisfied and
+			// valueless, same shape as evaluateAggregate's unknown-metric-key
+			// fallback, and fail the goal closed.
+			results = append(results, ClauseResult{ClauseID: c.ID, Position: c.Position, ConsideredCount: considered})
+			allAggregateSatisfied = false
 		}
 	}
 

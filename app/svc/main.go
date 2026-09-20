@@ -24,7 +24,7 @@ import (
 func main() {
 	cfg := loadConfig()
 
-	sqlDB, err := sql.Open("sqlite", cfg.dbPath)
+	sqlDB, err := sql.Open("sqlite", cfg.dbPath+"?_pragma=foreign_keys(1)")
 	if err != nil {
 		slog.Error("open database failed", "err", err)
 		os.Exit(1)

@@ -139,9 +139,17 @@ onMounted(async () => {
               <TimelineChart :series="[feed.pooledTimeline]" />
             </CardContent>
           </Card>
-          <Card v-for="group in feed.timelineGroups" :key="group.sportGroup">
+          <Card
+            v-for="group in feed.timelineGroups"
+            :key="`${group.sportGroup}-${group.series[0]?.metric ?? ''}`"
+          >
             <CardHeader>
-              <CardTitle>{{ group.sportGroupLabel || "All sports" }}</CardTitle>
+              <CardTitle>
+                {{ group.sportGroupLabel || "All sports" }}
+                <span v-if="group.series[0]" class="text-muted-foreground font-normal">
+                  · {{ catalog.metricLabel(group.series[0].metric) }}
+                </span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <TimelineChart :series="group.series" />

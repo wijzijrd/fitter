@@ -18,16 +18,24 @@
 // activities (upsert is keyed on strava_activity_id) but will insert a
 // second copy of the sample campaign and goals, since those don't have an
 // analogous natural key here — start from a fresh DB file for a clean seed.
+//
+// JWT_SECRET (must match the value the server was started with) lets this
+// tool mint a ready-to-use session token for the seeded user and print a
+// login URL — so the app can be exercised end to end without ever
+// authenticating against the real Strava API. FRONTEND_URL (default
+// http://localhost:5173) is used only to build that printed URL.
 package main
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
 
 	dbfs "github.com/fitter/svc/db"
+	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
 	"github.com/fitter/svc/internal/ingest"
 	"github.com/fitter/svc/internal/strava"
@@ -36,6 +44,8 @@ import (
 
 	_ "modernc.org/sqlite"
 )
+
+const seedJWTTTL = 30 * 24 * time.Hour
 
 const seedUserID = "seed-user-1"
 const seedStravaAthleteID = int64(1000001)
@@ -77,6 +87,20 @@ func main() {
 	slog.Info("seeded goals")
 
 	slog.Info("seed complete", "db_path", dbPath)
+
+	if secret := os.Getenv("JWT_SECRET"); secret != "" {
+		token, err := auth.Issue([]byte(secret), user.ID, seedJWTTTL)
+		if err != nil {
+			fatal("issue seed jwt failed", err)
+		}
+		frontendURL := envOr("FRONTEND_URL", "http://localhost:5173")
+		fmt.Println()
+		fmt.Println("Open this URL to log in as the seeded user (no Strava needed):")
+		fmt.Printf("  %s/auth/callback#token=%s\n", frontendURL, token)
+	} else {
+		fmt.Println()
+		fmt.Println("Set JWT_SECRET (matching the running server) to also get a ready login URL.")
+	}
 }
 
 // seedUser upserts a single fake athlete. UpsertUserByStravaID is keyed on

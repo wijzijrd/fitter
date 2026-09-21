@@ -4,7 +4,7 @@
 //
 // getComputedStyle().getPropertyValue() on a custom property returns its
 // raw declared value verbatim — for tokens declared as oklch(...) (this
-// app's theme, see style.css) that's a string ECharts/zrender can't parse.
+// app's theme, see index.css) that's a string ECharts/zrender can't parse.
 // Assigning the property through `color: var(--x)` on a probe element and
 // reading the browser's *computed* `color` back forces the browser to
 // resolve oklch/color-mix/etc. into a plain rgb()/rgba() string, which is

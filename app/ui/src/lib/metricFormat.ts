@@ -124,6 +124,10 @@ export function baseValueToEditString(unit: MetricUnit, value: number): string {
   if (isDurationUnit(unit)) {
     return formatSeconds(value);
   }
+  if (unit === MetricUnit.METERS_PER_SECOND) {
+    const kmh = value * 3.6;
+    return Number.isFinite(kmh) ? String(Math.round(kmh * 1000) / 1000) : "";
+  }
   return Number.isFinite(value) ? String(value) : "";
 }
 
@@ -141,6 +145,11 @@ export function editStringToBaseValue(unit: MetricUnit, input: string): number |
   }
   if (isDurationUnit(unit)) {
     return parseDuration(trimmed);
+  }
+  if (unit === MetricUnit.METERS_PER_SECOND) {
+    const kmh = Number(trimmed);
+    if (Number.isNaN(kmh)) return null;
+    return kmh / 3.6;
   }
   const n = Number(trimmed);
   return Number.isNaN(n) ? null : n;

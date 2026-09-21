@@ -189,7 +189,7 @@ watch(rows, emitChanges, { deep: true });
                     :key="m.key"
                     :value="String(m.metric)"
                   >
-                    {{ m.label }} ({{ m.unit !== 0 ? m.key : "unitless" }})
+                    {{ m.label }} ({{ editUnitHint(m.unit) || "unitless" }})
                     <span v-if="m.nullable" class="text-muted-foreground"> · device-dependent</span>
                   </SelectItem>
                 </SelectContent>

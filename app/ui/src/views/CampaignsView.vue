@@ -137,10 +137,21 @@ const joinValidFlags = ref<boolean[]>([false]);
 const joinError = ref("");
 const joining = ref(false);
 
+// joinKeys gives each join-goal row a stable identity independent of its
+// array index — Vue reuses a component instance for a given v-for key/index
+// across re-renders, so an index-keyed row would let a GoalForm/ClauseBuilder
+// instance (and its stale name/sport/clause state) survive from a previous
+// unsubmitted session into a freshly reopened dialog. Assigning a fresh id
+// per row whenever one is created (openJoin, addJoinGoal) forces a genuine
+// remount instead, matching GoalsView's single-form `formKey` pattern.
+let nextJoinRowId = 0;
+const joinKeys = ref<number[]>([nextJoinRowId++]);
+
 function openJoin(campaignId: string): void {
   joiningCampaignId.value = campaignId;
   joinGoals.value = [blankGoal()];
   joinValidFlags.value = [false];
+  joinKeys.value = [nextJoinRowId++];
   joinError.value = "";
   showJoin.value = true;
 }
@@ -148,11 +159,13 @@ function openJoin(campaignId: string): void {
 function addJoinGoal(): void {
   joinGoals.value.push(blankGoal());
   joinValidFlags.value.push(false);
+  joinKeys.value.push(nextJoinRowId++);
 }
 
 function removeJoinGoal(i: number): void {
   joinGoals.value.splice(i, 1);
   joinValidFlags.value.splice(i, 1);
+  joinKeys.value.splice(i, 1);
 }
 
 const joinFormValid = computed(
@@ -291,7 +304,7 @@ async function leave(campaignId: string): Promise<void> {
         <div class="max-h-[60vh] space-y-4 overflow-y-auto">
           <div
             v-for="(goal, i) in joinGoals"
-            :key="i"
+            :key="joinKeys[i]"
             class="space-y-2 rounded-lg border border-border p-3"
           >
             <div class="flex items-center justify-between">

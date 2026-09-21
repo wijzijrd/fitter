@@ -1,82 +1,164 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
-import { modeLabels, metricLabels, formatMetricValue, activityMetricValue } from "../lib/labels";
+import { useGoalsStore } from "../stores/goals";
+import { useCatalogStore } from "../stores/catalog";
+import { formatMetricValue } from "../lib/metricFormat";
 import { toDate } from "../lib/timestamp";
+import { MetricUnit } from "../gen/fitter/v1/common_pb";
 import TimelineChart from "../components/charts/TimelineChart.vue";
 import LeaderboardChart from "../components/charts/LeaderboardChart.vue";
-import { CampaignMode } from "../gen/fitter/v1/common_pb";
+import ClauseProgressList from "../components/ClauseProgressList.vue";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const props = defineProps<{ id: string }>();
 
+const route = useRoute();
+const router = useRouter();
 const campaignsStore = useCampaignsStore();
 const feedStore = useCampaignFeedStore();
-const tab = ref<"feed" | "leaderboard" | "timeline">("feed");
+const goalsStore = useGoalsStore();
+const catalog = useCatalogStore();
+
+const loadError = ref("");
+
+const tab = computed<string>({
+  get: () => (typeof route.query.tab === "string" ? route.query.tab : "feed"),
+  set: (v) => router.replace({ query: { ...route.query, tab: v } }),
+});
 
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
 const feed = computed(() => feedStore.stateFor(props.id));
+const goalById = computed(() => new Map(goalsStore.goals.map((g) => [g.id, g])));
 
 onMounted(async () => {
-  await campaignsStore.getCampaign(props.id);
-  await feedStore.fetchAll(props.id);
+  await catalog.ensureLoaded();
+  try {
+    await Promise.all([
+      campaignsStore.getCampaign(props.id),
+      feedStore.fetchAll(props.id),
+      goalsStore.fetchGoals(props.id),
+    ]);
+  } catch (e) {
+    loadError.value = e instanceof Error ? e.message : "Failed to load this campaign.";
+  }
 });
 </script>
 
 <template>
-  <div class="container" v-if="campaign">
-    <router-link to="/">&larr; Campaigns</router-link>
-    <h2>{{ campaign.name }}</h2>
-    <p class="muted">
-      {{ modeLabels[campaign.mode] }} · {{ metricLabels[campaign.metric] }} ·
-      target {{ formatMetricValue(campaign.metric, campaign.targetValue) }} · {{ campaign.memberCount }} members
-    </p>
-    <p v-if="campaign.description">{{ campaign.description }}</p>
+  <div class="mx-auto max-w-4xl space-y-4 p-6">
+    <Alert v-if="loadError" variant="destructive">
+      <AlertDescription>{{ loadError }}</AlertDescription>
+    </Alert>
 
-    <div class="card" style="display: flex; gap: 1rem">
-      <button class="btn" :class="{ secondary: tab !== 'feed' }" @click="tab = 'feed'">Feed</button>
-      <button class="btn" :class="{ secondary: tab !== 'leaderboard' }" @click="tab = 'leaderboard'">Leaderboard</button>
-      <button class="btn" :class="{ secondary: tab !== 'timeline' }" @click="tab = 'timeline'">Timeline</button>
-    </div>
-
-    <div v-if="feed.loading" class="muted">Loading…</div>
-
-    <div v-else-if="tab === 'feed'">
-      <div v-for="a in feed.activities" :key="a.id" class="card">
-        <strong>{{ a.userName }}</strong> — {{ a.name }} <span class="muted">({{ a.type }})</span>
-        <p class="muted">
-          {{ toDate(a.startDate)?.toLocaleDateString() }} ·
-          {{ formatMetricValue(campaign.metric, activityMetricValue(a, campaign.metric)) }}
-        </p>
-      </div>
-      <p v-if="feed.activities.length === 0" class="muted">No activity yet.</p>
-    </div>
-
-    <div v-else-if="tab === 'leaderboard'" class="card">
-      <p v-if="campaign.mode === CampaignMode.POOLED" class="muted">
-        Pooled progress: {{ formatMetricValue(campaign.metric, feed.pooledProgressValue) }} /
-        {{ formatMetricValue(campaign.metric, campaign.targetValue) }}
+    <template v-if="campaign">
+      <router-link to="/" class="text-sm text-muted-foreground hover:underline">&larr; Campaigns</router-link>
+      <h2 class="text-xl font-semibold">{{ campaign.name }}</h2>
+      <p class="text-sm text-muted-foreground">
+        {{ toDate(campaign.startDate)?.toLocaleDateString() }} – {{ toDate(campaign.endDate)?.toLocaleDateString() }}
+        · {{ campaign.memberCount }} members · {{ campaign.goalCount }} goals
       </p>
-      <LeaderboardChart :entries="feed.leaderboard" />
-      <table style="width: 100%; margin-top: 1rem">
-        <thead>
-          <tr><th style="text-align: left">#</th><th style="text-align: left">Member</th><th>Progress</th></tr>
-        </thead>
-        <tbody>
-          <tr v-for="e in feed.leaderboard" :key="e.userId">
-            <td>{{ e.rank }}</td>
-            <td>{{ e.userName }}</td>
-            <td>
-              <div class="progress-bar"><span :style="{ width: Math.min(100, e.progressRatio * 100) + '%' }" /></div>
-              <span class="muted">{{ formatMetricValue(campaign.metric, e.progressValue) }} / {{ formatMetricValue(campaign.metric, e.targetValue) }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <p v-if="campaign.description" class="text-sm">{{ campaign.description }}</p>
+      <Badge v-if="campaign.metric !== undefined" variant="secondary">
+        Pooled target: {{ catalog.metricLabel(campaign.metric) }}
+        {{ formatMetricValue(catalog.metricInfo(campaign.metric)?.unit ?? 0, campaign.targetValue ?? 0) }}
+      </Badge>
 
-    <div v-else class="card">
-      <TimelineChart :series="feed.timelineSeries" :target-value="feed.timelineTargetValue" />
-    </div>
+      <Tabs v-model="tab">
+        <TabsList>
+          <TabsTrigger value="feed">Feed</TabsTrigger>
+          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
+        </TabsList>
+
+        <p v-if="feed.loading" class="mt-4 text-sm text-muted-foreground">Loading…</p>
+
+        <TabsContent value="feed" class="mt-4 space-y-3">
+          <Card v-for="a in feed.activities" :key="a.stravaActivityId.toString()">
+            <CardContent class="pt-4">
+              <strong>{{ a.userName }}</strong> — {{ a.name }}
+              <span class="text-muted-foreground">({{ a.sportType }})</span>
+              <p class="mt-1 text-sm text-muted-foreground">
+                {{ toDate(a.startDate)?.toLocaleDateString() }} ·
+                {{ formatMetricValue(MetricUnit.METERS, a.distanceM) }} ·
+                {{ formatMetricValue(MetricUnit.SECONDS, Number(a.movingTimeS)) }}
+                <template v-if="a.elevationM > 0"> · {{ formatMetricValue(MetricUnit.METERS, a.elevationM) }} gain</template>
+                <template v-if="a.averageHeartrate !== undefined">
+                  · {{ formatMetricValue(MetricUnit.BPM, a.averageHeartrate) }} avg HR
+                </template>
+                <template v-if="a.averageWatts !== undefined">
+                  · {{ formatMetricValue(MetricUnit.WATTS, a.averageWatts) }} avg
+                </template>
+              </p>
+            </CardContent>
+          </Card>
+          <p v-if="!feed.loading && feed.activities.length === 0" class="text-sm text-muted-foreground">
+            No activity yet.
+          </p>
+        </TabsContent>
+
+        <TabsContent value="leaderboard" class="mt-4 space-y-4">
+          <Alert v-if="feed.pooledMetric !== undefined">
+            <AlertDescription>
+              Pooled progress: {{ formatMetricValue(catalog.metricInfo(feed.pooledMetric)?.unit ?? 0, feed.pooledProgressValue ?? 0) }}
+              / {{ formatMetricValue(catalog.metricInfo(feed.pooledMetric)?.unit ?? 0, feed.pooledTargetValue ?? 0) }}
+            </AlertDescription>
+          </Alert>
+
+          <Card v-for="group in feed.leaderboardGroups" :key="group.sportGroup">
+            <CardHeader>
+              <CardTitle>{{ group.sportGroupLabel || "All sports" }}</CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-4">
+              <LeaderboardChart :entries="group.entries" />
+              <div
+                v-for="entry in [...group.entries].sort((a, b) => a.rank - b.rank)"
+                :key="`${entry.userId}-${entry.goalId}`"
+                class="space-y-2 rounded-lg border border-border p-3"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="font-medium">#{{ entry.rank }} {{ entry.userName }} — {{ entry.goalName }}</span>
+                  <Badge :variant="entry.satisfied ? 'default' : 'outline'">
+                    {{ entry.satisfied ? "Satisfied" : "In progress" }}
+                  </Badge>
+                </div>
+                <ClauseProgressList
+                  :clauses="goalById.get(entry.goalId)?.clauses ?? []"
+                  :progress="entry.clauses"
+                />
+              </div>
+              <p v-if="group.entries.length === 0" class="text-sm text-muted-foreground">No entries yet.</p>
+            </CardContent>
+          </Card>
+          <p v-if="feed.leaderboardGroups.length === 0" class="text-sm text-muted-foreground">
+            No goals in this campaign yet.
+          </p>
+        </TabsContent>
+
+        <TabsContent value="timeline" class="mt-4 space-y-6">
+          <Card v-if="feed.pooledTimeline">
+            <CardHeader>
+              <CardTitle>Pooled</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TimelineChart :series="[feed.pooledTimeline]" />
+            </CardContent>
+          </Card>
+          <Card v-for="group in feed.timelineGroups" :key="group.sportGroup">
+            <CardHeader>
+              <CardTitle>{{ group.sportGroupLabel || "All sports" }}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TimelineChart :series="group.series" />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </template>
   </div>
 </template>

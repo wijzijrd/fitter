@@ -9,6 +9,7 @@
 //   - `update:valid`: whether every row currently parses and satisfies its
 //     metric's scope support, so the parent can gate submission
 import { computed, onMounted, reactive, watch } from "vue";
+import { z } from "zod";
 import { useCatalogStore } from "@/stores/catalog";
 import { ActivityMetric, ClauseScope, Comparator } from "@/gen/fitter/v1/common_pb";
 import type { ClauseInput } from "@/lib/clauses";
@@ -125,16 +126,37 @@ function rowError(row: ClauseRow): string {
   return "";
 }
 
-const allValid = computed(() => rows.length > 0 && rows.every((r) => rowError(r) === ""));
+// zod owns the structural "at least one clause" rule; per-row unit-aware
+// value parsing (rowError above) isn't a good fit for zod since it depends
+// on each row's metric unit, so it stays hand-written.
+const clauseInputSchema = z.object({
+  scope: z.number(),
+  metric: z.number(),
+  comparator: z.number(),
+  value: z.number(),
+});
+const clauseListSchema = z.array(clauseInputSchema).min(1, "Add at least one clause.");
 
-function emitChanges(): void {
-  const clauses: ClauseInput[] = rows.map((r) => ({
+function currentClauses(): ClauseInput[] {
+  return rows.map((r) => ({
     scope: r.scope,
     metric: r.metric,
     comparator: r.comparator,
     value: rowValue(r) ?? 0,
   }));
-  emit("update:modelValue", clauses);
+}
+
+const cardinalityError = computed(() => {
+  const result = clauseListSchema.safeParse(currentClauses());
+  return result.success ? "" : result.error.issues[0]?.message ?? "Add at least one clause.";
+});
+
+const allValid = computed(
+  () => cardinalityError.value === "" && rows.every((r) => rowError(r) === ""),
+);
+
+function emitChanges(): void {
+  emit("update:modelValue", currentClauses());
   emit("update:valid", allValid.value);
 }
 
@@ -244,6 +266,7 @@ watch(rows, emitChanges, { deep: true });
       <Button type="button" variant="outline" size="sm" @click="addRow">
         <Plus class="size-4" /> Add clause
       </Button>
+      <p v-if="cardinalityError" class="text-xs text-destructive">{{ cardinalityError }}</p>
     </template>
   </div>
 </template>

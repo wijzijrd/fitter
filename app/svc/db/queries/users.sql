@@ -20,3 +20,6 @@ UPDATE users SET access_token = ?, refresh_token = ?, token_expires_at = ? WHERE
 
 -- name: ListUsersByIDs :many
 SELECT * FROM users WHERE id IN (sqlc.slice('ids'));
+
+-- name: ListAllUsers :many
+SELECT * FROM users ORDER BY created_at ASC;

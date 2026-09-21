@@ -50,6 +50,42 @@ func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) 
 	return i, err
 }
 
+const listAllUsers = `-- name: ListAllUsers :many
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users ORDER BY created_at ASC
+`
+
+func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.StravaAthleteID,
+			&i.Name,
+			&i.AvatarUrl,
+			&i.AccessToken,
+			&i.RefreshToken,
+			&i.TokenExpiresAt,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsersByIDs = `-- name: ListUsersByIDs :many
 SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id IN (/*SLICE:ids*/?)
 `

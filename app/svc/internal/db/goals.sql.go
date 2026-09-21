@@ -7,30 +7,35 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createGoal = `-- name: CreateGoal :one
-INSERT INTO goals (id, user_id, metric, target_value, period_start, period_end, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?)
-RETURNING id, user_id, metric, target_value, period_start, period_end, created_at
+INSERT INTO goals (id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at
 `
 
 type CreateGoalParams struct {
-	ID          string  `json:"id"`
-	UserID      string  `json:"user_id"`
-	Metric      string  `json:"metric"`
-	TargetValue float64 `json:"target_value"`
-	PeriodStart int64   `json:"period_start"`
-	PeriodEnd   int64   `json:"period_end"`
-	CreatedAt   int64   `json:"created_at"`
+	ID          string         `json:"id"`
+	UserID      string         `json:"user_id"`
+	CampaignID  sql.NullString `json:"campaign_id"`
+	Name        string         `json:"name"`
+	SportGroup  sql.NullString `json:"sport_group"`
+	SportType   sql.NullString `json:"sport_type"`
+	PeriodStart int64          `json:"period_start"`
+	PeriodEnd   int64          `json:"period_end"`
+	CreatedAt   int64          `json:"created_at"`
 }
 
 func (q *Queries) CreateGoal(ctx context.Context, arg CreateGoalParams) (Goal, error) {
 	row := q.db.QueryRowContext(ctx, createGoal,
 		arg.ID,
 		arg.UserID,
-		arg.Metric,
-		arg.TargetValue,
+		arg.CampaignID,
+		arg.Name,
+		arg.SportGroup,
+		arg.SportType,
 		arg.PeriodStart,
 		arg.PeriodEnd,
 		arg.CreatedAt,
@@ -39,8 +44,10 @@ func (q *Queries) CreateGoal(ctx context.Context, arg CreateGoalParams) (Goal, e
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.Metric,
-		&i.TargetValue,
+		&i.CampaignID,
+		&i.Name,
+		&i.SportGroup,
+		&i.SportType,
 		&i.PeriodStart,
 		&i.PeriodEnd,
 		&i.CreatedAt,
@@ -63,7 +70,7 @@ func (q *Queries) DeleteGoal(ctx context.Context, arg DeleteGoalParams) error {
 }
 
 const getGoal = `-- name: GetGoal :one
-SELECT id, user_id, metric, target_value, period_start, period_end, created_at FROM goals WHERE id = ?
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE id = ?
 `
 
 func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
@@ -72,8 +79,10 @@ func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.Metric,
-		&i.TargetValue,
+		&i.CampaignID,
+		&i.Name,
+		&i.SportGroup,
+		&i.SportType,
 		&i.PeriodStart,
 		&i.PeriodEnd,
 		&i.CreatedAt,
@@ -81,12 +90,74 @@ func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
 	return i, err
 }
 
-const listGoalsForUser = `-- name: ListGoalsForUser :many
-SELECT id, user_id, metric, target_value, period_start, period_end, created_at FROM goals WHERE user_id = ? ORDER BY period_start DESC
+const listCampaignGoalsWithUsers = `-- name: ListCampaignGoalsWithUsers :many
+SELECT g.id, g.user_id, g.campaign_id, g.name, g.sport_group, g.sport_type, g.period_start, g.period_end, g.created_at, u.name AS user_name, u.avatar_url AS user_avatar_url
+FROM goals g
+JOIN users u ON u.id = g.user_id
+WHERE g.campaign_id = ?
+ORDER BY g.sport_group, g.sport_type, u.name
 `
 
-func (q *Queries) ListGoalsForUser(ctx context.Context, userID string) ([]Goal, error) {
-	rows, err := q.db.QueryContext(ctx, listGoalsForUser, userID)
+type ListCampaignGoalsWithUsersRow struct {
+	ID            string         `json:"id"`
+	UserID        string         `json:"user_id"`
+	CampaignID    sql.NullString `json:"campaign_id"`
+	Name          string         `json:"name"`
+	SportGroup    sql.NullString `json:"sport_group"`
+	SportType     sql.NullString `json:"sport_type"`
+	PeriodStart   int64          `json:"period_start"`
+	PeriodEnd     int64          `json:"period_end"`
+	CreatedAt     int64          `json:"created_at"`
+	UserName      string         `json:"user_name"`
+	UserAvatarUrl string         `json:"user_avatar_url"`
+}
+
+func (q *Queries) ListCampaignGoalsWithUsers(ctx context.Context, campaignID sql.NullString) ([]ListCampaignGoalsWithUsersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCampaignGoalsWithUsers, campaignID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCampaignGoalsWithUsersRow
+	for rows.Next() {
+		var i ListCampaignGoalsWithUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CampaignID,
+			&i.Name,
+			&i.SportGroup,
+			&i.SportType,
+			&i.PeriodStart,
+			&i.PeriodEnd,
+			&i.CreatedAt,
+			&i.UserName,
+			&i.UserAvatarUrl,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listGoalsForUserInCampaign = `-- name: ListGoalsForUserInCampaign :many
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE user_id = ? AND campaign_id = ? ORDER BY created_at ASC
+`
+
+type ListGoalsForUserInCampaignParams struct {
+	UserID     string         `json:"user_id"`
+	CampaignID sql.NullString `json:"campaign_id"`
+}
+
+func (q *Queries) ListGoalsForUserInCampaign(ctx context.Context, arg ListGoalsForUserInCampaignParams) ([]Goal, error) {
+	rows, err := q.db.QueryContext(ctx, listGoalsForUserInCampaign, arg.UserID, arg.CampaignID)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +168,10 @@ func (q *Queries) ListGoalsForUser(ctx context.Context, userID string) ([]Goal, 
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
-			&i.Metric,
-			&i.TargetValue,
+			&i.CampaignID,
+			&i.Name,
+			&i.SportGroup,
+			&i.SportType,
 			&i.PeriodStart,
 			&i.PeriodEnd,
 			&i.CreatedAt,
@@ -116,23 +189,64 @@ func (q *Queries) ListGoalsForUser(ctx context.Context, userID string) ([]Goal, 
 	return items, nil
 }
 
-const updateGoal = `-- name: UpdateGoal :one
-UPDATE goals SET target_value = ?, period_start = ?, period_end = ?
-WHERE id = ? AND user_id = ?
-RETURNING id, user_id, metric, target_value, period_start, period_end, created_at
+const listPersonalGoalsForUser = `-- name: ListPersonalGoalsForUser :many
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE user_id = ? AND campaign_id IS NULL ORDER BY period_start DESC
 `
 
-type UpdateGoalParams struct {
-	TargetValue float64 `json:"target_value"`
-	PeriodStart int64   `json:"period_start"`
-	PeriodEnd   int64   `json:"period_end"`
-	ID          string  `json:"id"`
-	UserID      string  `json:"user_id"`
+func (q *Queries) ListPersonalGoalsForUser(ctx context.Context, userID string) ([]Goal, error) {
+	rows, err := q.db.QueryContext(ctx, listPersonalGoalsForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Goal
+	for rows.Next() {
+		var i Goal
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CampaignID,
+			&i.Name,
+			&i.SportGroup,
+			&i.SportType,
+			&i.PeriodStart,
+			&i.PeriodEnd,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (q *Queries) UpdateGoal(ctx context.Context, arg UpdateGoalParams) (Goal, error) {
-	row := q.db.QueryRowContext(ctx, updateGoal,
-		arg.TargetValue,
+const updateGoalMeta = `-- name: UpdateGoalMeta :one
+UPDATE goals SET name = ?, sport_group = ?, sport_type = ?, period_start = ?, period_end = ?
+WHERE id = ? AND user_id = ?
+RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at
+`
+
+type UpdateGoalMetaParams struct {
+	Name        string         `json:"name"`
+	SportGroup  sql.NullString `json:"sport_group"`
+	SportType   sql.NullString `json:"sport_type"`
+	PeriodStart int64          `json:"period_start"`
+	PeriodEnd   int64          `json:"period_end"`
+	ID          string         `json:"id"`
+	UserID      string         `json:"user_id"`
+}
+
+func (q *Queries) UpdateGoalMeta(ctx context.Context, arg UpdateGoalMetaParams) (Goal, error) {
+	row := q.db.QueryRowContext(ctx, updateGoalMeta,
+		arg.Name,
+		arg.SportGroup,
+		arg.SportType,
 		arg.PeriodStart,
 		arg.PeriodEnd,
 		arg.ID,
@@ -142,8 +256,10 @@ func (q *Queries) UpdateGoal(ctx context.Context, arg UpdateGoalParams) (Goal, e
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.Metric,
-		&i.TargetValue,
+		&i.CampaignID,
+		&i.Name,
+		&i.SportGroup,
+		&i.SportType,
 		&i.PeriodStart,
 		&i.PeriodEnd,
 		&i.CreatedAt,

@@ -18,15 +18,15 @@ onMounted(async () => {
   try {
     await auth.fetchCurrentUser();
     router.replace({ name: "campaigns" });
-  } catch (e) {
+  } catch {
     error.value = "Could not load your profile after login.";
   }
 });
 </script>
 
 <template>
-  <div class="container" style="text-align: center; margin-top: 4rem">
-    <p v-if="error" class="muted">{{ error }}</p>
-    <p v-else class="muted">Signing you in…</p>
+  <div class="mt-16 text-center">
+    <p v-if="error" class="text-sm text-muted-foreground">{{ error }}</p>
+    <p v-else class="text-sm text-muted-foreground">Signing you in…</p>
   </div>
 </template>

@@ -2,20 +2,77 @@ syntax = "proto3";
 
 package fitter.v1;
 
-// ActivityMetric is the quantity a goal or campaign target is measured in.
+// ActivityMetric is the quantity a goal clause or campaign target is
+// measured in.
 enum ActivityMetric {
   ACTIVITY_METRIC_UNSPECIFIED = 0;
   ACTIVITY_METRIC_DISTANCE = 1;
-  ACTIVITY_METRIC_ELEVATION = 2;
-  ACTIVITY_METRIC_TIME = 3;
-  ACTIVITY_METRIC_COUNT = 4;
+  ACTIVITY_METRIC_ELEVATION_GAIN = 2;
+  ACTIVITY_METRIC_MOVING_TIME = 3;
+  ACTIVITY_METRIC_ACTIVITY_COUNT = 4;
+  ACTIVITY_METRIC_ELAPSED_TIME = 5;
+  ACTIVITY_METRIC_AVERAGE_SPEED = 6;
+  ACTIVITY_METRIC_MAX_SPEED = 7;
+  ACTIVITY_METRIC_PACE = 8;
+  ACTIVITY_METRIC_AVERAGE_HEARTRATE = 9;
+  ACTIVITY_METRIC_MAX_HEARTRATE = 10;
+  ACTIVITY_METRIC_AVERAGE_WATTS = 11;
+  ACTIVITY_METRIC_WEIGHTED_AVERAGE_WATTS = 12;
+  ACTIVITY_METRIC_MAX_WATTS = 13;
+  ACTIVITY_METRIC_KILOJOULES = 14;
+  ACTIVITY_METRIC_CALORIES = 15;
+  ACTIVITY_METRIC_AVERAGE_CADENCE = 16;
+  ACTIVITY_METRIC_SUFFER_SCORE = 17;
 }
 
-// CampaignMode controls how member progress rolls up to the campaign target.
-enum CampaignMode {
-  CAMPAIGN_MODE_UNSPECIFIED = 0;
-  // CAMPAIGN_MODE_POOLED: every member's matching activity contributes to one shared target.
-  CAMPAIGN_MODE_POOLED = 1;
-  // CAMPAIGN_MODE_PER_MEMBER: each member tracks their own copy of the target independently.
-  CAMPAIGN_MODE_PER_MEMBER = 2;
+// ClauseScope controls whether a goal clause is evaluated per-activity or
+// over the aggregate of all matching activities in the period.
+enum ClauseScope {
+  CLAUSE_SCOPE_UNSPECIFIED = 0;
+  CLAUSE_SCOPE_AGGREGATE = 1;
+  CLAUSE_SCOPE_SINGLE = 2;
+}
+
+// Comparator is how a clause's current value is checked against its target.
+enum Comparator {
+  COMPARATOR_UNSPECIFIED = 0;
+  COMPARATOR_GTE = 1;
+  COMPARATOR_LTE = 2;
+}
+
+// MetricAggregation identifies how an ActivityMetric combines multiple
+// activities into one value.
+enum MetricAggregation {
+  METRIC_AGGREGATION_UNSPECIFIED = 0;
+  METRIC_AGGREGATION_SUM = 1;
+  METRIC_AGGREGATION_AVERAGE = 2; // duration-weighted
+  METRIC_AGGREGATION_MAX = 3;
+  METRIC_AGGREGATION_COUNT = 4;
+  METRIC_AGGREGATION_DERIVED = 5; // pace
+}
+
+// MetricUnit identifies how a metric's numeric value should be interpreted
+// and formatted.
+enum MetricUnit {
+  METRIC_UNIT_UNSPECIFIED = 0;
+  METRIC_UNIT_METERS = 1;
+  METRIC_UNIT_SECONDS = 2;
+  METRIC_UNIT_METERS_PER_SECOND = 3;
+  METRIC_UNIT_SECONDS_PER_KM = 4;
+  METRIC_UNIT_BPM = 5;
+  METRIC_UNIT_WATTS = 6;
+  METRIC_UNIT_KILOJOULES = 7;
+  METRIC_UNIT_KILOCALORIES = 8;
+  METRIC_UNIT_RPM = 9;
+  METRIC_UNIT_COUNT = 10;
+  METRIC_UNIT_SCORE = 11;
+}
+
+// SportSelector: an entirely unset message (neither oneof branch present)
+// means "all sports".
+message SportSelector {
+  oneof selector {
+    string group = 1;      // a curated group key from CatalogService.ListSports
+    string sport_type = 2; // an exact Strava sport_type string
+  }
 }

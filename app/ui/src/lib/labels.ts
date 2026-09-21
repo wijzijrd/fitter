@@ -1,53 +1,32 @@
-import { ActivityMetric, CampaignMode } from "../gen/fitter/v1/common_pb";
-import type { FeedActivity } from "../gen/fitter/v1/feed_pb";
+import { ClauseScope, Comparator } from "../gen/fitter/v1/common_pb";
+import type { SportSelector } from "../gen/fitter/v1/common_pb";
+import type { SportGroupInfo } from "../gen/fitter/v1/catalog_pb";
 
-export const metricLabels: Record<ActivityMetric, string> = {
-  [ActivityMetric.UNSPECIFIED]: "Unspecified",
-  [ActivityMetric.DISTANCE]: "Distance",
-  [ActivityMetric.ELEVATION]: "Elevation gain",
-  [ActivityMetric.TIME]: "Moving time",
-  [ActivityMetric.COUNT]: "Activity count",
+// ClauseScope and Comparator are small, stable protocol-level enums (not
+// part of the 17-metric catalog), so they stay as plain maps here rather
+// than coming from CatalogService.
+export const scopeLabels: Record<ClauseScope, string> = {
+  [ClauseScope.UNSPECIFIED]: "Unspecified",
+  [ClauseScope.AGGREGATE]: "Total across activities",
+  [ClauseScope.SINGLE]: "Any single activity",
 };
 
-export const modeLabels: Record<CampaignMode, string> = {
-  [CampaignMode.UNSPECIFIED]: "Unspecified",
-  [CampaignMode.POOLED]: "Pooled (shared target)",
-  [CampaignMode.PER_MEMBER]: "Per-member (own target)",
+export const comparatorLabels: Record<Comparator, string> = {
+  [Comparator.UNSPECIFIED]: "Unspecified",
+  [Comparator.GTE]: "at least",
+  [Comparator.LTE]: "at most",
 };
 
-// formatMetricValue renders a raw metric value (meters, seconds, or a plain
-// count) in units people actually read.
-export function formatMetricValue(metric: ActivityMetric, value: number): string {
-  switch (metric) {
-    case ActivityMetric.DISTANCE:
-      return `${(value / 1000).toFixed(1)} km`;
-    case ActivityMetric.ELEVATION:
-      return `${Math.round(value)} m`;
-    case ActivityMetric.TIME: {
-      const hours = Math.floor(value / 3600);
-      const minutes = Math.round((value % 3600) / 60);
-      return `${hours}h ${minutes}m`;
-    }
-    case ActivityMetric.COUNT:
-      return `${Math.round(value)} activities`;
-    default:
-      return `${value}`;
+// sportSelectorLabel renders a SportSelector oneof for display, using the
+// sport-group catalog to turn a group key into its human label.
+export function sportSelectorLabel(
+  sport: SportSelector | undefined,
+  sportGroups: SportGroupInfo[],
+): string {
+  if (!sport || sport.selector.case === undefined) return "All sports";
+  if (sport.selector.case === "group") {
+    const group = sportGroups.find((g) => g.group === sport.selector.value);
+    return group ? group.label : sport.selector.value;
   }
-}
-
-// activityMetricValue extracts the raw value of a single feed activity for
-// the given metric — "count" is always 1 per activity.
-export function activityMetricValue(activity: FeedActivity, metric: ActivityMetric): number {
-  switch (metric) {
-    case ActivityMetric.DISTANCE:
-      return activity.distanceM;
-    case ActivityMetric.ELEVATION:
-      return activity.elevationM;
-    case ActivityMetric.TIME:
-      return Number(activity.movingTimeS);
-    case ActivityMetric.COUNT:
-      return 1;
-    default:
-      return 0;
-  }
+  return sport.selector.value;
 }

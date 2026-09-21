@@ -34,7 +34,7 @@ func (c *Client) CreateSubscription(ctx context.Context, callbackURL string) (*S
 		"callback_url":  {callbackURL},
 		"verify_token":  {c.cfg.WebhookVerifyToken},
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, apiBaseURL+"/push_subscriptions", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.cfg.APIBaseURL+"/push_subscriptions", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (c *Client) ListSubscriptions(ctx context.Context) ([]Subscription, error) 
 		"client_id":     {c.cfg.ClientID},
 		"client_secret": {c.cfg.ClientSecret},
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiBaseURL+"/push_subscriptions?"+v.Encode(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.cfg.APIBaseURL+"/push_subscriptions?"+v.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (c *Client) DeleteSubscription(ctx context.Context, id int64) error {
 		"client_secret": {c.cfg.ClientSecret},
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete,
-		fmt.Sprintf("%s/push_subscriptions/%d?%s", apiBaseURL, id, v.Encode()), nil)
+		fmt.Sprintf("%s/push_subscriptions/%d?%s", c.cfg.APIBaseURL, id, v.Encode()), nil)
 	if err != nil {
 		return err
 	}

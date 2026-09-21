@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"strings"
 )
 
@@ -19,8 +20,19 @@ func (q *Queries) DeleteActivityByStravaID(ctx context.Context, stravaActivityID
 	return err
 }
 
+const getLatestActivityStartDateForUser = `-- name: GetLatestActivityStartDateForUser :one
+SELECT CAST(COALESCE(MAX(start_date), 0) AS INTEGER) FROM activities WHERE user_id = ?
+`
+
+func (q *Queries) GetLatestActivityStartDateForUser(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getLatestActivityStartDateForUser, userID)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const listActivitiesForUserInRange = `-- name: ListActivitiesForUserInRange :many
-SELECT id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at FROM activities
+SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at FROM activities
 WHERE user_id = ? AND start_date >= ? AND start_date <= ?
 ORDER BY start_date ASC
 `
@@ -41,16 +53,30 @@ func (q *Queries) ListActivitiesForUserInRange(ctx context.Context, arg ListActi
 	for rows.Next() {
 		var i Activity
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
 			&i.StravaActivityID,
+			&i.UserID,
 			&i.Type,
+			&i.SportType,
+			&i.Name,
+			&i.StartDate,
 			&i.DistanceM,
 			&i.ElevationM,
 			&i.MovingTimeS,
-			&i.StartDate,
-			&i.Name,
+			&i.ElapsedTimeS,
+			&i.AverageSpeedMs,
+			&i.MaxSpeedMs,
+			&i.AverageHeartrate,
+			&i.MaxHeartrate,
+			&i.AverageWatts,
+			&i.WeightedAverageWatts,
+			&i.MaxWatts,
+			&i.DeviceWatts,
+			&i.Kilojoules,
+			&i.Calories,
+			&i.AverageCadence,
+			&i.SufferScore,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -66,7 +92,7 @@ func (q *Queries) ListActivitiesForUserInRange(ctx context.Context, arg ListActi
 }
 
 const listActivitiesForUsersInRange = `-- name: ListActivitiesForUsersInRange :many
-SELECT id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at FROM activities
+SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at FROM activities
 WHERE user_id IN (/*SLICE:user_ids*/?) AND start_date >= ? AND start_date <= ?
 ORDER BY start_date ASC
 `
@@ -99,16 +125,30 @@ func (q *Queries) ListActivitiesForUsersInRange(ctx context.Context, arg ListAct
 	for rows.Next() {
 		var i Activity
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
 			&i.StravaActivityID,
+			&i.UserID,
 			&i.Type,
+			&i.SportType,
+			&i.Name,
+			&i.StartDate,
 			&i.DistanceM,
 			&i.ElevationM,
 			&i.MovingTimeS,
-			&i.StartDate,
-			&i.Name,
+			&i.ElapsedTimeS,
+			&i.AverageSpeedMs,
+			&i.MaxSpeedMs,
+			&i.AverageHeartrate,
+			&i.MaxHeartrate,
+			&i.AverageWatts,
+			&i.WeightedAverageWatts,
+			&i.MaxWatts,
+			&i.DeviceWatts,
+			&i.Kilojoules,
+			&i.Calories,
+			&i.AverageCadence,
+			&i.SufferScore,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -124,7 +164,7 @@ func (q *Queries) ListActivitiesForUsersInRange(ctx context.Context, arg ListAct
 }
 
 const listCampaignFeedActivities = `-- name: ListCampaignFeedActivities :many
-SELECT a.id, a.user_id, a.strava_activity_id, a.type, a.distance_m, a.elevation_m, a.moving_time_s, a.start_date, a.name, a.created_at, u.name AS user_name, u.avatar_url AS user_avatar_url
+SELECT a.strava_activity_id, a.user_id, a.type, a.sport_type, a.name, a.start_date, a.distance_m, a.elevation_m, a.moving_time_s, a.elapsed_time_s, a.average_speed_ms, a.max_speed_ms, a.average_heartrate, a.max_heartrate, a.average_watts, a.weighted_average_watts, a.max_watts, a.device_watts, a.kilojoules, a.calories, a.average_cadence, a.suffer_score, a.created_at, a.updated_at, u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM activities a
 JOIN campaign_members cm ON cm.user_id = a.user_id
 JOIN users u ON u.id = a.user_id
@@ -140,18 +180,32 @@ type ListCampaignFeedActivitiesParams struct {
 }
 
 type ListCampaignFeedActivitiesRow struct {
-	ID               string  `json:"id"`
-	UserID           string  `json:"user_id"`
-	StravaActivityID int64   `json:"strava_activity_id"`
-	Type             string  `json:"type"`
-	DistanceM        float64 `json:"distance_m"`
-	ElevationM       float64 `json:"elevation_m"`
-	MovingTimeS      int64   `json:"moving_time_s"`
-	StartDate        int64   `json:"start_date"`
-	Name             string  `json:"name"`
-	CreatedAt        int64   `json:"created_at"`
-	UserName         string  `json:"user_name"`
-	UserAvatarUrl    string  `json:"user_avatar_url"`
+	StravaActivityID     int64           `json:"strava_activity_id"`
+	UserID               string          `json:"user_id"`
+	Type                 string          `json:"type"`
+	SportType            string          `json:"sport_type"`
+	Name                 string          `json:"name"`
+	StartDate            int64           `json:"start_date"`
+	DistanceM            float64         `json:"distance_m"`
+	ElevationM           float64         `json:"elevation_m"`
+	MovingTimeS          int64           `json:"moving_time_s"`
+	ElapsedTimeS         int64           `json:"elapsed_time_s"`
+	AverageSpeedMs       float64         `json:"average_speed_ms"`
+	MaxSpeedMs           float64         `json:"max_speed_ms"`
+	AverageHeartrate     sql.NullFloat64 `json:"average_heartrate"`
+	MaxHeartrate         sql.NullFloat64 `json:"max_heartrate"`
+	AverageWatts         sql.NullFloat64 `json:"average_watts"`
+	WeightedAverageWatts sql.NullFloat64 `json:"weighted_average_watts"`
+	MaxWatts             sql.NullFloat64 `json:"max_watts"`
+	DeviceWatts          int64           `json:"device_watts"`
+	Kilojoules           sql.NullFloat64 `json:"kilojoules"`
+	Calories             sql.NullFloat64 `json:"calories"`
+	AverageCadence       sql.NullFloat64 `json:"average_cadence"`
+	SufferScore          sql.NullFloat64 `json:"suffer_score"`
+	CreatedAt            int64           `json:"created_at"`
+	UpdatedAt            int64           `json:"updated_at"`
+	UserName             string          `json:"user_name"`
+	UserAvatarUrl        string          `json:"user_avatar_url"`
 }
 
 func (q *Queries) ListCampaignFeedActivities(ctx context.Context, arg ListCampaignFeedActivitiesParams) ([]ListCampaignFeedActivitiesRow, error) {
@@ -164,16 +218,30 @@ func (q *Queries) ListCampaignFeedActivities(ctx context.Context, arg ListCampai
 	for rows.Next() {
 		var i ListCampaignFeedActivitiesRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
 			&i.StravaActivityID,
+			&i.UserID,
 			&i.Type,
+			&i.SportType,
+			&i.Name,
+			&i.StartDate,
 			&i.DistanceM,
 			&i.ElevationM,
 			&i.MovingTimeS,
-			&i.StartDate,
-			&i.Name,
+			&i.ElapsedTimeS,
+			&i.AverageSpeedMs,
+			&i.MaxSpeedMs,
+			&i.AverageHeartrate,
+			&i.MaxHeartrate,
+			&i.AverageWatts,
+			&i.WeightedAverageWatts,
+			&i.MaxWatts,
+			&i.DeviceWatts,
+			&i.Kilojoules,
+			&i.Calories,
+			&i.AverageCadence,
+			&i.SufferScore,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.UserName,
 			&i.UserAvatarUrl,
 		); err != nil {
@@ -191,56 +259,126 @@ func (q *Queries) ListCampaignFeedActivities(ctx context.Context, arg ListCampai
 }
 
 const upsertActivity = `-- name: UpsertActivity :one
-INSERT INTO activities (id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO activities (
+    strava_activity_id, user_id, type, sport_type, name, start_date,
+    distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms,
+    average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts,
+    device_watts, kilojoules, calories, average_cadence, suffer_score,
+    created_at, updated_at
+)
+VALUES (
+    ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?,
+    ?, ?
+)
 ON CONFLICT (strava_activity_id) DO UPDATE SET
-    type = excluded.type,
-    distance_m = excluded.distance_m,
-    elevation_m = excluded.elevation_m,
-    moving_time_s = excluded.moving_time_s,
-    start_date = excluded.start_date,
-    name = excluded.name
-RETURNING id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at
+    user_id                = excluded.user_id,
+    type                   = excluded.type,
+    sport_type             = excluded.sport_type,
+    name                   = excluded.name,
+    start_date             = excluded.start_date,
+    distance_m             = excluded.distance_m,
+    elevation_m            = excluded.elevation_m,
+    moving_time_s          = excluded.moving_time_s,
+    elapsed_time_s         = excluded.elapsed_time_s,
+    average_speed_ms       = excluded.average_speed_ms,
+    max_speed_ms           = excluded.max_speed_ms,
+    average_heartrate      = COALESCE(excluded.average_heartrate, average_heartrate),
+    max_heartrate          = COALESCE(excluded.max_heartrate, max_heartrate),
+    average_watts          = COALESCE(excluded.average_watts, average_watts),
+    weighted_average_watts = COALESCE(excluded.weighted_average_watts, weighted_average_watts),
+    max_watts              = COALESCE(excluded.max_watts, max_watts),
+    device_watts           = excluded.device_watts,
+    kilojoules             = COALESCE(excluded.kilojoules, kilojoules),
+    calories               = COALESCE(excluded.calories, calories),
+    average_cadence        = COALESCE(excluded.average_cadence, average_cadence),
+    suffer_score           = COALESCE(excluded.suffer_score, suffer_score),
+    updated_at             = excluded.updated_at
+RETURNING strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at
 `
 
 type UpsertActivityParams struct {
-	ID               string  `json:"id"`
-	UserID           string  `json:"user_id"`
-	StravaActivityID int64   `json:"strava_activity_id"`
-	Type             string  `json:"type"`
-	DistanceM        float64 `json:"distance_m"`
-	ElevationM       float64 `json:"elevation_m"`
-	MovingTimeS      int64   `json:"moving_time_s"`
-	StartDate        int64   `json:"start_date"`
-	Name             string  `json:"name"`
-	CreatedAt        int64   `json:"created_at"`
+	StravaActivityID     int64           `json:"strava_activity_id"`
+	UserID               string          `json:"user_id"`
+	Type                 string          `json:"type"`
+	SportType            string          `json:"sport_type"`
+	Name                 string          `json:"name"`
+	StartDate            int64           `json:"start_date"`
+	DistanceM            float64         `json:"distance_m"`
+	ElevationM           float64         `json:"elevation_m"`
+	MovingTimeS          int64           `json:"moving_time_s"`
+	ElapsedTimeS         int64           `json:"elapsed_time_s"`
+	AverageSpeedMs       float64         `json:"average_speed_ms"`
+	MaxSpeedMs           float64         `json:"max_speed_ms"`
+	AverageHeartrate     sql.NullFloat64 `json:"average_heartrate"`
+	MaxHeartrate         sql.NullFloat64 `json:"max_heartrate"`
+	AverageWatts         sql.NullFloat64 `json:"average_watts"`
+	WeightedAverageWatts sql.NullFloat64 `json:"weighted_average_watts"`
+	MaxWatts             sql.NullFloat64 `json:"max_watts"`
+	DeviceWatts          int64           `json:"device_watts"`
+	Kilojoules           sql.NullFloat64 `json:"kilojoules"`
+	Calories             sql.NullFloat64 `json:"calories"`
+	AverageCadence       sql.NullFloat64 `json:"average_cadence"`
+	SufferScore          sql.NullFloat64 `json:"suffer_score"`
+	CreatedAt            int64           `json:"created_at"`
+	UpdatedAt            int64           `json:"updated_at"`
 }
 
 func (q *Queries) UpsertActivity(ctx context.Context, arg UpsertActivityParams) (Activity, error) {
 	row := q.db.QueryRowContext(ctx, upsertActivity,
-		arg.ID,
-		arg.UserID,
 		arg.StravaActivityID,
+		arg.UserID,
 		arg.Type,
+		arg.SportType,
+		arg.Name,
+		arg.StartDate,
 		arg.DistanceM,
 		arg.ElevationM,
 		arg.MovingTimeS,
-		arg.StartDate,
-		arg.Name,
+		arg.ElapsedTimeS,
+		arg.AverageSpeedMs,
+		arg.MaxSpeedMs,
+		arg.AverageHeartrate,
+		arg.MaxHeartrate,
+		arg.AverageWatts,
+		arg.WeightedAverageWatts,
+		arg.MaxWatts,
+		arg.DeviceWatts,
+		arg.Kilojoules,
+		arg.Calories,
+		arg.AverageCadence,
+		arg.SufferScore,
 		arg.CreatedAt,
+		arg.UpdatedAt,
 	)
 	var i Activity
 	err := row.Scan(
-		&i.ID,
-		&i.UserID,
 		&i.StravaActivityID,
+		&i.UserID,
 		&i.Type,
+		&i.SportType,
+		&i.Name,
+		&i.StartDate,
 		&i.DistanceM,
 		&i.ElevationM,
 		&i.MovingTimeS,
-		&i.StartDate,
-		&i.Name,
+		&i.ElapsedTimeS,
+		&i.AverageSpeedMs,
+		&i.MaxSpeedMs,
+		&i.AverageHeartrate,
+		&i.MaxHeartrate,
+		&i.AverageWatts,
+		&i.WeightedAverageWatts,
+		&i.MaxWatts,
+		&i.DeviceWatts,
+		&i.Kilojoules,
+		&i.Calories,
+		&i.AverageCadence,
+		&i.SufferScore,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

@@ -211,12 +211,15 @@ func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoal
 	return results, nil
 }
 
-// toGoalProto maps a persisted goal, its clauses, and its evaluated result
-// to the wire Goal message.
-func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitterv1.Goal {
-	protoClauses := make([]*fitterv1.GoalClause, len(clauses))
+// clauseDefsToProto maps a goal's persisted clause definitions
+// (scope/metric/comparator/value) to their wire GoalClause form — shared by
+// Goal.clauses and LeaderboardEntry.clause_defs, so a leaderboard entry can
+// label another member's clauses without ever loading that member's own
+// goals (see LeaderboardEntry.clause_defs' doc comment in feed.proto).
+func clauseDefsToProto(clauses []db.GoalClause) []*fitterv1.GoalClause {
+	out := make([]*fitterv1.GoalClause, len(clauses))
 	for i, c := range clauses {
-		protoClauses[i] = &fitterv1.GoalClause{
+		out[i] = &fitterv1.GoalClause{
 			Id:         c.ID,
 			Position:   int32(c.Position),
 			Scope:      scopeFromDB(c.Scope),
@@ -225,6 +228,13 @@ func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitte
 			Value:      c.Value,
 		}
 	}
+	return out
+}
+
+// toGoalProto maps a persisted goal, its clauses, and its evaluated result
+// to the wire Goal message.
+func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitterv1.Goal {
+	protoClauses := clauseDefsToProto(clauses)
 
 	progressProto := &fitterv1.GoalProgress{
 		Satisfied:               res.Satisfied,
@@ -304,6 +314,9 @@ func (d *Deps) toGoalProtosWithProgress(ctx context.Context, goals []db.Goal, cl
 // member of it, and the period is still forced to that campaign's own
 // window (Global Constraints) rather than trusting the request.
 func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID string, msg *fitterv1.CreateGoalRequest, campaignOverride *db.Campaign) (db.Goal, []db.GoalClause, error) {
+	if msg.GetName() == "" {
+		return db.Goal{}, nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
 	prepared, err := validateClauses(msg.GetClauses())
 	if err != nil {
 		return db.Goal{}, nil, connect.NewError(connect.CodeInvalidArgument, err)

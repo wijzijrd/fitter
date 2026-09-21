@@ -278,8 +278,14 @@ type LeaderboardEntry struct {
 	Rank                    int32                  `protobuf:"varint,8,opt,name=rank,proto3" json:"rank,omitempty"` // rank within its LeaderboardGroup
 	Clauses                 []*ClauseProgress      `protobuf:"bytes,9,rep,name=clauses,proto3" json:"clauses,omitempty"`
 	ConsideredActivityCount int32                  `protobuf:"varint,10,opt,name=considered_activity_count,json=consideredActivityCount,proto3" json:"considered_activity_count,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	// Clause DEFINITIONS (scope/metric/comparator/value) for this entry's
+	// goal, in the same order/position as `clauses`. Populated for every
+	// entry — including other members' — since ListGoals only ever returns
+	// the caller's own goals, leaving no other way for the frontend to label
+	// another member's clause progress.
+	ClauseDefs    []*GoalClause `protobuf:"bytes,11,rep,name=clause_defs,json=clauseDefs,proto3" json:"clause_defs,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LeaderboardEntry) Reset() {
@@ -380,6 +386,13 @@ func (x *LeaderboardEntry) GetConsideredActivityCount() int32 {
 		return x.ConsideredActivityCount
 	}
 	return 0
+}
+
+func (x *LeaderboardEntry) GetClauseDefs() []*GoalClause {
+	if x != nil {
+		return x.ClauseDefs
+	}
+	return nil
 }
 
 type LeaderboardGroup struct {
@@ -914,7 +927,7 @@ const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\x17GetCampaignFeedResponse\x127\n" +
 	"\n" +
 	"activities\x18\x01 \x03(\v2\x17.fitter.v1.FeedActivityR\n" +
-	"activities\"\xf0\x02\n" +
+	"activities\"\xa8\x03\n" +
 	"\x10LeaderboardEntry\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tuser_name\x18\x02 \x01(\tR\buserName\x12&\n" +
@@ -926,7 +939,9 @@ const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\x04rank\x18\b \x01(\x05R\x04rank\x123\n" +
 	"\aclauses\x18\t \x03(\v2\x19.fitter.v1.ClauseProgressR\aclauses\x12:\n" +
 	"\x19considered_activity_count\x18\n" +
-	" \x01(\x05R\x17consideredActivityCount\"\x96\x01\n" +
+	" \x01(\x05R\x17consideredActivityCount\x126\n" +
+	"\vclause_defs\x18\v \x03(\v2\x15.fitter.v1.GoalClauseR\n" +
+	"clauseDefs\"\x96\x01\n" +
 	"\x10LeaderboardGroup\x12\x1f\n" +
 	"\vsport_group\x18\x01 \x01(\tR\n" +
 	"sportGroup\x12*\n" +
@@ -1007,36 +1022,38 @@ var file_fitter_v1_feed_proto_goTypes = []any{
 	(*GetCampaignTimelineResponse)(nil),    // 11: fitter.v1.GetCampaignTimelineResponse
 	(*timestamppb.Timestamp)(nil),          // 12: google.protobuf.Timestamp
 	(*ClauseProgress)(nil),                 // 13: fitter.v1.ClauseProgress
-	(ActivityMetric)(0),                    // 14: fitter.v1.ActivityMetric
-	(Comparator)(0),                        // 15: fitter.v1.Comparator
+	(*GoalClause)(nil),                     // 14: fitter.v1.GoalClause
+	(ActivityMetric)(0),                    // 15: fitter.v1.ActivityMetric
+	(Comparator)(0),                        // 16: fitter.v1.Comparator
 }
 var file_fitter_v1_feed_proto_depIdxs = []int32{
 	12, // 0: fitter.v1.FeedActivity.start_date:type_name -> google.protobuf.Timestamp
 	0,  // 1: fitter.v1.GetCampaignFeedResponse.activities:type_name -> fitter.v1.FeedActivity
 	13, // 2: fitter.v1.LeaderboardEntry.clauses:type_name -> fitter.v1.ClauseProgress
-	3,  // 3: fitter.v1.LeaderboardGroup.entries:type_name -> fitter.v1.LeaderboardEntry
-	4,  // 4: fitter.v1.GetCampaignLeaderboardResponse.groups:type_name -> fitter.v1.LeaderboardGroup
-	14, // 5: fitter.v1.GetCampaignLeaderboardResponse.pooled_metric:type_name -> fitter.v1.ActivityMetric
-	12, // 6: fitter.v1.TimelinePoint.date:type_name -> google.protobuf.Timestamp
-	14, // 7: fitter.v1.TimelineSeries.metric:type_name -> fitter.v1.ActivityMetric
-	15, // 8: fitter.v1.TimelineSeries.comparator:type_name -> fitter.v1.Comparator
-	7,  // 9: fitter.v1.TimelineSeries.points:type_name -> fitter.v1.TimelinePoint
-	8,  // 10: fitter.v1.TimelineGroup.series:type_name -> fitter.v1.TimelineSeries
-	9,  // 11: fitter.v1.GetCampaignTimelineResponse.groups:type_name -> fitter.v1.TimelineGroup
-	8,  // 12: fitter.v1.GetCampaignTimelineResponse.pooled:type_name -> fitter.v1.TimelineSeries
-	12, // 13: fitter.v1.GetCampaignTimelineResponse.start_date:type_name -> google.protobuf.Timestamp
-	12, // 14: fitter.v1.GetCampaignTimelineResponse.end_date:type_name -> google.protobuf.Timestamp
-	1,  // 15: fitter.v1.FeedService.GetCampaignFeed:input_type -> fitter.v1.GetCampaignFeedRequest
-	5,  // 16: fitter.v1.FeedService.GetCampaignLeaderboard:input_type -> fitter.v1.GetCampaignLeaderboardRequest
-	10, // 17: fitter.v1.FeedService.GetCampaignTimeline:input_type -> fitter.v1.GetCampaignTimelineRequest
-	2,  // 18: fitter.v1.FeedService.GetCampaignFeed:output_type -> fitter.v1.GetCampaignFeedResponse
-	6,  // 19: fitter.v1.FeedService.GetCampaignLeaderboard:output_type -> fitter.v1.GetCampaignLeaderboardResponse
-	11, // 20: fitter.v1.FeedService.GetCampaignTimeline:output_type -> fitter.v1.GetCampaignTimelineResponse
-	18, // [18:21] is the sub-list for method output_type
-	15, // [15:18] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	14, // 3: fitter.v1.LeaderboardEntry.clause_defs:type_name -> fitter.v1.GoalClause
+	3,  // 4: fitter.v1.LeaderboardGroup.entries:type_name -> fitter.v1.LeaderboardEntry
+	4,  // 5: fitter.v1.GetCampaignLeaderboardResponse.groups:type_name -> fitter.v1.LeaderboardGroup
+	15, // 6: fitter.v1.GetCampaignLeaderboardResponse.pooled_metric:type_name -> fitter.v1.ActivityMetric
+	12, // 7: fitter.v1.TimelinePoint.date:type_name -> google.protobuf.Timestamp
+	15, // 8: fitter.v1.TimelineSeries.metric:type_name -> fitter.v1.ActivityMetric
+	16, // 9: fitter.v1.TimelineSeries.comparator:type_name -> fitter.v1.Comparator
+	7,  // 10: fitter.v1.TimelineSeries.points:type_name -> fitter.v1.TimelinePoint
+	8,  // 11: fitter.v1.TimelineGroup.series:type_name -> fitter.v1.TimelineSeries
+	9,  // 12: fitter.v1.GetCampaignTimelineResponse.groups:type_name -> fitter.v1.TimelineGroup
+	8,  // 13: fitter.v1.GetCampaignTimelineResponse.pooled:type_name -> fitter.v1.TimelineSeries
+	12, // 14: fitter.v1.GetCampaignTimelineResponse.start_date:type_name -> google.protobuf.Timestamp
+	12, // 15: fitter.v1.GetCampaignTimelineResponse.end_date:type_name -> google.protobuf.Timestamp
+	1,  // 16: fitter.v1.FeedService.GetCampaignFeed:input_type -> fitter.v1.GetCampaignFeedRequest
+	5,  // 17: fitter.v1.FeedService.GetCampaignLeaderboard:input_type -> fitter.v1.GetCampaignLeaderboardRequest
+	10, // 18: fitter.v1.FeedService.GetCampaignTimeline:input_type -> fitter.v1.GetCampaignTimelineRequest
+	2,  // 19: fitter.v1.FeedService.GetCampaignFeed:output_type -> fitter.v1.GetCampaignFeedResponse
+	6,  // 20: fitter.v1.FeedService.GetCampaignLeaderboard:output_type -> fitter.v1.GetCampaignLeaderboardResponse
+	11, // 21: fitter.v1.FeedService.GetCampaignTimeline:output_type -> fitter.v1.GetCampaignTimelineResponse
+	19, // [19:22] is the sub-list for method output_type
+	16, // [16:19] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_feed_proto_init() }

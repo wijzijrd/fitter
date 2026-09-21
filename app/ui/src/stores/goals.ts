@@ -11,8 +11,12 @@ export const useGoalsStore = defineStore("goals", () => {
   const goals = ref<Goal[]>([]);
   const loading = ref(false);
 
-  // fetchGoals lists personal goals (campaignId undefined) or a campaign's
-  // shared goals (campaignId set) — see ListGoalsRequest.campaign_id.
+  // fetchGoals lists personal goals (campaignId undefined) or, when
+  // campaignId is set, only the CALLER'S OWN goals in that campaign — see
+  // ListGoalsRequest.campaign_id ("WHERE user_id = ? AND campaign_id = ?"
+  // server-side). It is NOT a campaign-wide shared view: for that, see
+  // FeedService.GetCampaignLeaderboard, whose LeaderboardEntry now carries
+  // every member's own clause_defs alongside their progress.
   async function fetchGoals(campaignId?: string): Promise<void> {
     loading.value = true;
     try {

@@ -45,6 +45,12 @@ message LeaderboardEntry {
   int32 rank = 8; // rank within its LeaderboardGroup
   repeated ClauseProgress clauses = 9;
   int32 considered_activity_count = 10;
+  // Clause DEFINITIONS (scope/metric/comparator/value) for this entry's
+  // goal, in the same order/position as `clauses`. Populated for every
+  // entry — including other members' — since ListGoals only ever returns
+  // the caller's own goals, leaving no other way for the frontend to label
+  // another member's clause progress.
+  repeated GoalClause clause_defs = 11;
 }
 
 message LeaderboardGroup {

@@ -50,6 +50,13 @@ const seedJWTTTL = 30 * 24 * time.Hour
 const seedUserID = "seed-user-1"
 const seedStravaAthleteID = int64(1000001)
 
+// A second seeded user, joined to the same sample campaign, so multi-member
+// leaderboard/timeline behavior (sport-group collisions, per-clause
+// labeling of OTHER members' entries) is exercisable without a second real
+// Strava account. See seedActivitiesTwo/seedGoalsTwo.
+const seedUserTwoID = "seed-user-2"
+const seedStravaAthleteTwoID = int64(1000002)
+
 func main() {
 	dbPath := envOr("DB_PATH", "fitter.db")
 	sqlDB, err := sql.Open("sqlite", dbPath+"?_pragma=foreign_keys(1)")
@@ -72,6 +79,9 @@ func main() {
 	user := seedUser(ctx, q)
 	slog.Info("seeded user", "id", user.ID, "name", user.Name)
 
+	userTwo := seedUserTwo(ctx, q)
+	slog.Info("seeded user", "id", userTwo.ID, "name", userTwo.Name)
+
 	activities := seedActivities()
 	for _, a := range activities {
 		if err := ingest.UpsertActivity(ctx, q, user.ID, a); err != nil {
@@ -80,11 +90,23 @@ func main() {
 	}
 	slog.Info("seeded activities", "count", len(activities))
 
+	activitiesTwo := seedActivitiesTwo()
+	for _, a := range activitiesTwo {
+		if err := ingest.UpsertActivity(ctx, q, userTwo.ID, a); err != nil {
+			fatal("seed activity upsert failed", err)
+		}
+	}
+	slog.Info("seeded activities", "count", len(activitiesTwo), "user", userTwo.ID)
+
 	campaign := seedCampaign(ctx, q, user)
 	slog.Info("seeded campaign", "id", campaign.ID, "name", campaign.Name)
 
 	seedGoals(ctx, q, user, campaign)
 	slog.Info("seeded goals")
+
+	joinCampaignTwo(ctx, q, userTwo, campaign)
+	seedGoalsTwo(ctx, q, userTwo, campaign)
+	slog.Info("seeded goals", "user", userTwo.ID)
 
 	slog.Info("seed complete", "db_path", dbPath)
 
@@ -119,6 +141,25 @@ func seedUser(ctx context.Context, q *db.Queries) db.User {
 	})
 	if err != nil {
 		fatal("upsert seed user failed", err)
+	}
+	return u
+}
+
+// seedUserTwo upserts a second fake athlete, distinct from seedUser's — see
+// the seedUserTwoID doc comment for why this exists.
+func seedUserTwo(ctx context.Context, q *db.Queries) db.User {
+	u, err := q.UpsertUserByStravaID(ctx, db.UpsertUserByStravaIDParams{
+		ID:              seedUserTwoID,
+		StravaAthleteID: seedStravaAthleteTwoID,
+		Name:            "Seed Athlete Two",
+		AvatarUrl:       "https://dgalywyr863hv.cloudfront.net/pictures/athletes/000/000/2/large.jpg",
+		AccessToken:     "seed-access-token-2",
+		RefreshToken:    "seed-refresh-token-2",
+		TokenExpiresAt:  time.Now().Add(24 * time.Hour).Unix(),
+		CreatedAt:       time.Now().Unix(),
+	})
+	if err != nil {
+		fatal("upsert seed user two failed", err)
 	}
 	return u
 }
@@ -265,6 +306,68 @@ func seedActivities() []strava.Activity {
 	}
 }
 
+// seedActivitiesTwo returns a second user's fixture activities. Deliberately
+// smaller than seedActivities' set (it doesn't need to be as elaborate), but
+// includes a "run" group activity — the same sport group as seed-user-1's
+// "30-Day Run Volume" and "10K Effort" goals — so the two users' entries
+// land in the same leaderboard/timeline group and the multi-member label
+// collision this seed exists to catch is actually exercisable.
+func seedActivitiesTwo() []strava.Activity {
+	return []strava.Activity{
+		// --- run group: overlaps seed-user-1's run-group goals ---
+		{
+			ID:               900101,
+			Name:             "Easy Miles",
+			Type:             "Run",
+			SportType:        "Run",
+			Distance:         9000,
+			MovingTime:       2500,
+			ElapsedTime:      2550,
+			StartDate:        daysAgo(3, 6),
+			AverageSpeed:     3.6,
+			MaxSpeed:         4.6,
+			HasHeartrate:     true,
+			AverageHeartrate: f64(148),
+			MaxHeartrate:     f64(166),
+			AverageCadence:   f64(170),
+			SufferScore:      f64(50),
+		},
+		{
+			ID:                 900102,
+			Name:               "Hilly Trail Run",
+			Type:               "Run",
+			SportType:          "TrailRun",
+			Distance:           14000,
+			TotalElevationGain: 410,
+			MovingTime:         3200,
+			ElapsedTime:        3300,
+			StartDate:          daysAgo(8, 7),
+			AverageSpeed:       4.38,
+			MaxSpeed:           5.9,
+			HasHeartrate:       true,
+			AverageHeartrate:   f64(156),
+			MaxHeartrate:       f64(179),
+			SufferScore:        f64(80),
+		},
+
+		// --- ride group: a second sport group for user two ---
+		{
+			// Deliberately nil HR/watts: a bike with no sensors attached.
+			ID:                 900103,
+			Name:               "Weekend Ride",
+			Type:               "Ride",
+			SportType:          "Ride",
+			Distance:           25000,
+			TotalElevationGain: 200,
+			MovingTime:         4200,
+			ElapsedTime:        4500,
+			StartDate:          daysAgo(4, 9),
+			AverageSpeed:       5.95,
+			MaxSpeed:           10.2,
+		},
+	}
+}
+
 // seedCampaign creates one sample campaign with no pooled target
 // (metric/target_value both NULL) and joins the seed user to it.
 func seedCampaign(ctx context.Context, q *db.Queries, user db.User) db.Campaign {
@@ -353,6 +456,55 @@ func seedGoals(ctx context.Context, q *db.Queries, user db.User, campaign db.Cam
 		if _, err := q.CreateGoalClause(ctx, cl); err != nil {
 			fatal("create performance goal clause failed", err)
 		}
+	}
+}
+
+// joinCampaignTwo joins the second seed user to the sample campaign,
+// mirroring seedCampaign's own JoinCampaign call for the first user.
+func joinCampaignTwo(ctx context.Context, q *db.Queries, userTwo db.User, campaign db.Campaign) {
+	if err := q.JoinCampaign(ctx, db.JoinCampaignParams{
+		CampaignID: campaign.ID,
+		UserID:     userTwo.ID,
+		JoinedAt:   time.Now().Unix(),
+	}); err != nil {
+		fatal("join seed campaign (user two) failed", err)
+	}
+}
+
+// seedGoalsTwo gives the second seed user one campaign goal in the "run"
+// sport group — the same group as seed-user-1's campaign "10K Effort" goal —
+// so GetCampaignLeaderboard/GetCampaignTimeline have two members to show
+// side by side in an overlapping group, exercising fixes 1-2's multi-member
+// clause-labeling and (sport group, metric) grouping.
+func seedGoalsTwo(ctx context.Context, q *db.Queries, userTwo db.User, campaign db.Campaign) {
+	now := time.Now()
+	periodStart := now.AddDate(0, 0, -14).Unix()
+	periodEnd := now.AddDate(0, 0, 16).Unix()
+
+	goal, err := q.CreateGoal(ctx, db.CreateGoalParams{
+		ID:          uuid.NewString(),
+		UserID:      userTwo.ID,
+		CampaignID:  sql.NullString{String: campaign.ID, Valid: true},
+		Name:        "September Run Distance",
+		SportGroup:  sql.NullString{String: "run", Valid: true},
+		SportType:   sql.NullString{},
+		PeriodStart: periodStart,
+		PeriodEnd:   periodEnd,
+		CreatedAt:   now.Unix(),
+	})
+	if err != nil {
+		fatal("create seed user two goal failed", err)
+	}
+	if _, err := q.CreateGoalClause(ctx, db.CreateGoalClauseParams{
+		ID:         uuid.NewString(),
+		GoalID:     goal.ID,
+		Position:   0,
+		Scope:      "aggregate",
+		Metric:     "distance",
+		Comparator: "gte",
+		Value:      15000,
+	}); err != nil {
+		fatal("create seed user two goal clause failed", err)
 	}
 }
 

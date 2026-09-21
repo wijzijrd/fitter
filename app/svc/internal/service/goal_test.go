@@ -58,6 +58,23 @@ func twoClauseCreateGoalRequest(periodStart, periodEnd int64) *fitterv1.CreateGo
 	}
 }
 
+func TestCreateGoal_NameRequired(t *testing.T) {
+	deps := newDeps(t)
+	alice := seedUser(t, deps.Queries, "alice")
+	svc := service.NewGoalService(deps)
+	ctx := ctxAs(alice.ID)
+
+	periodStart := time.Now().Add(-7 * 24 * time.Hour).Unix()
+	periodEnd := time.Now().Add(7 * 24 * time.Hour).Unix()
+
+	req := twoClauseCreateGoalRequest(periodStart, periodEnd)
+	req.Name = ""
+	_, err := svc.CreateGoal(ctx, connect.NewRequest(req))
+	if connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("CreateGoal(empty name) error = %v, want CodeInvalidArgument", err)
+	}
+}
+
 func TestCreateGoal_ListGoals_ClausesAndProgress(t *testing.T) {
 	deps := newDeps(t)
 	alice := seedUser(t, deps.Queries, "alice")

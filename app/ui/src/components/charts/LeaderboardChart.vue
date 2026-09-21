@@ -20,7 +20,10 @@ function render(): void {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
     grid: { left: 120, right: 24, top: 16, bottom: 24 },
     xAxis: { type: "value", max: 100, axisLabel: { formatter: "{value}%" } },
-    yAxis: { type: "category", data: sorted.map((e) => e.userName) },
+    // Keyed by user + goal name, not just userName — a user with two goals
+    // in the same sport group would otherwise produce duplicate category
+    // axis entries that collide in the chart.
+    yAxis: { type: "category", data: sorted.map((e) => `${e.userName} — ${e.goalName}`) },
     series: [
       {
         type: "bar",

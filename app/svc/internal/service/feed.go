@@ -187,6 +187,7 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			Satisfied:               res.Satisfied,
 			Clauses:                 clauseResultsToProto(res.Clauses),
 			ConsideredActivityCount: int32(res.ConsideredCount),
+			ClauseDefs:              clauseDefsToProto(clausesByGoal[g.ID]),
 		})
 	}
 
@@ -207,7 +208,13 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			if entries[i].Satisfied != entries[j].Satisfied {
 				return entries[i].Satisfied
 			}
-			return entries[i].UserName < entries[j].UserName
+			if entries[i].UserName != entries[j].UserName {
+				return entries[i].UserName < entries[j].UserName
+			}
+			// Final tie-break: GoalId, so two goals from the same user with
+			// an equal ratio in the same group still sort deterministically
+			// across calls rather than relying on map/slice iteration order.
+			return entries[i].GoalId < entries[j].GoalId
 		})
 		for i, e := range entries {
 			e.Rank = int32(i + 1)
@@ -229,15 +236,30 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 		for _, a := range acts {
 			acc.Add(a)
 		}
-		value, _, _ := acc.Result()
-		target := c.TargetValue.Float64
-		metricProto := keyToMetric(metrics.Key(c.Metric.String))
-		resp.PooledProgressValue = &value
-		resp.PooledTargetValue = &target
-		resp.PooledMetric = &metricProto
+		value, _, ok := acc.Result()
+		if ok {
+			target := c.TargetValue.Float64
+			metricProto := keyToMetric(metrics.Key(c.Metric.String))
+			resp.PooledProgressValue = &value
+			resp.PooledTargetValue = &target
+			resp.PooledMetric = &metricProto
+		}
+		// !ok (e.g. a nullable pooled metric with zero contributing
+		// activities): leave all three pooled fields unset, matching the
+		// existing "omit all three when no target" pattern above, rather
+		// than rendering a misleading pooled_progress_value = 0.
 	}
 
 	return connect.NewResponse(resp), nil
+}
+
+// timelineGroupKey buckets timeline series by (sport group, metric): two
+// members' goals in the same sport group but with different AGGREGATE
+// metrics can't share a y-axis, so grouping by sport group alone (as the
+// leaderboard does, via goalGroupKey) isn't specific enough here.
+type timelineGroupKey struct {
+	sportGroup string
+	metric     metrics.Key
 }
 
 func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Request[fitterv1.GetCampaignTimelineRequest]) (*connect.Response[fitterv1.GetCampaignTimelineResponse], error) {
@@ -284,7 +306,7 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	seriesByGroup := make(map[string][]*fitterv1.TimelineSeries)
+	seriesByGroup := make(map[timelineGroupKey][]*fitterv1.TimelineSeries)
 	for _, g := range goals {
 		sel := sports.Selector{Group: sports.Group(g.SportGroup.String), SportType: g.SportType.String}
 		acts := actsByUser[g.UserID]
@@ -309,9 +331,13 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 				// validateClauses. Skip rather than panic on a data bug.
 				continue
 			}
+			// Label combines the user, goal name, and metric so that a user
+			// with two AGGREGATE clauses (even within the same sport group)
+			// never produces two series with an identical label in the
+			// chart legend/tooltip.
 			series := &fitterv1.TimelineSeries{
 				UserId:      g.UserID,
-				Label:       userNameByGoal[g.ID],
+				Label:       fmt.Sprintf("%s — %s · %s", userNameByGoal[g.ID], g.Name, def.Label),
 				GoalId:      g.ID,
 				ClauseId:    cl.ID,
 				Metric:      keyToMetric(metricKey),
@@ -333,23 +359,32 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 					Value: value,
 				})
 			}
-			key := goalGroupKey(g.SportGroup, g.SportType)
+			// Grouped by (sport group, metric): two members in the same
+			// sport group with different AGGREGATE metrics can't share a
+			// y-axis, so they must land in separate TimelineGroups even
+			// though goalGroupKey alone would bucket them together.
+			key := timelineGroupKey{sportGroup: goalGroupKey(g.SportGroup, g.SportType), metric: metricKey}
 			seriesByGroup[key] = append(seriesByGroup[key], series)
 		}
 	}
 
 	order := sportGroupOrder()
-	keys := make([]string, 0, len(seriesByGroup))
+	keys := make([]timelineGroupKey, 0, len(seriesByGroup))
 	for k := range seriesByGroup {
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool { return order[keys[i]] < order[keys[j]] })
+	sort.Slice(keys, func(i, j int) bool {
+		if order[keys[i].sportGroup] != order[keys[j].sportGroup] {
+			return order[keys[i].sportGroup] < order[keys[j].sportGroup]
+		}
+		return keys[i].metric < keys[j].metric
+	})
 
 	groups := make([]*fitterv1.TimelineGroup, 0, len(keys))
 	for _, k := range keys {
 		groups = append(groups, &fitterv1.TimelineGroup{
-			SportGroup:      k,
-			SportGroupLabel: sportGroupLabel(k),
+			SportGroup:      k.sportGroup,
+			SportGroupLabel: sportGroupLabel(k.sportGroup),
 			Series:          seriesByGroup[k],
 		})
 	}

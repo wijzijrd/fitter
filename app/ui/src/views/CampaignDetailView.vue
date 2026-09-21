@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
-import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { formatMetricValue } from "../lib/metricFormat";
 import { toDate } from "../lib/timestamp";
@@ -22,7 +21,6 @@ const route = useRoute();
 const router = useRouter();
 const campaignsStore = useCampaignsStore();
 const feedStore = useCampaignFeedStore();
-const goalsStore = useGoalsStore();
 const catalog = useCatalogStore();
 
 const loadError = ref("");
@@ -34,16 +32,11 @@ const tab = computed<string>({
 
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
 const feed = computed(() => feedStore.stateFor(props.id));
-const goalById = computed(() => new Map(goalsStore.goals.map((g) => [g.id, g])));
 
 onMounted(async () => {
   await catalog.ensureLoaded();
   try {
-    await Promise.all([
-      campaignsStore.getCampaign(props.id),
-      feedStore.fetchAll(props.id),
-      goalsStore.fetchGoals(props.id),
-    ]);
+    await Promise.all([campaignsStore.getCampaign(props.id), feedStore.fetchAll(props.id)]);
   } catch (e) {
     loadError.value = e instanceof Error ? e.message : "Failed to load this campaign.";
   }
@@ -127,10 +120,7 @@ onMounted(async () => {
                     {{ entry.satisfied ? "Satisfied" : "In progress" }}
                   </Badge>
                 </div>
-                <ClauseProgressList
-                  :clauses="goalById.get(entry.goalId)?.clauses ?? []"
-                  :progress="entry.clauses"
-                />
+                <ClauseProgressList :clauses="entry.clauseDefs" :progress="entry.clauses" />
               </div>
               <p v-if="group.entries.length === 0" class="text-sm text-muted-foreground">No entries yet.</p>
             </CardContent>

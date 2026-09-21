@@ -49,6 +49,7 @@ func main() {
 	})
 
 	svcDeps := &service.Deps{
+		DB:        sqlDB,
 		Queries:   queries,
 		Strava:    stravaClient,
 		JWTSecret: cfg.jwtSecret,
@@ -72,6 +73,7 @@ func main() {
 	registerService(fitterv1connect.NewCampaignServiceHandler(service.NewCampaignService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewGoalServiceHandler(service.NewGoalService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewFeedServiceHandler(service.NewFeedService(svcDeps), connectOpts))
+	registerService(fitterv1connect.NewCatalogServiceHandler(service.NewCatalogService(svcDeps), connectOpts))
 
 	mux.HandleFunc("/auth/strava/login", handlerDeps.Login)
 	mux.HandleFunc("/auth/strava/callback", handlerDeps.Callback)

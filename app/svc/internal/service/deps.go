@@ -30,9 +30,11 @@ type CampaignService struct{ *Deps }
 type GoalService struct{ *Deps }
 type FeedService struct{ *Deps }
 type CatalogService struct{ *Deps }
+type AdminService struct{ *Deps }
 
 func NewUserService(d *Deps) *UserService         { return &UserService{d} }
 func NewCampaignService(d *Deps) *CampaignService { return &CampaignService{d} }
 func NewGoalService(d *Deps) *GoalService         { return &GoalService{d} }
 func NewFeedService(d *Deps) *FeedService         { return &FeedService{d} }
 func NewCatalogService(d *Deps) *CatalogService   { return &CatalogService{d} }
+func NewAdminService(d *Deps) *AdminService       { return &AdminService{d} }

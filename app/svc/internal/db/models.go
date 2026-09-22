@@ -53,6 +53,33 @@ type CampaignMember struct {
 	JoinedAt   int64  `json:"joined_at"`
 }
 
+type CustomMetric struct {
+	ID                     string `json:"id"`
+	Key                    string `json:"key"`
+	Label                  string `json:"label"`
+	Unit                   string `json:"unit"`
+	Aggregation            string `json:"aggregation"`
+	Nullable               int64  `json:"nullable"`
+	LowerIsBetter          int64  `json:"lower_is_better"`
+	SupportsSingleScope    int64  `json:"supports_single_scope"`
+	SupportsAggregateScope int64  `json:"supports_aggregate_scope"`
+	CreatedBy              string `json:"created_by"`
+	CreatedAt              int64  `json:"created_at"`
+}
+
+type CustomMetricSport struct {
+	MetricID string `json:"metric_id"`
+	SportRef string `json:"sport_ref"`
+}
+
+type CustomSport struct {
+	ID        string `json:"id"`
+	Key       string `json:"key"`
+	Label     string `json:"label"`
+	CreatedBy string `json:"created_by"`
+	CreatedAt int64  `json:"created_at"`
+}
+
 type Goal struct {
 	ID          string         `json:"id"`
 	UserID      string         `json:"user_id"`

@@ -27,8 +27,8 @@ export const useGoalsStore = defineStore("goals", () => {
     }
   }
 
-  async function createGoal(input: GoalFormInput): Promise<Goal> {
-    const resp = await goalClient.createGoal(toCreateGoalInit(input));
+  async function createGoal(input: GoalFormInput, campaignId?: string): Promise<Goal> {
+    const resp = await goalClient.createGoal(toCreateGoalInit(input, campaignId));
     if (resp.goal) goals.value.unshift(resp.goal);
     return resp.goal!;
   }

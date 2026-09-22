@@ -7,7 +7,9 @@ import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { sportSelectorLabel } from "../lib/labels";
 import { allSports } from "../lib/sportSelector";
+import type { SportSelectorValue } from "../lib/sportSelector";
 import { toDate } from "../lib/timestamp";
+import type { Goal } from "../gen/fitter/v1/goal_pb";
 import type { GoalFormCore } from "../components/GoalForm.vue";
 import GoalForm from "../components/GoalForm.vue";
 import ClauseProgressList from "../components/ClauseProgressList.vue";
@@ -114,6 +116,85 @@ const submitCreate = handleSubmit(async (v) => {
   }
 });
 
+// --- edit goal dialog ------------------------------------------------------
+
+const {
+  defineField: defineEditField,
+  errors: editErrors,
+  handleSubmit: handleEditSubmit,
+  resetForm: resetEditForm,
+} = useForm({
+  validationSchema: periodSchema,
+  initialValues: periodDefaults(),
+});
+const [editPeriodStart] = defineEditField("periodStart");
+const [editPeriodEnd] = defineEditField("periodEnd");
+
+function goalToCore(g: Goal): GoalFormCore {
+  const sport: SportSelectorValue = g.sport?.selector ?? allSports();
+  return {
+    name: g.name,
+    sport,
+    clauses: g.clauses.map((c) => ({
+      scope: c.scope,
+      metric: c.metric,
+      comparator: c.comparator,
+      value: c.value,
+    })),
+  };
+}
+
+function dateInputValue(d: Date | null | undefined): string {
+  return d ? d.toISOString().slice(0, 10) : periodDefaults().periodStart;
+}
+
+const showEdit = ref(false);
+const editing = ref(false);
+const editError = ref("");
+const editGoalId = ref<string | null>(null);
+const editGoalCore = ref<GoalFormCore>(blankGoalCore());
+const editGoalCoreValid = ref(false);
+const editFormKey = ref(0);
+
+function openEdit(g: Goal): void {
+  editGoalId.value = g.id;
+  editGoalCore.value = goalToCore(g);
+  editGoalCoreValid.value = false;
+  editError.value = "";
+  resetEditForm({
+    values: {
+      periodStart: dateInputValue(toDate(g.periodStart)),
+      periodEnd: dateInputValue(toDate(g.periodEnd)),
+    },
+  });
+  editFormKey.value += 1; // remounts GoalForm/ClauseBuilder so they seed from this goal, not a previous one
+  showEdit.value = true;
+}
+
+const submitEdit = handleEditSubmit(async (v) => {
+  if (!editGoalId.value) return;
+  if (!editGoalCoreValid.value) {
+    editError.value = "Add a name and at least one valid clause.";
+    return;
+  }
+  editing.value = true;
+  editError.value = "";
+  try {
+    await store.updateGoal(editGoalId.value, {
+      name: editGoalCore.value.name,
+      sport: editGoalCore.value.sport,
+      clauses: editGoalCore.value.clauses,
+      periodStart: new Date(v.periodStart),
+      periodEnd: new Date(v.periodEnd),
+    });
+    showEdit.value = false;
+  } catch (e) {
+    editError.value = e instanceof Error ? e.message : "Failed to update goal.";
+  } finally {
+    editing.value = false;
+  }
+});
+
 // --- delete with confirmation ---------------------------------------------
 
 const deleteTargetId = ref<string | null>(null);
@@ -206,13 +287,48 @@ const deleteDialogOpen = computed({
           </p>
           <Badge v-if="g.progress?.satisfied" variant="default" class="mt-2">Goal met</Badge>
         </div>
-        <Button variant="outline" size="sm" @click="confirmDelete(g.id)">Delete</Button>
+        <div class="flex shrink-0 gap-2">
+          <Button variant="outline" size="sm" @click="openEdit(g)">Edit</Button>
+          <Button variant="outline" size="sm" @click="confirmDelete(g.id)">Delete</Button>
+        </div>
       </CardHeader>
       <CardContent>
         <ClauseProgressList :clauses="g.clauses" :progress="g.progress?.clauses" />
       </CardContent>
     </Card>
     <p v-if="store.goals.length === 0" class="text-sm text-muted-foreground">No goals yet.</p>
+
+    <Dialog v-model:open="showEdit">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Edit goal</DialogTitle>
+        </DialogHeader>
+        <form :key="editFormKey" class="space-y-4" @submit="submitEdit">
+          <GoalForm
+            v-model="editGoalCore"
+            @update:valid="(v) => (editGoalCoreValid = v)"
+          />
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-1.5">
+              <Label>Period start</Label>
+              <Input v-model="editPeriodStart" type="date" required />
+              <p v-if="editErrors.periodStart" class="text-sm text-destructive">{{ editErrors.periodStart }}</p>
+            </div>
+            <div class="space-y-1.5">
+              <Label>Period end</Label>
+              <Input v-model="editPeriodEnd" type="date" required />
+              <p v-if="editErrors.periodEnd" class="text-sm text-destructive">{{ editErrors.periodEnd }}</p>
+            </div>
+          </div>
+          <Alert v-if="editError" variant="destructive">
+            <AlertDescription>{{ editError }}</AlertDescription>
+          </Alert>
+          <DialogFooter>
+            <Button type="submit" :disabled="editing">{{ editing ? "Saving…" : "Save" }}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
 
     <AlertDialog v-model:open="deleteDialogOpen">
       <AlertDialogContent>

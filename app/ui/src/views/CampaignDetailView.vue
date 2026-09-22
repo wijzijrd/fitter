@@ -4,15 +4,21 @@ import { useRoute, useRouter } from "vue-router";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
 import { useCatalogStore } from "../stores/catalog";
+import { useGoalsStore } from "../stores/goals";
 import { formatMetricValue } from "../lib/metricFormat";
 import { toDate } from "../lib/timestamp";
+import { allSports } from "../lib/sportSelector";
 import { MetricUnit } from "../gen/fitter/v1/common_pb";
+import type { GoalFormCore } from "../components/GoalForm.vue";
+import GoalForm from "../components/GoalForm.vue";
 import TimelineChart from "../components/charts/TimelineChart.vue";
 import LeaderboardChart from "../components/charts/LeaderboardChart.vue";
 import ClauseProgressList from "../components/ClauseProgressList.vue";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const props = defineProps<{ id: string }>();
@@ -22,6 +28,7 @@ const router = useRouter();
 const campaignsStore = useCampaignsStore();
 const feedStore = useCampaignFeedStore();
 const catalog = useCatalogStore();
+const goalsStore = useGoalsStore();
 
 const loadError = ref("");
 
@@ -41,6 +48,56 @@ onMounted(async () => {
     loadError.value = e instanceof Error ? e.message : "Failed to load this campaign.";
   }
 });
+
+// --- add goal to this campaign ---------------------------------------------
+// Period is intentionally not collected here — CreateGoalRequest forces the
+// goal's period to the campaign window whenever campaign_id is set (see
+// goal.proto), the same rule the join-campaign flow (CampaignsView.vue)
+// relies on to omit period inputs entirely.
+
+function blankGoalCore(): GoalFormCore {
+  return { name: "", sport: allSports(), clauses: [] };
+}
+
+const showAddGoal = ref(false);
+const addingGoal = ref(false);
+const addGoalError = ref("");
+const addGoalCore = ref<GoalFormCore>(blankGoalCore());
+const addGoalCoreValid = ref(false);
+const addGoalFormKey = ref(0);
+
+function openAddGoal(): void {
+  addGoalCore.value = blankGoalCore();
+  addGoalCoreValid.value = false;
+  addGoalError.value = "";
+  addGoalFormKey.value += 1; // remounts GoalForm/ClauseBuilder for a fresh, blank instance
+  showAddGoal.value = true;
+}
+
+async function submitAddGoal(): Promise<void> {
+  if (!addGoalCoreValid.value) {
+    addGoalError.value = "Add a name and at least one valid clause.";
+    return;
+  }
+  addingGoal.value = true;
+  addGoalError.value = "";
+  try {
+    await goalsStore.createGoal(
+      {
+        name: addGoalCore.value.name,
+        sport: addGoalCore.value.sport,
+        clauses: addGoalCore.value.clauses,
+      },
+      props.id,
+    );
+    showAddGoal.value = false;
+    await feedStore.fetchAll(props.id); // refresh leaderboard/feed so the new goal shows up immediately
+  } catch (e) {
+    addGoalError.value = e instanceof Error ? e.message : "Failed to add goal.";
+  } finally {
+    addingGoal.value = false;
+  }
+}
 </script>
 
 <template>
@@ -51,7 +108,31 @@ onMounted(async () => {
 
     <template v-if="campaign">
       <router-link to="/" class="text-sm text-muted-foreground hover:underline">&larr; Campaigns</router-link>
-      <h2 class="text-xl font-semibold">{{ campaign.name }}</h2>
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-xl font-semibold">{{ campaign.name }}</h2>
+        <Dialog v-model:open="showAddGoal">
+          <DialogTrigger as-child>
+            <Button size="sm" @click="openAddGoal">Add goal</Button>
+          </DialogTrigger>
+          <DialogContent class="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add a goal to {{ campaign.name }}</DialogTitle>
+            </DialogHeader>
+            <form :key="addGoalFormKey" class="space-y-4" @submit.prevent="submitAddGoal">
+              <GoalForm
+                v-model="addGoalCore"
+                @update:valid="(v) => (addGoalCoreValid = v)"
+              />
+              <Alert v-if="addGoalError" variant="destructive">
+                <AlertDescription>{{ addGoalError }}</AlertDescription>
+              </Alert>
+              <DialogFooter>
+                <Button type="submit" :disabled="addingGoal">{{ addingGoal ? "Adding…" : "Add goal" }}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
       <p class="text-sm text-muted-foreground">
         {{ toDate(campaign.startDate)?.toLocaleDateString() }} – {{ toDate(campaign.endDate)?.toLocaleDateString() }}
         · {{ campaign.memberCount }} members · {{ campaign.goalCount }} goals

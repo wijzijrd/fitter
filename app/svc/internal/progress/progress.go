@@ -47,6 +47,26 @@ type Clause struct {
 	Metric     metrics.Key
 	Comparator Comparator
 	Value      float64
+	// Def, when set (Def.Key != ""), is used in place of metrics.Lookup(Metric)
+	// to resolve this clause's Def. This is what lets a clause reference a
+	// custom metric: this package is deliberately DB-free and can't look up
+	// a custom Def itself (those are built at the service layer — see
+	// metrics.NewCustomDef), so the caller resolves it once (via its own
+	// merged built-in+custom lookup) and hands the already-built Def
+	// straight through. Left unset, behavior is identical to before this
+	// field existed — every existing caller and test that only sets Metric
+	// keeps resolving via metrics.Lookup exactly as it always has.
+	Def metrics.Def
+}
+
+// resolveDef returns c's Def: the explicitly-attached one if set, otherwise
+// the built-in registry lookup by Metric — the same fallback semantics
+// every caller of this package relied on before Def existed.
+func resolveDef(c Clause) (metrics.Def, bool) {
+	if c.Def.Key != "" {
+		return c.Def, true
+	}
+	return metrics.Lookup(c.Metric)
 }
 
 // Goal is one goal's evaluable definition: which activities count
@@ -161,7 +181,7 @@ func Evaluate(g Goal, acts []metrics.Activity) Result {
 // metric's Accumulator and compares the result against the clause's
 // threshold.
 func evaluateAggregate(c Clause, filtered []metrics.Activity, considered int) ClauseResult {
-	def, ok := metrics.Lookup(c.Metric)
+	def, ok := resolveDef(c)
 	if !ok {
 		// Defensive only: Clause.Metric is validated upstream (Task 7).
 		// An unknown key must never panic — report it as unsatisfied and
@@ -206,7 +226,7 @@ type singleActivityScore struct {
 func evaluateSingle(clauses []Clause, filtered []metrics.Activity, considered int) (results []ClauseResult, qualifyingID, bestAttemptID int64) {
 	defs := make([]metrics.Def, len(clauses))
 	for i, c := range clauses {
-		d, ok := metrics.Lookup(c.Metric)
+		d, ok := resolveDef(c)
 		if !ok {
 			// Defensive only: see evaluateAggregate.
 			d = metrics.Def{}

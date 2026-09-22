@@ -61,6 +61,15 @@ type Activity struct {
 	Calories         *float64
 	AverageCadence   *float64
 	SufferScore      *float64
+	// Custom carries admin-defined custom-metric values (see NewCustomDef),
+	// keyed by the same Key type built-ins use. A nil map, or a key simply
+	// absent from it, means "not present" — matching the *float64 nullable
+	// fields' semantics for built-ins, just via map membership instead of a
+	// pointer. FromDB never sets this (see adapter.go); the service layer
+	// populates it one layer up, from real DB columns for built-in metrics
+	// logged manually and from manual_entries/synthetic activities for
+	// custom ones (Task 5).
+	Custom map[Key]float64
 }
 
 // Aggregation identifies how an Accumulator combines activities into one

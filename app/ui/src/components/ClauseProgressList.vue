@@ -39,7 +39,12 @@ const rows = computed<Row[]>(() => {
         position: clause.position,
         clause,
         progress,
-        tier: statusTier(progress?.satisfied ?? false, progress?.progressRatio ?? 0),
+        // requireSatisfiedForSuccess=true: this clause's own Ratio can hit
+        // 1.0 while its Satisfied stays false (e.g. the backend's
+        // best-attempt fallback for a multi-clause SINGLE-scope goal), so
+        // gating success on satisfied alone keeps this badge's color from
+        // contradicting its "Satisfied"/"Not yet" label below.
+        tier: statusTier(progress?.satisfied ?? false, progress?.progressRatio ?? 0, true),
       };
     });
 });

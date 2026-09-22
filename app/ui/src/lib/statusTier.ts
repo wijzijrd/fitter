@@ -5,8 +5,26 @@
 // Progress fill color) agree on the same thresholds.
 export type StatusTier = "success" | "warning" | "neutral";
 
-export function statusTier(satisfied: boolean, ratio: number): StatusTier {
-  if (satisfied || ratio >= 1.0) return "success";
+// By default, the top tier is reached when EITHER the satisfied flag is true
+// OR the ratio has reached 1.0 — this is correct for aggregate callers
+// (GoalsView's overall goal badge, CampaignDetailView's leaderboard entry)
+// where satisfied is derived from the same minRatio, so the two conditions
+// can't diverge.
+//
+// Pass requireSatisfiedForSuccess=true for callers displaying a single
+// clause's own progress (ClauseProgressList), where a clause's Ratio can hit
+// 1.0 while its Satisfied stays false — e.g. the backend's best-attempt
+// fallback for a multi-clause SINGLE-scope goal (progress.go's
+// evaluateSingle, "haveBest" branch — see also
+// TestPerformanceGoal_NoSingleActivitySatisfiesBoth). In that mode the
+// success tier requires satisfied === true alone, so the badge's color
+// never contradicts its "Satisfied"/"Not yet" label text.
+export function statusTier(
+  satisfied: boolean,
+  ratio: number,
+  requireSatisfiedForSuccess = false,
+): StatusTier {
+  if (requireSatisfiedForSuccess ? satisfied : satisfied || ratio >= 1.0) return "success";
   if (ratio >= 0.5) return "warning";
   return "neutral";
 }

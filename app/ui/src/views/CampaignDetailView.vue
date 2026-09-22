@@ -9,6 +9,7 @@ import { formatMetricValue } from "../lib/metricFormat";
 import { toDate } from "../lib/timestamp";
 import { allSports } from "../lib/sportSelector";
 import { MetricUnit } from "../gen/fitter/v1/common_pb";
+import { statusTier, badgeVariantForTier } from "../lib/statusTier";
 import type { GoalFormCore } from "../components/GoalForm.vue";
 import GoalForm from "../components/GoalForm.vue";
 import TimelineChart from "../components/charts/TimelineChart.vue";
@@ -197,7 +198,7 @@ async function submitAddGoal(): Promise<void> {
               >
                 <div class="flex items-center justify-between">
                   <span class="font-medium">#{{ entry.rank }} {{ entry.userName }} — {{ entry.goalName }}</span>
-                  <Badge :variant="entry.satisfied ? 'default' : 'outline'">
+                  <Badge :variant="badgeVariantForTier(statusTier(entry.satisfied, entry.progressRatio))">
                     {{ entry.satisfied ? "Satisfied" : "In progress" }}
                   </Badge>
                 </div>

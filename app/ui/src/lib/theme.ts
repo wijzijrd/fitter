@@ -1,3 +1,8 @@
+// THEME_STORAGE_KEY is the localStorage key used to persist the user's
+// explicit dark/light choice across reloads (set from App.vue's toggle,
+// read in main.ts before mount to avoid a flash of the wrong theme).
+export const THEME_STORAGE_KEY = "fitter:theme";
+
 // resolveThemeColor reads a CSS custom property (e.g. "--primary") and
 // resolves it to a concrete rgb()/rgba() string ECharts can use as a
 // literal color, following the active theme (light/dark) at render time.

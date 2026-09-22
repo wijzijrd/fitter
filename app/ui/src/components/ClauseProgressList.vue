@@ -9,6 +9,7 @@ import { useCatalogStore } from "@/stores/catalog";
 import type { GoalClause, ClauseProgress } from "@/gen/fitter/v1/goal_pb";
 import { comparatorLabels } from "@/lib/labels";
 import { formatMetricValue } from "@/lib/metricFormat";
+import { statusTier, badgeVariantForTier, progressIndicatorClassForTier } from "@/lib/statusTier";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
@@ -24,6 +25,7 @@ interface Row {
   position: number;
   clause: GoalClause;
   progress?: ClauseProgress;
+  tier: ReturnType<typeof statusTier>;
 }
 
 const rows = computed<Row[]>(() => {
@@ -31,7 +33,15 @@ const rows = computed<Row[]>(() => {
   for (const p of props.progress ?? []) byPosition.set(p.position, p);
   return [...props.clauses]
     .sort((a, b) => a.position - b.position)
-    .map((clause) => ({ position: clause.position, clause, progress: byPosition.get(clause.position) }));
+    .map((clause) => {
+      const progress = byPosition.get(clause.position);
+      return {
+        position: clause.position,
+        clause,
+        progress,
+        tier: statusTier(progress?.satisfied ?? false, progress?.progressRatio ?? 0),
+      };
+    });
 });
 </script>
 
@@ -46,11 +56,14 @@ const rows = computed<Row[]>(() => {
             {{ formatMetricValue(catalog.metricInfo(row.clause.metric)?.unit ?? 0, row.clause.value) }}
           </span>
         </span>
-        <Badge :variant="row.progress?.satisfied ? 'default' : 'outline'">
+        <Badge :variant="badgeVariantForTier(row.tier)">
           {{ row.progress?.satisfied ? "Satisfied" : "Not yet" }}
         </Badge>
       </div>
-      <Progress :model-value="Math.min(100, Math.max(0, (row.progress?.progressRatio ?? 0) * 100))" />
+      <Progress
+        :model-value="Math.min(100, Math.max(0, (row.progress?.progressRatio ?? 0) * 100))"
+        :indicator-class="progressIndicatorClassForTier(row.tier)"
+      />
       <p class="text-xs text-muted-foreground">
         <template v-if="row.progress?.hasValue">
           {{ formatMetricValue(catalog.metricInfo(row.clause.metric)?.unit ?? 0, row.progress.currentValue) }}

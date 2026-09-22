@@ -10,6 +10,7 @@ import { allSports } from "../lib/sportSelector";
 import type { SportSelectorValue } from "../lib/sportSelector";
 import { toDate } from "../lib/timestamp";
 import type { Goal } from "../gen/fitter/v1/goal_pb";
+import { statusTier, badgeVariantForTier } from "../lib/statusTier";
 import type { GoalFormCore } from "../components/GoalForm.vue";
 import GoalForm from "../components/GoalForm.vue";
 import ClauseProgressList from "../components/ClauseProgressList.vue";
@@ -285,7 +286,12 @@ const deleteDialogOpen = computed({
             {{ sportSelectorLabel(g.sport, catalog.sportGroups) }} ·
             {{ toDate(g.periodStart)?.toLocaleDateString() }} – {{ toDate(g.periodEnd)?.toLocaleDateString() }}
           </p>
-          <Badge v-if="g.progress?.satisfied" variant="default" class="mt-2">Goal met</Badge>
+          <Badge
+            :variant="badgeVariantForTier(statusTier(g.progress?.satisfied ?? false, g.progress?.progressRatio ?? 0))"
+            class="mt-2"
+          >
+            {{ g.progress?.satisfied ? "Goal met" : "In progress" }}
+          </Badge>
         </div>
         <div class="flex shrink-0 gap-2">
           <Button variant="outline" size="sm" @click="openEdit(g)">Edit</Button>

@@ -16,6 +16,18 @@ import (
 	"github.com/fitter/svc/internal/sports"
 )
 
+// requireAdmin errors unless the current request's role (looked up fresh
+// from the DB per request by the auth interceptor, not from the JWT) is
+// 'admin'. No admin-gated RPC exists yet (that's a later task); this is
+// pure plumbing for those RPCs to call.
+func requireAdmin(ctx context.Context) error {
+	role, ok := auth.RoleFromContext(ctx)
+	if !ok || role != "admin" {
+		return connect.NewError(connect.CodePermissionDenied, errors.New("admin role required"))
+	}
+	return nil
+}
+
 // requireMember loads the campaign and errors unless the current user is a member —
 // campaign feed/leaderboard/timeline are visible only to joined members.
 func (s *FeedService) requireMember(ctx context.Context, campaignID string) (db.Campaign, string, error) {

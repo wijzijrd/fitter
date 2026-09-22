@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -56,15 +58,16 @@ func main() {
 		JWTTTL:    cfg.jwtTTL,
 	}
 	handlerDeps := &handler.Deps{
-		Queries:       queries,
-		Strava:        stravaClient,
-		JWTSecret:     cfg.jwtSecret,
-		JWTTTL:        cfg.jwtTTL,
-		FrontendURL:   cfg.frontendURL,
-		PublicBaseURL: cfg.publicBaseURL,
+		Queries:               queries,
+		Strava:                stravaClient,
+		JWTSecret:             cfg.jwtSecret,
+		JWTTTL:                cfg.jwtTTL,
+		FrontendURL:           cfg.frontendURL,
+		PublicBaseURL:         cfg.publicBaseURL,
+		AdminStravaAthleteIDs: cfg.adminStravaAthleteIDs,
 	}
 
-	authInterceptor := auth.NewInterceptor(cfg.jwtSecret)
+	authInterceptor := auth.NewInterceptor(cfg.jwtSecret, queries)
 	connectOpts := connect.WithInterceptors(authInterceptor)
 
 	mux := http.NewServeMux()
@@ -99,6 +102,7 @@ type config struct {
 	frontendURL              string
 	publicBaseURL            string
 	corsOrigin               string
+	adminStravaAthleteIDs    []int64
 }
 
 func loadConfig() config {
@@ -114,6 +118,7 @@ func loadConfig() config {
 		frontendURL:              frontendURL,
 		publicBaseURL:            mustEnv("PUBLIC_BASE_URL"),
 		corsOrigin:               envOr("CORS_ORIGIN", frontendURL),
+		adminStravaAthleteIDs:    parseInt64CSV("ADMIN_STRAVA_ATHLETE_IDS", envOr("ADMIN_STRAVA_ATHLETE_IDS", "")),
 	}
 }
 
@@ -131,4 +136,25 @@ func mustEnv(key string) string {
 		os.Exit(1)
 	}
 	return v
+}
+
+// parseInt64CSV parses a comma-separated list of int64s, e.g.
+// ADMIN_STRAVA_ATHLETE_IDS="123,456". Blank entries (from a trailing comma
+// or an unset/empty env var) are skipped rather than erroring. key is only
+// used to make a malformed-value error message actionable.
+func parseInt64CSV(key, raw string) []int64 {
+	var ids []int64
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			slog.Error("invalid env var: not a comma-separated list of integers", "key", key, "value", raw)
+			os.Exit(1)
+		}
+		ids = append(ids, id)
+	}
+	return ids
 }

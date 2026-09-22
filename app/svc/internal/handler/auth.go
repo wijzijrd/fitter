@@ -64,16 +64,36 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := d.Queries.UpsertUserByStravaID(r.Context(), db.UpsertUserByStravaIDParams{
-		ID:              uuid.NewString(),
-		StravaAthleteID: tok.Athlete.ID,
-		Name:            tok.Athlete.Name(),
-		AvatarUrl:       tok.Athlete.ProfileURL,
-		AccessToken:     tok.AccessToken,
-		RefreshToken:    tok.RefreshToken,
-		TokenExpiresAt:  tok.ExpiresAt,
-		CreatedAt:       time.Now().Unix(),
-	})
+	var u db.User
+	if d.isBootstrapAdmin(tok.Athlete.ID) {
+		// Explicitly (re-)grants admin on every login for a listed athlete
+		// id. Never the other branch: removing an id from the env var only
+		// stops future re-grants via this path, it never demotes a
+		// standing admin (see UpsertUserByStravaID's own doc comment).
+		u, err = d.Queries.UpsertUserByStravaIDAsAdmin(r.Context(), db.UpsertUserByStravaIDAsAdminParams{
+			ID:              uuid.NewString(),
+			StravaAthleteID: tok.Athlete.ID,
+			Name:            tok.Athlete.Name(),
+			AvatarUrl:       tok.Athlete.ProfileURL,
+			AccessToken:     tok.AccessToken,
+			RefreshToken:    tok.RefreshToken,
+			TokenExpiresAt:  tok.ExpiresAt,
+			CreatedAt:       time.Now().Unix(),
+		})
+	} else {
+		// Never mentions role at all, so an existing user's role (in
+		// particular a promoted admin's) is left untouched here.
+		u, err = d.Queries.UpsertUserByStravaID(r.Context(), db.UpsertUserByStravaIDParams{
+			ID:              uuid.NewString(),
+			StravaAthleteID: tok.Athlete.ID,
+			Name:            tok.Athlete.Name(),
+			AvatarUrl:       tok.Athlete.ProfileURL,
+			AccessToken:     tok.AccessToken,
+			RefreshToken:    tok.RefreshToken,
+			TokenExpiresAt:  tok.ExpiresAt,
+			CreatedAt:       time.Now().Unix(),
+		})
+	}
 	if err != nil {
 		slog.Error("upsert user failed", "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -105,6 +125,16 @@ func (d *Deps) backfillActivities(u db.User) {
 		return
 	}
 	slog.Info("backfill activities complete", "user_id", u.ID, "count", count)
+}
+
+// isBootstrapAdmin reports whether athleteID is in ADMIN_STRAVA_ATHLETE_IDS.
+func (d *Deps) isBootstrapAdmin(athleteID int64) bool {
+	for _, id := range d.AdminStravaAthleteIDs {
+		if id == athleteID {
+			return true
+		}
+	}
+	return false
 }
 
 func randomState() string {

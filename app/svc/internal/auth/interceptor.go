@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"connectrpc.com/connect"
+	"github.com/fitter/svc/internal/db"
 )
 
 // exemptProcedures lists fully-qualified RPC procedure names (Spec.Procedure
@@ -21,14 +22,15 @@ var exemptProcedures = map[string]bool{
 
 // NewInterceptor returns a Connect interceptor that requires a valid
 // "Authorization: Bearer <jwt>" header on every unary and streaming call
-// (except exemptProcedures), and injects the authenticated user id into the
-// request context.
-func NewInterceptor(secret []byte) connect.Interceptor {
-	return &interceptor{secret: secret}
+// (except exemptProcedures), and injects the authenticated user id and
+// current role into the request context.
+func NewInterceptor(secret []byte, queries *db.Queries) connect.Interceptor {
+	return &interceptor{secret: secret, queries: queries}
 }
 
 type interceptor struct {
-	secret []byte
+	secret  []byte
+	queries *db.Queries
 }
 
 func (i *interceptor) authenticate(ctx context.Context, header interface{ Get(string) string }) (context.Context, error) {
@@ -41,7 +43,17 @@ func (i *interceptor) authenticate(ctx context.Context, header interface{ Get(st
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, err)
 	}
-	return WithUserID(ctx, userID), nil
+	// Role is looked up fresh from the DB on every request rather than
+	// carried in the JWT, so a role change (promotion or, in the future,
+	// demotion) takes effect on the very next call instead of waiting for
+	// the token to expire and be reissued.
+	u, err := i.queries.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, ErrInvalidToken)
+	}
+	ctx = WithUserID(ctx, userID)
+	ctx = WithRole(ctx, u.Role)
+	return ctx, nil
 }
 
 func (i *interceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {

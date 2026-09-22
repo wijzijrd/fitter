@@ -84,4 +84,5 @@ type User struct {
 	RefreshToken    string `json:"refresh_token"`
 	TokenExpiresAt  int64  `json:"token_expires_at"`
 	CreatedAt       int64  `json:"created_at"`
+	Role            string `json:"role"`
 }

@@ -11,7 +11,7 @@ import (
 )
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id = ?
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
@@ -26,12 +26,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 		&i.RefreshToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.Role,
 	)
 	return i, err
 }
 
 const getUserByStravaID = `-- name: GetUserByStravaID :one
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE strava_athlete_id = ?
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users WHERE strava_athlete_id = ?
 `
 
 func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) (User, error) {
@@ -46,12 +47,13 @@ func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) 
 		&i.RefreshToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.Role,
 	)
 	return i, err
 }
 
 const listAllUsers = `-- name: ListAllUsers :many
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users ORDER BY created_at ASC
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users ORDER BY created_at ASC
 `
 
 func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
@@ -72,6 +74,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 			&i.RefreshToken,
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
+			&i.Role,
 		); err != nil {
 			return nil, err
 		}
@@ -87,7 +90,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const listUsersByIDs = `-- name: ListUsersByIDs :many
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id IN (/*SLICE:ids*/?)
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users WHERE id IN (/*SLICE:ids*/?)
 `
 
 func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, error) {
@@ -118,6 +121,7 @@ func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, err
 			&i.RefreshToken,
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
+			&i.Role,
 		); err != nil {
 			return nil, err
 		}
@@ -162,7 +166,7 @@ ON CONFLICT (strava_athlete_id) DO UPDATE SET
     access_token = excluded.access_token,
     refresh_token = excluded.refresh_token,
     token_expires_at = excluded.token_expires_at
-RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role
 `
 
 type UpsertUserByStravaIDParams struct {
@@ -176,6 +180,11 @@ type UpsertUserByStravaIDParams struct {
 	CreatedAt       int64  `json:"created_at"`
 }
 
+// Deliberately never mentions the role column: on INSERT it takes the
+// column's own default, and on CONFLICT it's simply absent from the SET
+// list, so an existing user's role (in particular a promoted admin's) is
+// never touched by an ordinary login. See UpsertUserByStravaIDAsAdmin for
+// the only path that ever grants admin.
 func (q *Queries) UpsertUserByStravaID(ctx context.Context, arg UpsertUserByStravaIDParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, upsertUserByStravaID,
 		arg.ID,
@@ -197,6 +206,64 @@ func (q *Queries) UpsertUserByStravaID(ctx context.Context, arg UpsertUserByStra
 		&i.RefreshToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.Role,
+	)
+	return i, err
+}
+
+const upsertUserByStravaIDAsAdmin = `-- name: UpsertUserByStravaIDAsAdmin :one
+INSERT INTO users (id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'admin')
+ON CONFLICT (strava_athlete_id) DO UPDATE SET
+    name = excluded.name,
+    avatar_url = excluded.avatar_url,
+    access_token = excluded.access_token,
+    refresh_token = excluded.refresh_token,
+    token_expires_at = excluded.token_expires_at,
+    role = 'admin'
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role
+`
+
+type UpsertUserByStravaIDAsAdminParams struct {
+	ID              string `json:"id"`
+	StravaAthleteID int64  `json:"strava_athlete_id"`
+	Name            string `json:"name"`
+	AvatarUrl       string `json:"avatar_url"`
+	AccessToken     string `json:"access_token"`
+	RefreshToken    string `json:"refresh_token"`
+	TokenExpiresAt  int64  `json:"token_expires_at"`
+	CreatedAt       int64  `json:"created_at"`
+}
+
+// Used instead of UpsertUserByStravaID only when the caller has already
+// checked the Strava athlete id against ADMIN_STRAVA_ATHLETE_IDS. Explicitly
+// grants admin on both INSERT and CONFLICT, since being in the env var list
+// should (re-)grant admin on every login. There is no path that ever
+// explicitly demotes role back to member on conflict, so removing an id
+// from the env var stops future re-grants but never demotes a standing
+// admin.
+func (q *Queries) UpsertUserByStravaIDAsAdmin(ctx context.Context, arg UpsertUserByStravaIDAsAdminParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, upsertUserByStravaIDAsAdmin,
+		arg.ID,
+		arg.StravaAthleteID,
+		arg.Name,
+		arg.AvatarUrl,
+		arg.AccessToken,
+		arg.RefreshToken,
+		arg.TokenExpiresAt,
+		arg.CreatedAt,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.StravaAthleteID,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.AccessToken,
+		&i.RefreshToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.Role,
 	)
 	return i, err
 }

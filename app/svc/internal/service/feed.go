@@ -121,7 +121,10 @@ func (s *FeedService) pooledActivities(ctx context.Context, c db.Campaign) ([]me
 // pooled_progress_value and the timeline's running pooled series.
 func (s *FeedService) pooledTotal(ctx context.Context, c db.Campaign) (def metrics.Def, acts []metrics.Activity, err error) {
 	key := metrics.Key(c.Metric.String)
-	def, ok := metrics.Lookup(key)
+	def, ok, err := lookupMetric(ctx, s.Queries, key)
+	if err != nil {
+		return metrics.Def{}, nil, err
+	}
 	if !ok {
 		return metrics.Def{}, nil, fmt.Errorf("campaign %s: unknown pooled metric %q", c.ID, c.Metric.String)
 	}
@@ -174,7 +177,7 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 	}
 	progressClauses := make(map[string][]progress.Clause, len(goals))
 	for gid, cls := range clausesByGoal {
-		pc, err := clausesToProgress(cls)
+		pc, err := clausesToProgress(ctx, s.Queries, cls)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
@@ -337,7 +340,10 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 				continue
 			}
 			metricKey := metrics.Key(cl.Metric)
-			def, ok := metrics.Lookup(metricKey)
+			def, ok, err := lookupMetric(ctx, s.Queries, metricKey)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 			if !ok {
 				// Defensive only: persisted clause rows have already passed
 				// validateClauses. Skip rather than panic on a data bug.

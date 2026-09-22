@@ -54,3 +54,10 @@ func seedUser(t *testing.T, queries *db.Queries, name string) db.User {
 func ctxAs(userID string) context.Context {
 	return auth.WithUserID(context.Background(), userID)
 }
+
+// ctxAsAdmin is ctxAs plus the "admin" role, the way the auth interceptor
+// injects it after looking up the user's current role (see
+// interceptor.go's authenticate) — for exercising requireAdmin-gated RPCs.
+func ctxAsAdmin(userID string) context.Context {
+	return auth.WithRole(ctxAs(userID), "admin")
+}

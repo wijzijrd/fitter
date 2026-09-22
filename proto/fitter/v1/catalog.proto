@@ -17,6 +17,11 @@ message MetricInfo {
   bool supports_single_scope = 7;
   bool supports_aggregate_scope = 8;
   bool lower_is_better = 9;
+  // Curated sport groups this metric is meaningful for — built-in group
+  // keys (e.g. "strength") and/or custom sport keys. Empty = applies to
+  // every sport (no curated restriction), matching today's implicit
+  // behavior for every metric before this field existed.
+  repeated string applicable_sport_groups = 10;
 }
 
 message SportGroupInfo {

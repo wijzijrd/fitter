@@ -35,8 +35,13 @@ type MetricInfo struct {
 	SupportsSingleScope    bool                   `protobuf:"varint,7,opt,name=supports_single_scope,json=supportsSingleScope,proto3" json:"supports_single_scope,omitempty"`
 	SupportsAggregateScope bool                   `protobuf:"varint,8,opt,name=supports_aggregate_scope,json=supportsAggregateScope,proto3" json:"supports_aggregate_scope,omitempty"`
 	LowerIsBetter          bool                   `protobuf:"varint,9,opt,name=lower_is_better,json=lowerIsBetter,proto3" json:"lower_is_better,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	// Curated sport groups this metric is meaningful for — built-in group
+	// keys (e.g. "strength") and/or custom sport keys. Empty = applies to
+	// every sport (no curated restriction), matching today's implicit
+	// behavior for every metric before this field existed.
+	ApplicableSportGroups []string `protobuf:"bytes,10,rep,name=applicable_sport_groups,json=applicableSportGroups,proto3" json:"applicable_sport_groups,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *MetricInfo) Reset() {
@@ -130,6 +135,13 @@ func (x *MetricInfo) GetLowerIsBetter() bool {
 		return x.LowerIsBetter
 	}
 	return false
+}
+
+func (x *MetricInfo) GetApplicableSportGroups() []string {
+	if x != nil {
+		return x.ApplicableSportGroups
+	}
+	return nil
 }
 
 type SportGroupInfo struct {
@@ -356,7 +368,7 @@ var File_fitter_v1_catalog_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_catalog_proto_rawDesc = "" +
 	"\n" +
-	"\x17fitter/v1/catalog.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\"\x84\x03\n" +
+	"\x17fitter/v1/catalog.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\"\xbc\x03\n" +
 	"\n" +
 	"MetricInfo\x121\n" +
 	"\x06metric\x18\x01 \x01(\x0e2\x19.fitter.v1.ActivityMetricR\x06metric\x12\x10\n" +
@@ -367,7 +379,9 @@ const file_fitter_v1_catalog_proto_rawDesc = "" +
 	"\bnullable\x18\x06 \x01(\bR\bnullable\x122\n" +
 	"\x15supports_single_scope\x18\a \x01(\bR\x13supportsSingleScope\x128\n" +
 	"\x18supports_aggregate_scope\x18\b \x01(\bR\x16supportsAggregateScope\x12&\n" +
-	"\x0flower_is_better\x18\t \x01(\bR\rlowerIsBetter\"]\n" +
+	"\x0flower_is_better\x18\t \x01(\bR\rlowerIsBetter\x126\n" +
+	"\x17applicable_sport_groups\x18\n" +
+	" \x03(\tR\x15applicableSportGroups\"]\n" +
 	"\x0eSportGroupInfo\x12\x14\n" +
 	"\x05group\x18\x01 \x01(\tR\x05group\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12\x1f\n" +

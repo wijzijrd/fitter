@@ -26,10 +26,14 @@ type preparedClause struct {
 }
 
 // validateClauses validates a full clause list from a Create/UpdateGoal
-// request: at least one clause, every metric resolves, scope/comparator are
-// specified, and SINGLE scope is rejected for a metric that doesn't support
-// it (activity_count).
-func validateClauses(clauses []*fitterv1.GoalClause) ([]preparedClause, error) {
+// request: at least one clause, every metric resolves (via the merged
+// built-in+custom lookup, so a clause can reference a custom metric),
+// scope/comparator are specified, and SINGLE scope is rejected for a metric
+// that doesn't support it (activity_count).
+//
+// q is passed explicitly rather than read off *Deps: see lookupMetric's doc
+// comment — createGoalInTx must pass its own open qtx here, not d.Queries.
+func validateClauses(ctx context.Context, q *db.Queries, clauses []*fitterv1.GoalClause) ([]preparedClause, error) {
 	if len(clauses) == 0 {
 		return nil, errors.New("at least one clause is required")
 	}
@@ -39,7 +43,10 @@ func validateClauses(clauses []*fitterv1.GoalClause) ([]preparedClause, error) {
 		if err != nil {
 			return nil, fmt.Errorf("clause %d: %w", i, err)
 		}
-		def, ok := metrics.Lookup(metricKey)
+		def, ok, err := lookupMetric(ctx, q, metricKey)
+		if err != nil {
+			return nil, fmt.Errorf("clause %d: %w", i, err)
+		}
 		if !ok {
 			return nil, fmt.Errorf("clause %d: unknown metric %q", i, metricKey)
 		}
@@ -60,12 +67,19 @@ func validateClauses(clauses []*fitterv1.GoalClause) ([]preparedClause, error) {
 }
 
 // clauseToProgress converts one persisted db.GoalClause into a
-// progress.Clause for evaluation. The DB's CHECK constraints on scope and
-// comparator mean an error here indicates a data-consistency bug, not bad
-// user input.
-func clauseToProgress(c db.GoalClause) (progress.Clause, error) {
+// progress.Clause for evaluation, resolving its Def via the merged
+// built-in+custom lookup and attaching it directly (progress.Clause.Def) so
+// a clause referencing a custom metric evaluates correctly — this package
+// is deliberately DB-free and can't resolve a custom Def itself. The DB's
+// CHECK constraints on scope and comparator mean an error here indicates a
+// data-consistency bug, not bad user input.
+func clauseToProgress(ctx context.Context, q *db.Queries, c db.GoalClause) (progress.Clause, error) {
 	key := metrics.Key(c.Metric)
-	if _, ok := metrics.Lookup(key); !ok {
+	def, ok, err := lookupMetric(ctx, q, key)
+	if err != nil {
+		return progress.Clause{}, fmt.Errorf("goal_clauses row %s: %w", c.ID, err)
+	}
+	if !ok {
 		return progress.Clause{}, fmt.Errorf("goal_clauses row %s: unknown metric %q", c.ID, c.Metric)
 	}
 	var scope progress.Scope
@@ -93,14 +107,15 @@ func clauseToProgress(c db.GoalClause) (progress.Clause, error) {
 		Metric:     key,
 		Comparator: cmp,
 		Value:      c.Value,
+		Def:        def,
 	}, nil
 }
 
 // clausesToProgress converts a slice of persisted clauses in one call.
-func clausesToProgress(clauses []db.GoalClause) ([]progress.Clause, error) {
+func clausesToProgress(ctx context.Context, q *db.Queries, clauses []db.GoalClause) ([]progress.Clause, error) {
 	out := make([]progress.Clause, len(clauses))
 	for i, c := range clauses {
-		pc, err := clauseToProgress(c)
+		pc, err := clauseToProgress(ctx, q, c)
 		if err != nil {
 			return nil, err
 		}
@@ -283,7 +298,7 @@ func (d *Deps) toGoalProtosWithProgress(ctx context.Context, goals []db.Goal, cl
 	}
 	progressClauses := make(map[string][]progress.Clause, len(goals))
 	for gid, cs := range clausesByGoal {
-		pc, err := clausesToProgress(cs)
+		pc, err := clausesToProgress(ctx, d.Queries, cs)
 		if err != nil {
 			return nil, err
 		}
@@ -317,7 +332,7 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 	if msg.GetName() == "" {
 		return db.Goal{}, nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
 	}
-	prepared, err := validateClauses(msg.GetClauses())
+	prepared, err := validateClauses(ctx, qtx, msg.GetClauses())
 	if err != nil {
 		return db.Goal{}, nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -486,7 +501,7 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 	}
 	msg := req.Msg
 
-	prepared, err := validateClauses(msg.GetClauses())
+	prepared, err := validateClauses(ctx, s.Queries, msg.GetClauses())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

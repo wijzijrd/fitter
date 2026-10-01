@@ -8,7 +8,7 @@ A Strava activity tracker for you and your friends — join shared campaigns, tr
 fitter/
 ├── app/
 │   ├── ui/    Vue 3 + Vite + Pinia frontend
-│   └── svc/   Go backend — ConnectRPC + goose + sqlc, SQLite storage
+│   └── svc/   Go backend — ConnectRPC + goose + sqlc, Postgres storage
 ├── proto/     fitter.v1 service/message definitions (shared source for Go + TS codegen)
 ├── infra/     docker-compose files + Caddyfile
 ├── buf.yaml / buf.gen.yaml   codegen config for proto/ -> app/svc/gen (Go) and app/ui/src/gen (TS)

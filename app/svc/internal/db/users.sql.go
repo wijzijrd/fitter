@@ -7,11 +7,12 @@ package db
 
 import (
 	"context"
-	"strings"
+
+	"github.com/lib/pq"
 )
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id = ?
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
@@ -31,7 +32,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 }
 
 const getUserByStravaID = `-- name: GetUserByStravaID :one
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE strava_athlete_id = ?
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE strava_athlete_id = $1
 `
 
 func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) (User, error) {
@@ -51,21 +52,11 @@ func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) 
 }
 
 const listUsersByIDs = `-- name: ListUsersByIDs :many
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id IN (/*SLICE:ids*/?)
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at FROM users WHERE id = ANY($1::text[])
 `
 
 func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, error) {
-	query := listUsersByIDs
-	var queryParams []interface{}
-	if len(ids) > 0 {
-		for _, v := range ids {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:ids*/?", strings.Repeat(",?", len(ids))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:ids*/?", "NULL", 1)
-	}
-	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	rows, err := q.db.QueryContext(ctx, listUsersByIDs, pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +88,7 @@ func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, err
 }
 
 const updateUserTokens = `-- name: UpdateUserTokens :exec
-UPDATE users SET access_token = ?, refresh_token = ?, token_expires_at = ? WHERE id = ?
+UPDATE users SET access_token = $1, refresh_token = $2, token_expires_at = $3 WHERE id = $4
 `
 
 type UpdateUserTokensParams struct {
@@ -119,7 +110,7 @@ func (q *Queries) UpdateUserTokens(ctx context.Context, arg UpdateUserTokensPara
 
 const upsertUserByStravaID = `-- name: UpsertUserByStravaID :one
 INSERT INTO users (id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 ON CONFLICT (strava_athlete_id) DO UPDATE SET
     name = excluded.name,
     avatar_url = excluded.avatar_url,

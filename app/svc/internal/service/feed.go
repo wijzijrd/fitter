@@ -78,9 +78,9 @@ func memberTarget(c db.Campaign, m db.ListCampaignMembersRow) float64 {
 
 func (s *FeedService) campaignActivities(ctx context.Context, c db.Campaign, userIDs []string) ([]db.Activity, error) {
 	return s.Queries.ListActivitiesForUsersInRange(ctx, db.ListActivitiesForUsersInRangeParams{
-		UserIds:     userIDs,
-		StartDate:   c.StartDate,
-		StartDate_2: c.EndDate,
+		UserIds:   userIDs,
+		StartFrom: c.StartDate,
+		StartTo:   c.EndDate,
 	})
 }
 

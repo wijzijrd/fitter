@@ -1,0 +1,6 @@
+# Local SQLite leftovers and dev-only tooling never belong in the image context.
+*.db
+*.db-shm
+*.db-wal
+.env
+cmd/seed

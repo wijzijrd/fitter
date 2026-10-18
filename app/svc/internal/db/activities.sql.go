@@ -7,11 +7,12 @@ package db
 
 import (
 	"context"
-	"strings"
+
+	"github.com/lib/pq"
 )
 
 const deleteActivityByStravaID = `-- name: DeleteActivityByStravaID :exec
-DELETE FROM activities WHERE strava_activity_id = ?
+DELETE FROM activities WHERE strava_activity_id = $1
 `
 
 func (q *Queries) DeleteActivityByStravaID(ctx context.Context, stravaActivityID int64) error {
@@ -21,7 +22,7 @@ func (q *Queries) DeleteActivityByStravaID(ctx context.Context, stravaActivityID
 
 const listActivitiesForUserInRange = `-- name: ListActivitiesForUserInRange :many
 SELECT id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at FROM activities
-WHERE user_id = ? AND start_date >= ? AND start_date <= ?
+WHERE user_id = $1 AND start_date >= $2 AND start_date <= $3
 ORDER BY start_date ASC
 `
 
@@ -67,30 +68,19 @@ func (q *Queries) ListActivitiesForUserInRange(ctx context.Context, arg ListActi
 
 const listActivitiesForUsersInRange = `-- name: ListActivitiesForUsersInRange :many
 SELECT id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at FROM activities
-WHERE user_id IN (/*SLICE:user_ids*/?) AND start_date >= ? AND start_date <= ?
+WHERE user_id = ANY($1::text[])
+  AND start_date >= $2 AND start_date <= $3
 ORDER BY start_date ASC
 `
 
 type ListActivitiesForUsersInRangeParams struct {
-	UserIds     []string `json:"user_ids"`
-	StartDate   int64    `json:"start_date"`
-	StartDate_2 int64    `json:"start_date_2"`
+	UserIds   []string `json:"user_ids"`
+	StartFrom int64    `json:"start_from"`
+	StartTo   int64    `json:"start_to"`
 }
 
 func (q *Queries) ListActivitiesForUsersInRange(ctx context.Context, arg ListActivitiesForUsersInRangeParams) ([]Activity, error) {
-	query := listActivitiesForUsersInRange
-	var queryParams []interface{}
-	if len(arg.UserIds) > 0 {
-		for _, v := range arg.UserIds {
-			queryParams = append(queryParams, v)
-		}
-		query = strings.Replace(query, "/*SLICE:user_ids*/?", strings.Repeat(",?", len(arg.UserIds))[1:], 1)
-	} else {
-		query = strings.Replace(query, "/*SLICE:user_ids*/?", "NULL", 1)
-	}
-	queryParams = append(queryParams, arg.StartDate)
-	queryParams = append(queryParams, arg.StartDate_2)
-	rows, err := q.db.QueryContext(ctx, query, queryParams...)
+	rows, err := q.db.QueryContext(ctx, listActivitiesForUsersInRange, pq.Array(arg.UserIds), arg.StartFrom, arg.StartTo)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +118,7 @@ SELECT a.id, a.user_id, a.strava_activity_id, a.type, a.distance_m, a.elevation_
 FROM activities a
 JOIN campaign_members cm ON cm.user_id = a.user_id
 JOIN users u ON u.id = a.user_id
-WHERE cm.campaign_id = ? AND a.start_date >= ? AND a.start_date <= ?
+WHERE cm.campaign_id = $1 AND a.start_date >= $2 AND a.start_date <= $3
 ORDER BY a.start_date DESC
 LIMIT 100
 `
@@ -192,7 +182,7 @@ func (q *Queries) ListCampaignFeedActivities(ctx context.Context, arg ListCampai
 
 const upsertActivity = `-- name: UpsertActivity :one
 INSERT INTO activities (id, user_id, strava_activity_id, type, distance_m, elevation_m, moving_time_s, start_date, name, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 ON CONFLICT (strava_activity_id) DO UPDATE SET
     type = excluded.type,
     distance_m = excluded.distance_m,

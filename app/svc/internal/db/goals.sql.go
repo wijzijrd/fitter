@@ -11,7 +11,7 @@ import (
 
 const createGoal = `-- name: CreateGoal :one
 INSERT INTO goals (id, user_id, metric, target_value, period_start, period_end, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, user_id, metric, target_value, period_start, period_end, created_at
 `
 
@@ -49,7 +49,7 @@ func (q *Queries) CreateGoal(ctx context.Context, arg CreateGoalParams) (Goal, e
 }
 
 const deleteGoal = `-- name: DeleteGoal :exec
-DELETE FROM goals WHERE id = ? AND user_id = ?
+DELETE FROM goals WHERE id = $1 AND user_id = $2
 `
 
 type DeleteGoalParams struct {
@@ -63,7 +63,7 @@ func (q *Queries) DeleteGoal(ctx context.Context, arg DeleteGoalParams) error {
 }
 
 const getGoal = `-- name: GetGoal :one
-SELECT id, user_id, metric, target_value, period_start, period_end, created_at FROM goals WHERE id = ?
+SELECT id, user_id, metric, target_value, period_start, period_end, created_at FROM goals WHERE id = $1
 `
 
 func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
@@ -82,7 +82,7 @@ func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
 }
 
 const listGoalsForUser = `-- name: ListGoalsForUser :many
-SELECT id, user_id, metric, target_value, period_start, period_end, created_at FROM goals WHERE user_id = ? ORDER BY period_start DESC
+SELECT id, user_id, metric, target_value, period_start, period_end, created_at FROM goals WHERE user_id = $1 ORDER BY period_start DESC
 `
 
 func (q *Queries) ListGoalsForUser(ctx context.Context, userID string) ([]Goal, error) {
@@ -117,8 +117,8 @@ func (q *Queries) ListGoalsForUser(ctx context.Context, userID string) ([]Goal, 
 }
 
 const updateGoal = `-- name: UpdateGoal :one
-UPDATE goals SET target_value = ?, period_start = ?, period_end = ?
-WHERE id = ? AND user_id = ?
+UPDATE goals SET target_value = $1, period_start = $2, period_end = $3
+WHERE id = $4 AND user_id = $5
 RETURNING id, user_id, metric, target_value, period_start, period_end, created_at
 `
 

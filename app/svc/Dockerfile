@@ -6,9 +6,9 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/fitter-svc .
 
 FROM alpine:3.24
-RUN mkdir -p /data
+# Outbound TLS to Strava and to Postgres needs a trust store; the scratch alpine base has none.
+RUN apk add --no-cache ca-certificates
 COPY --from=build /out/fitter-svc /usr/local/bin/fitter-svc
 ENV PORT=8081
-ENV DB_PATH=/data/fitter.db
 EXPOSE 8081
 CMD ["fitter-svc"]

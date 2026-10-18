@@ -11,7 +11,7 @@ import (
 )
 
 const countCampaignMembers = `-- name: CountCampaignMembers :one
-SELECT COUNT(*) AS member_count FROM campaign_members WHERE campaign_id = ?
+SELECT COUNT(*) AS member_count FROM campaign_members WHERE campaign_id = $1
 `
 
 func (q *Queries) CountCampaignMembers(ctx context.Context, campaignID string) (int64, error) {
@@ -23,7 +23,7 @@ func (q *Queries) CountCampaignMembers(ctx context.Context, campaignID string) (
 
 const createCampaign = `-- name: CreateCampaign :one
 INSERT INTO campaigns (id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at
 `
 
@@ -70,7 +70,7 @@ func (q *Queries) CreateCampaign(ctx context.Context, arg CreateCampaignParams) 
 }
 
 const getCampaign = `-- name: GetCampaign :one
-SELECT id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at FROM campaigns WHERE id = ?
+SELECT id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at FROM campaigns WHERE id = $1
 `
 
 func (q *Queries) GetCampaign(ctx context.Context, id string) (Campaign, error) {
@@ -92,7 +92,7 @@ func (q *Queries) GetCampaign(ctx context.Context, id string) (Campaign, error) 
 }
 
 const getCampaignMember = `-- name: GetCampaignMember :one
-SELECT campaign_id, user_id, joined_at, per_member_target_value FROM campaign_members WHERE campaign_id = ? AND user_id = ?
+SELECT campaign_id, user_id, joined_at, per_member_target_value FROM campaign_members WHERE campaign_id = $1 AND user_id = $2
 `
 
 type GetCampaignMemberParams struct {
@@ -113,7 +113,7 @@ func (q *Queries) GetCampaignMember(ctx context.Context, arg GetCampaignMemberPa
 }
 
 const isCampaignMember = `-- name: IsCampaignMember :one
-SELECT EXISTS(SELECT 1 FROM campaign_members WHERE campaign_id = ? AND user_id = ?) AS is_member
+SELECT EXISTS(SELECT 1 FROM campaign_members WHERE campaign_id = $1 AND user_id = $2) AS is_member
 `
 
 type IsCampaignMemberParams struct {
@@ -130,7 +130,7 @@ func (q *Queries) IsCampaignMember(ctx context.Context, arg IsCampaignMemberPara
 
 const joinCampaign = `-- name: JoinCampaign :exec
 INSERT INTO campaign_members (campaign_id, user_id, joined_at, per_member_target_value)
-VALUES (?, ?, ?, ?)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT (campaign_id, user_id) DO UPDATE SET per_member_target_value = excluded.per_member_target_value
 `
 
@@ -152,7 +152,7 @@ func (q *Queries) JoinCampaign(ctx context.Context, arg JoinCampaignParams) erro
 }
 
 const leaveCampaign = `-- name: LeaveCampaign :exec
-DELETE FROM campaign_members WHERE campaign_id = ? AND user_id = ?
+DELETE FROM campaign_members WHERE campaign_id = $1 AND user_id = $2
 `
 
 type LeaveCampaignParams struct {
@@ -170,7 +170,7 @@ SELECT cm.campaign_id, cm.user_id, cm.joined_at, cm.per_member_target_value,
        u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM campaign_members cm
 JOIN users u ON u.id = cm.user_id
-WHERE cm.campaign_id = ?
+WHERE cm.campaign_id = $1
 `
 
 type ListCampaignMembersRow struct {
@@ -251,7 +251,7 @@ func (q *Queries) ListCampaigns(ctx context.Context) ([]Campaign, error) {
 }
 
 const listJoinedCampaignIDsForUser = `-- name: ListJoinedCampaignIDsForUser :many
-SELECT campaign_id FROM campaign_members WHERE user_id = ?
+SELECT campaign_id FROM campaign_members WHERE user_id = $1
 `
 
 func (q *Queries) ListJoinedCampaignIDsForUser(ctx context.Context, userID string) ([]string, error) {

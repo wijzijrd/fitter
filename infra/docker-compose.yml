@@ -1,13 +1,30 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: fitter
+      POSTGRES_PASSWORD: fitter
+      POSTGRES_DB: fitter
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitter -d fitter"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   svc:
     build:
-      context: ../app/svc
+      context: app/svc
     image: fitter-svc
-    volumes:
-      - svc-data:/data
     environment:
       PORT: 8081
-      DB_PATH: /data/fitter.db
+      # Locally one superuser serves both roles. In a deployed environment these are
+      # distinct DSNs from the secret store: the migration URL is the admin user, the
+      # serving URL is the restricted role over a transaction-mode pooler.
+      DATABASE_URL: postgres://fitter:fitter@postgres:5432/fitter?sslmode=disable
+      DATABASE_MIGRATION_URL: postgres://fitter:fitter@postgres:5432/fitter?sslmode=disable
       STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID}
       STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET}
       STRAVA_WEBHOOK_VERIFY_TOKEN: ${STRAVA_WEBHOOK_VERIFY_TOKEN}
@@ -15,11 +32,14 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
       CORS_ORIGIN: ${FRONTEND_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   ui:
     build:
-      context: ../app/ui
+      context: app/ui
       args:
         VITE_API_BASE_URL: ${PUBLIC_BASE_URL}
     image: fitter-ui
@@ -30,4 +50,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  svc-data:
+  pg-data:

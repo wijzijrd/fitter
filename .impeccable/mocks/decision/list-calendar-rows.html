@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#351e28;--muted:#5a4a52;--t:#ff5c34;--b:#d7efff;--h:#e9e2e6}
+*{box-sizing:border-box}html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#fff;color:var(--ink);font-family:"Hanken Grotesk",sans-serif}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--ink)}
+.wm{font-family:Bungee;font-size:20px}.nav span{font-weight:600;color:var(--muted);margin-left:14px}.nav .on{color:var(--ink);text-decoration:underline 3px var(--t);text-underline-offset:6px}
+.pill{display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:6px 14px;font-weight:700;font-size:15px;background:#fff}.pri{background:var(--t)}
+.head{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 6px}
+h1{margin:0;font:400 26px Bungee}
+.lede{margin:0 16px 12px;color:var(--muted);font-size:13px}
+.cal{position:relative;margin:0 16px}
+.axis{display:grid;grid-template-columns:150px 1fr;border-bottom:2px solid var(--ink);font:400 11px Bungee;color:var(--muted)}
+.months{position:relative;height:20px}.months span{position:absolute;bottom:3px}
+.row{display:grid;grid-template-columns:150px 1fr;align-items:center;min-height:70px;border-bottom:1px solid var(--h)}
+.who{display:flex;gap:8px;align-items:center;padding-right:8px;min-width:0}
+.chip{display:grid;place-items:center;min-width:34px;height:30px;padding:0 4px;border:2px solid var(--ink);border-radius:6px;font:400 15px Bungee;flex:none}
+.chip.me{background:var(--t)}
+.who b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.who small{display:block;font-size:12px;color:var(--muted);white-space:nowrap}
+.lane{position:relative;height:100%}
+.bar{position:absolute;top:50%;height:18px;margin-top:-9px;border:2px solid var(--ink);border-radius:999px;background:var(--t)}
+.bar.soon{background:var(--b)}.bar.open{background:#fff;border-style:dashed}.bar.done{background:var(--b)}
+.today{position:absolute;top:-6px;bottom:0;left:calc(150px + 92px);width:3px;background:var(--ink);z-index:2}
+.today i{position:absolute;top:-16px;left:-22px;font:400 10px Bungee;font-style:normal;background:#fff}
+.sect{font:400 12px Bungee;padding:10px 0 2px;color:var(--ink)}
+.key{display:flex;gap:12px;margin:12px 16px 0;font-size:12px;color:var(--muted)}.key i{display:inline-block;width:18px;height:10px;border:2px solid var(--ink);border-radius:9px;margin-right:4px;vertical-align:-1px}
+</style></head><body>
+<div class="nav"><span class="wm" style="margin:0;color:var(--ink)">FITTER</span><div><span class="on">Campaigns</span><span>Goals</span></div></div>
+<div class="head"><h1>CAMPAIGNS</h1><span class="pill pri">New campaign</span></div>
+<p class="lede">Each row is a race. Left: your place and next gap. Right: when it runs, against today.</p>
+<div class="cal">
+<div class="axis"><span></span><div class="months"><span style="left:0">SEP</span><span style="left:58px">OCT</span><span style="left:118px">NOV</span><span style="left:178px">DEC</span></div></div>
+<div class="today"><i>TODAY</i></div>
+<div class="row"><div class="who"><span class="chip me">3</span><span><b>October Climb</b><small>470 m to catch Sam</small></span></div><div class="lane"><span class="bar" style="left:58px;width:60px"></span></div></div>
+<div class="row"><div class="who"><span class="chip me">1</span><span><b>Lunch Run Club</b><small>8.2 km clear of Sam</small></span></div><div class="lane"><span class="bar" style="left:68px;width:60px"></span></div></div>
+<div class="row"><div class="who"><span class="chip me">64%</span><span><b>Crew to Cape Point</b><small>You: 22% of total</small></span></div><div class="lane"><span class="bar" style="left:38px;width:140px"></span></div></div>
+<div class="row"><div class="who"><span class="chip">–</span><span><b>Winter Base Miles</b><small>Starts in 14 days</small></span></div><div class="lane"><span class="bar soon" style="left:118px;width:120px"></span></div></div>
+<div class="row"><div class="who"><span class="pill" style="padding:2px 10px;font-size:13px">Join</span><span><b>Weekend Rides</b><small>2,000 km together</small></span></div><div class="lane"><span class="bar open" style="left:76px;width:62px"></span></div></div>
+<div class="row"><div class="who"><span class="chip" style="background:var(--b)">2</span><span><b>September Streak</b><small>Finisher · 2nd of 5</small></span></div><div class="lane"><span class="bar done" style="left:0;width:58px"></span></div></div>
+</div>
+<div class="key"><span><i style="background:var(--t)"></i>Racing</span><span><i style="background:var(--b)"></i>Soon / finished</span><span><i style="border-style:dashed"></i>Open to join</span></div>
+</body></html>

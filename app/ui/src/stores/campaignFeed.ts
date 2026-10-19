@@ -47,5 +47,14 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
     }
   }
 
-  return { byCampaign, stateFor, fetchAll };
+  // fetchLeaderboard is the light fetch the campaigns list uses for each bib;
+  // it also warms the detail page's stack.
+  async function fetchLeaderboard(campaignId: string): Promise<void> {
+    const s = stateFor(campaignId);
+    const resp = await feedClient.getCampaignLeaderboard({ campaignId });
+    s.leaderboard = resp.entries;
+    s.pooledProgressValue = resp.pooledProgressValue;
+  }
+
+  return { byCampaign, stateFor, fetchAll, fetchLeaderboard };
 });

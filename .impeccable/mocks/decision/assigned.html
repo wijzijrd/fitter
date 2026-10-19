@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--aub:#2B0A2E;--rust:#B4552D;--avo:#A9A23C;--ground:#F4EEF3;--line:#E2D6E0;--muted:#6B5A69}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:var(--ground);color:var(--aub);font:400 15px/1.4 "Atkinson Hyperlegible",sans-serif}
+.num{font-variant-numeric:tabular-nums}
+header{background:var(--aub);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+.mark{font:800 22px/1 "Bricolage Grotesque";letter-spacing:-.02em}
+nav{display:flex;gap:16px;font-size:14px;align-items:center}
+nav a{color:#fff;opacity:.75;text-decoration:none}nav a.on{opacity:1;font-weight:700}
+.av{width:28px;height:28px;border-radius:50%;background:var(--avo);color:var(--aub);display:grid;place-items:center;font-weight:700;font-size:12px}
+.title{padding:18px 16px 0}
+.back{font-size:13px;color:var(--muted)}
+h1{font:800 34px/1 "Bricolage Grotesque";letter-spacing:-.03em;margin-top:6px}
+.meta{font-size:13px;color:var(--muted);margin-top:6px}
+.tabs{display:flex;gap:22px;padding:14px 16px 0;border-bottom:1px solid var(--line)}
+.tabs span{padding-bottom:10px;font-weight:700;font-size:14px;color:var(--muted)}
+.tabs .on{color:var(--aub);border-bottom:3px solid var(--rust)}
+.you{display:flex;gap:14px;align-items:center;margin:16px;padding:14px;background:#fff;border-radius:14px;border:1px solid var(--line)}
+.medal{position:relative;width:68px;height:68px;border-radius:50%;background:var(--aub);display:grid;place-items:center;box-shadow:inset 0 0 0 5px var(--rust),inset 0 0 0 7px var(--aub),inset 0 0 0 8px #E6B49C}
+.medal b{font:800 30px/1 "Bricolage Grotesque";color:#fff}
+.you .big{font:800 26px/1 "Bricolage Grotesque"}
+.you .big small{font:500 14px "Atkinson Hyperlegible";color:var(--muted)}
+.gap{margin-top:6px;font-size:14px;font-weight:700;color:var(--rust)}
+.board{margin:0 16px;background:#fff;border-radius:14px;border:1px solid var(--line);padding:12px 12px 6px;position:relative}
+.bh{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:8px}
+.finish{position:absolute;top:30px;bottom:6px;left:calc(12px + 96px + (100% - 24px - 96px - 64px));border-left:2px dashed var(--aub);opacity:.35}
+.row{display:grid;grid-template-columns:20px 76px 1fr 64px;align-items:center;gap:0;height:44px}
+.row .r{font-weight:700;color:var(--muted);font-size:13px}
+.row .n{font-weight:700;font-size:14px}
+.row .v{text-align:right;font-weight:700;font-size:14px}
+.track{height:14px;position:relative;margin-right:8px}
+.rib{height:14px;border-radius:2px 7px 7px 2px;background:repeating-linear-gradient(90deg,var(--rust) 0 10px,var(--avo) 10px 16px,var(--aub) 16px 22px)}
+.row.me{background:#F7EFE9;margin:0 -12px;padding:0 12px;border-radius:8px}
+.row.dim{opacity:1}
+.hung{position:absolute;right:-6px;top:-7px;width:28px;height:28px;border-radius:50%;background:var(--avo);border:3px solid var(--aub);display:grid;place-items:center;font:800 12px "Bricolage Grotesque";color:var(--aub)}
+.feed{margin:14px 16px 0;font-size:13px;color:var(--muted)}
+.feed b{color:var(--aub)}
+footer{position:absolute;bottom:14px;left:16px;font-size:11px;color:var(--muted)}
+</style></head><body>
+<header><span class="mark">Fitter</span><nav><a class="on">Campaigns</a><a>Goals</a><span class="av">YO</span></nav></header>
+<div class="title"><div class="back">← Campaigns</div><h1>October 200 km</h1><div class="meta num">Per member · Distance · Day 18 of 31 · 6 friends</div></div>
+<div class="tabs"><span class="on">Standings</span><span>Feed</span><span>Timeline</span></div>
+<div class="you"><div class="medal"><b class="num">3</b></div><div><div class="big num">133.8 <small>of 200 km</small></div><div class="gap num">8.2 km behind Sam · 13 days left</div></div></div>
+<div class="board">
+  <div class="bh"><span>Standings</span><span class="num">Finish 200 km</span></div>
+  <div class="row"><span class="r num">1</span><span class="n">Priya</span><div class="track"><div class="rib" style="width:100%"></div><span class="hung">✓</span></div><span class="v num">204.1</span></div>
+  <div class="row"><span class="r num">2</span><span class="n">Sam</span><div class="track"><div class="rib" style="width:71%"></div></div><span class="v num">142.0</span></div>
+  <div class="row me"><span class="r num">3</span><span class="n">You</span><div class="track"><div class="rib" style="width:67%"></div></div><span class="v num">133.8</span></div>
+  <div class="row"><span class="r num">4</span><span class="n">Jonno</span><div class="track"><div class="rib" style="width:49%"></div></div><span class="v num">97.5</span></div>
+  <div class="row"><span class="r num">5</span><span class="n">Lerato</span><div class="track"><div class="rib" style="width:31%"></div></div><span class="v num">61.2</span></div>
+  <div class="row"><span class="r num">6</span><span class="n">Mika</span><div class="track"><div class="rib" style="width:11%"></div></div><span class="v num">22.0</span></div>
+</div>
+<p class="feed num"><b>Sam</b> ran 10.4 km · 2 h ago &nbsp;·&nbsp; <b>Priya</b> finished on day 17</p>
+<footer>Powered by Strava</footer>
+</body></html>

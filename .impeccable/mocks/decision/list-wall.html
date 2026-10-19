@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#351e28;--muted:#5a4a52;--t:#ff5c34;--b:#d7efff;--h:#e9e2e6}
+*{box-sizing:border-box}html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#fff;color:var(--ink);font-family:"Hanken Grotesk",sans-serif}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--ink)}
+.wm{font-family:Bungee;font-size:20px}.nav span{font-weight:600;color:var(--muted);margin-left:14px}.nav .on{color:var(--ink);text-decoration:underline 3px var(--t);text-underline-offset:6px}
+.pill{display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:6px 14px;font-weight:700;font-size:15px;background:#fff}.pri{background:var(--t)}
+.head{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 14px}
+h1{margin:0;font:400 26px Bungee}
+.wall{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px}
+.bib{border:2px solid var(--ink);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.band{background:var(--t);padding:3px 8px;font:400 12px Bungee;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blue .band{background:var(--b)}.open{border-style:dashed}.open .band{background:#fff;border-bottom:2px dashed var(--ink)}
+.main{padding:6px 10px 4px;flex:1;min-height:96px;display:flex;flex-direction:column;justify-content:flex-end}
+.num{font:400 64px/0.85 Bungee}.num.l{font-size:40px}
+.main small{color:var(--muted);font-size:12px}
+.tab{border-top:2px dashed var(--ink);background:var(--b);padding:5px 10px;font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.open .main b{font:400 18px/1.1 Bungee}
+</style></head><body>
+<div class="nav"><span class="wm" style="margin:0;color:var(--ink)">FITTER</span><div><span class="on">Campaigns</span><span>Goals</span></div></div>
+<div class="head"><h1>CAMPAIGNS</h1><span class="pill pri">New campaign</span></div>
+<div class="wall">
+<div class="bib"><div class="band">OCTOBER CLIMB · 14D</div><div class="main"><span class="num">3</span><small>3,420 m · of 6</small></div><div class="tab">470 m to Sam</div></div>
+<div class="bib"><div class="band">LUNCH RUN CLUB · 18D</div><div class="main"><span class="num">1</span><small>62.3 km · of 4</small></div><div class="tab">8.2 km clear</div></div>
+<div class="bib"><div class="band">CAPE POINT · 44D</div><div class="main"><span class="num l">64%</span><small>964 of 1,500 km</small></div><div class="tab">You: 22%</div></div>
+<div class="bib blue"><div class="band">WINTER BASE MILES</div><div class="main"><span class="num l">14D</span><small>to the start · 40h each</small></div></div>
+<div class="bib open"><div class="band">WEEKEND LONG RIDES</div><div class="main"><b>No. —</b><small>2,000 km together · 4 in</small><span class="pill" style="margin-top:6px;padding:2px 10px;font-size:13px;align-self:flex-start">Join</span></div></div>
+<div class="bib blue"><div class="band">FINISHER · SEPT STREAK</div><div class="main"><span class="num">2</span><small>26 activities · of 5</small></div></div>
+</div>
+</body></html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<style>
+:root{--ch:#351E28;--tg:#FF5C34;--cb:#D7EFFF;--muted:#5A4A52;--line:#ECE7EA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:#F7F7F8;color:var(--ch);font:400 15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;position:relative}
+.num{font-variant-numeric:tabular-nums}
+header{background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.mark{font-weight:800;font-size:19px}nav{display:flex;gap:16px;font-size:14px;color:var(--muted)}nav .on{color:var(--ch);font-weight:600}
+h1{font-size:24px;font-weight:700;padding:16px 16px 2px}
+.meta{padding:0 16px;font-size:13px;color:var(--muted)}
+.seg{display:flex;margin:14px 16px 0;background:#fff;border:1px solid var(--line);border-radius:8px;padding:3px}
+.seg span{flex:1;text-align:center;padding:7px;font-size:14px;font-weight:600;border-radius:6px;color:var(--muted)}.seg .on{background:var(--ch);color:#fff}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;margin:12px 16px;padding:14px}
+.stat{display:flex;justify-content:space-between;align-items:baseline}.stat b{font-size:24px}
+.bar{height:8px;border-radius:4px;background:var(--cb);margin-top:10px;overflow:hidden}.bar span{display:block;height:100%;background:var(--ch)}
+.sub{font-size:13px;color:var(--muted);margin-top:6px}
+.row{display:grid;grid-template-columns:24px 32px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-child{border:0}
+.av{width:32px;height:32px;border-radius:50%;background:var(--cb);display:grid;place-items:center;font-weight:700;font-size:13px}
+.row .v{font-weight:600}
+.row.me{font-weight:700}
+.btn{position:absolute;left:16px;right:16px;bottom:40px;background:var(--tg);color:var(--ch);border-radius:10px;padding:13px;text-align:center;font-weight:700}
+footer{position:absolute;bottom:14px;left:16px;font-size:11px;color:var(--muted)}
+</style></head><body>
+<header><span class="mark">Fitter</span><nav><span class="on">Campaigns</span><span>Goals</span></nav></header>
+<h1>October 200 km</h1><div class="meta num">Per member · Distance · Oct 1–31 · 6 members</div>
+<div class="seg"><span class="on">Leaderboard</span><span>Feed</span><span>Timeline</span></div>
+<div class="card num"><div class="stat"><span>Your progress</span><b>133.8 km</b></div><div class="bar"><span style="width:67%"></span></div><div class="sub">3rd of 6 · 8.2 km behind Sam · 13 days left</div></div>
+<div class="card num">
+<div class="row"><span>1</span><span class="av">P</span><span>Priya</span><span class="v">204.1 km</span></div>
+<div class="row"><span>2</span><span class="av">S</span><span>Sam</span><span class="v">142.0 km</span></div>
+<div class="row me"><span>3</span><span class="av">Y</span><span>You</span><span class="v">133.8 km</span></div>
+<div class="row"><span>4</span><span class="av">J</span><span>Jonno</span><span class="v">97.5 km</span></div>
+<div class="row"><span>5</span><span class="av">L</span><span>Lerato</span><span class="v">61.2 km</span></div>
+</div>
+<div class="btn">Invite a friend</div>
+<footer>Powered by Strava</footer>
+</body></html>

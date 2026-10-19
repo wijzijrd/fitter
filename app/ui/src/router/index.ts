@@ -4,6 +4,8 @@ import LoginView from "../views/LoginView.vue";
 import AuthCallbackView from "../views/AuthCallbackView.vue";
 import CampaignsView from "../views/CampaignsView.vue";
 import CampaignDetailView from "../views/CampaignDetailView.vue";
+import CampaignCreateView from "../views/CampaignCreateView.vue";
+import CampaignJoinView from "../views/CampaignJoinView.vue";
 import GoalsView from "../views/GoalsView.vue";
 
 const router = createRouter({
@@ -12,6 +14,14 @@ const router = createRouter({
     { path: "/login", name: "login", component: LoginView },
     { path: "/auth/callback", name: "auth-callback", component: AuthCallbackView },
     { path: "/", name: "campaigns", component: CampaignsView, meta: { requiresAuth: true } },
+    { path: "/campaigns/new", name: "campaign-new", component: CampaignCreateView, meta: { requiresAuth: true } },
+    {
+      path: "/campaigns/:id/join",
+      name: "campaign-join",
+      component: CampaignJoinView,
+      meta: { requiresAuth: true },
+      props: true,
+    },
     {
       path: "/campaigns/:id",
       name: "campaign-detail",

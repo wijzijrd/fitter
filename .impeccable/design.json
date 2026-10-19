@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T20:54:04+00:00",
+  "title": "Design System: Fitter",
+  "extensions": {
+    "colorMeta": {
+      "tangerine": {
+        "role": "primary",
+        "displayName": "Tangerine",
+        "canonical": "#ff5c34",
+        "tonalRamp": [
+          "#4a1206",
+          "#7a1f0c",
+          "#b02e12",
+          "#e2401c",
+          "#ff5c34",
+          "#ff8a6c",
+          "#ffbba9",
+          "#ffe6df"
+        ]
+      },
+      "cool-blue": {
+        "role": "secondary",
+        "displayName": "Cool Blue",
+        "canonical": "#d7efff",
+        "tonalRamp": [
+          "#0d2c42",
+          "#174a6e",
+          "#246c9e",
+          "#3f92cc",
+          "#79bbeb",
+          "#a9d6f7",
+          "#d7efff",
+          "#f4fbff"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#474747",
+          "#6b6b6b",
+          "#919191",
+          "#b8b8b8",
+          "#dcdcdc",
+          "#f2f2f2",
+          "#ffffff"
+        ]
+      },
+      "black-cherry": {
+        "role": "neutral",
+        "displayName": "Black Cherry",
+        "canonical": "#351e28",
+        "tonalRamp": [
+          "#1c0f15",
+          "#351e28",
+          "#55333f",
+          "#77505e",
+          "#9a7682",
+          "#bfa1ab",
+          "#dfcdd3",
+          "#f5eef0"
+        ]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#5a4a52",
+        "tonalRamp": [
+          "#211a1e",
+          "#3a2f35",
+          "#5a4a52",
+          "#786770",
+          "#988991",
+          "#b8adb2",
+          "#d8d0d4",
+          "#f2eef0"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e9e2e6",
+        "tonalRamp": [
+          "#2e2629",
+          "#4d4247",
+          "#6e6168",
+          "#91848a",
+          "#b5a9ae",
+          "#d2c9cd",
+          "#e9e2e6",
+          "#f8f5f6"
+        ]
+      },
+      "tangerine-hover": {
+        "role": "primary",
+        "displayName": "Tangerine Hover",
+        "canonical": "#ff7a59",
+        "tonalRamp": [
+          "#4a1406",
+          "#7a2510",
+          "#a8371d",
+          "#d6492a",
+          "#ff5c34",
+          "#ff7a59",
+          "#ffa68f",
+          "#ffd6cb"
+        ]
+      },
+      "cool-blue-soft": {
+        "role": "secondary",
+        "displayName": "Cool Blue Soft",
+        "canonical": "#eef8ff",
+        "tonalRamp": [
+          "#0f2a3d",
+          "#1f4a66",
+          "#346f94",
+          "#5a97bf",
+          "#93c4e6",
+          "#c3e6ff",
+          "#d7efff",
+          "#eef8ff"
+        ]
+      },
+      "cool-blue-deep": {
+        "role": "secondary",
+        "displayName": "Cool Blue Deep",
+        "canonical": "#c3e6ff",
+        "tonalRamp": [
+          "#0f2a3d",
+          "#1f4a66",
+          "#346f94",
+          "#5a97bf",
+          "#93c4e6",
+          "#c3e6ff",
+          "#d7efff",
+          "#eef8ff"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Rank numeral on the front bib; 2.75rem on peeks; 2.5rem start-list numbers."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Campaign titles, uppercase, balanced wrap."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Progress value on the front bib."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Bib and sheet band capitals; start-list column labels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Names, activity lines, reading text."
+      },
+      "body-strong": {
+        "displayName": "Body Strong",
+        "purpose": "Buttons, tear-off tab, values."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Notes and metadata in Muted Ink."
+      }
+    },
+    "shadows": [
+      {
+        "name": "front-bib-lift",
+        "value": "0 6px 0 var(--ink)",
+        "purpose": "The One Lift: hard unblurred offset under the bib in focus only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Bib swap and hover fills."
+      },
+      {
+        "name": "bib-swap-enter",
+        "value": "transform 380ms, opacity 220ms on ease-out-expo; from translate(+/-10%, +/-34%) scale(0.9)",
+        "purpose": "Neighbour's bib comes to the front from its peek side; instant under reduced motion."
+      },
+      {
+        "name": "bib-swap-leave",
+        "value": "opacity 140ms ease-out",
+        "purpose": "Outgoing front bib fades."
+      },
+      {
+        "name": "hover-fill",
+        "value": "background-color 160ms ease-out-expo",
+        "purpose": "Pill, peek, linked-bib, start-list row and choice-card hover fills."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow",
+        "value": "360px"
+      },
+      {
+        "name": "phone",
+        "value": "480px"
+      },
+      {
+        "name": "two-pane",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tangerine pill for the one primary action (Join campaign).",
+      "html": "<button class=\"ds-btn-primary\">Join campaign</button>",
+      "css": ".ds-btn-primary { border: 2px solid var(--ink); border-radius: 999px; background: var(--tangerine); color: var(--ink); font: 700 0.9375rem var(--font-body); padding: 0.5rem 1.1rem; cursor: pointer; } .ds-btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.6; cursor: progress; }"
+    },
+    {
+      "name": "Pill Button",
+      "kind": "button",
+      "refersTo": "button-pill",
+      "description": "Outlined pill for secondary actions and Ahead / Behind stepping; dashed when quiet.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-pill\"><svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M16 10H5M9 5l-5 5 5 5\"/></svg>Ahead</button><button class=\"ds-pill ds-pill--quiet\">Back to you</button><button class=\"ds-pill\" disabled>Behind<svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M4 10h11M11 5l5 5-5 5\"/></svg></button></div>",
+      "css": ".ds-pills { display: flex; gap: 0.6rem; flex-wrap: wrap; } .ds-pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.5rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper); color: var(--ink); font: 700 0.875rem var(--font-body); padding: 0.35rem 0.9rem; cursor: pointer; transition: background-color 160ms var(--ease-out-expo); } .ds-pill:hover:not(:disabled) { background: var(--cool-blue); } .ds-pill:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-pill:disabled { border-color: var(--hairline); color: var(--ink-muted); cursor: default; } .ds-pill--quiet { border-style: dashed; } .ds-pill svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Primary Pill",
+      "kind": "button",
+      "refersTo": "button-pill-primary",
+      "description": "Tangerine pill with pill metrics for the primary action on list, create, join and leave-confirm.",
+      "html": "<div class=\"ds-pills\"><button class=\"ds-pill ds-pill--primary\">New campaign</button><button class=\"ds-pill ds-pill--primary\" disabled>Creating…</button></div>",
+      "css": ".ds-pills { display: flex; gap: 0.6rem; flex-wrap: wrap; } .ds-pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.5rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper); color: var(--ink); font: 700 0.875rem var(--font-body); padding: 0.35rem 0.9rem; cursor: pointer; } .ds-pill--primary { background: var(--tangerine); font-size: 0.9375rem; padding-inline: 1.1rem; } .ds-pill--primary:hover:not(:disabled) { background: var(--tangerine-hover); } .ds-pill:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-pill--primary:disabled { opacity: 0.6; cursor: progress; }"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "Shared shell: Bungee wordmark, Muted Ink links, Tangerine underline on the active link, outlined logout pill.",
+      "html": "<div class=\"ds-nav\"><a class=\"ds-nav-mark\" href=\"#\">Fitter</a><nav><a href=\"#\" class=\"is-active\">Campaigns</a><a href=\"#\">Goals</a><button class=\"ds-nav-out\">Log out</button></nav></div>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; background: var(--paper); border-bottom: 2px solid var(--ink); color: var(--ink); font-family: var(--font-body); } .ds-nav-mark { font-family: var(--font-display); font-size: 1.25rem; color: var(--ink); text-decoration: none; } .ds-nav nav { display: flex; gap: 1rem; align-items: center; } .ds-nav nav a { color: var(--ink-muted); font-weight: 600; text-decoration: none; text-underline-offset: 6px; } .ds-nav nav a.is-active { color: var(--ink); text-decoration: underline 3px var(--tangerine); } .ds-nav a:focus-visible, .ds-nav-out:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-nav-out { border: 2px solid var(--ink); border-radius: 999px; background: var(--paper); color: var(--ink); font: 600 0.875rem var(--font-body); padding: 0.3rem 0.8rem; cursor: pointer; } .ds-nav-out:hover { background: var(--cool-blue); }"
+    },
+    {
+      "name": "Tabs",
+      "kind": "nav",
+      "refersTo": "",
+      "description": "Underline tabs over a Hairline baseline; the selected tab carries a 3px Tangerine underline.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\">Standings</button><button role=\"tab\" aria-selected=\"false\">Feed</button><button role=\"tab\" aria-selected=\"false\">Timeline</button></div>",
+      "css": ".ds-tabs { display: flex; gap: 1.5rem; border-bottom: 2px solid var(--hairline); } .ds-tabs button { border: 0; background: none; padding: 0.5rem 0 0.6rem; margin-bottom: -2px; border-bottom: 3px solid transparent; color: var(--ink-muted); font: 700 1rem var(--font-body); cursor: pointer; } .ds-tabs button[aria-selected=\"true\"] { color: var(--ink); border-bottom-color: var(--tangerine); } .ds-tabs button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }"
+    },
+    {
+      "name": "Rank Chip and Finisher Tag",
+      "kind": "chip",
+      "refersTo": "rank-chip",
+      "description": "Outlined Bungee rank chip (Tangerine for you) and the Cool Blue FINISHER tag.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip\">1</span><span class=\"ds-chip ds-chip--you\">3</span><span class=\"ds-tag\">Finisher</span></div>",
+      "css": ".ds-chips { display: flex; gap: 0.75rem; align-items: center; } .ds-chip { display: grid; place-items: center; width: 2.25rem; height: 2rem; border: 2px solid var(--ink); border-radius: 6px; color: var(--ink); font: 400 0.9375rem var(--font-display); font-variant-numeric: tabular-nums; } .ds-chip--you { background: var(--tangerine); } .ds-tag { padding: 0.05rem 0.4rem; border-radius: 4px; background: var(--cool-blue); color: var(--ink); font: 400 0.6875rem/1.4 var(--font-display); text-transform: uppercase; }"
+    },
+    {
+      "name": "Standings Row",
+      "kind": "card",
+      "refersTo": "",
+      "description": "Rank chip, human name with note, right-aligned tabular value over a Hairline divider.",
+      "html": "<ol class=\"ds-rows\"><li><span class=\"ds-chip\">2</span><span class=\"ds-who\"><b>Sam Okafor</b><small>Active 14h ago</small></span><span class=\"ds-val\">145.4 km</span></li><li class=\"is-me\"><span class=\"ds-chip\">3</span><span class=\"ds-who\"><b>You</b><small>Active 2h ago</small></span><span class=\"ds-val\">137.2 km</span></li></ol>",
+      "css": ".ds-rows { list-style: none; margin: 0; padding: 0; font-family: var(--font-body); color: var(--ink); } .ds-rows li { display: grid; grid-template-columns: 2.25rem minmax(0,1fr) auto; align-items: center; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--hairline); } .ds-rows li:hover b { text-decoration: underline 2px var(--cool-blue); text-underline-offset: 4px; } .ds-chip { display: grid; place-items: center; height: 2rem; border: 2px solid var(--ink); border-radius: 6px; font: 400 0.9375rem var(--font-display); font-variant-numeric: tabular-nums; } .is-me .ds-chip { background: var(--tangerine); } .ds-who { display: flex; flex-direction: column; min-width: 0; } .ds-who small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-val { font-weight: 700; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Front Bib",
+      "kind": "custom",
+      "refersTo": "bib-front",
+      "description": "Signature: Tangerine band, monumental numeral, value, and the dashed Cool Blue tear-off tab; the one hard offset.",
+      "html": "<div class=\"ds-bib\"><span class=\"ds-band\"><span>October 200 km</span><span>You</span></span><span class=\"ds-bib-main\"><span class=\"ds-numeral\">3</span><span class=\"ds-bib-value\"><b>137.2 km</b><small>62.8 km to go</small><small>14 days left</small></span></span><button class=\"ds-tab\"><span>8.2 km to catch Sam</span><svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M4 10h11M11 5l5 5-5 5\"/></svg></button></div>",
+      "css": ".ds-bib { display: flex; flex-direction: column; max-width: 320px; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--font-body); box-shadow: 0 6px 0 var(--ink); } .ds-band { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.75rem; background: var(--tangerine); font: 400 0.75rem/1.3 var(--font-display); text-transform: uppercase; white-space: nowrap; } .ds-bib-main { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0.9rem; } .ds-numeral { font: 400 6.5rem/0.85 var(--font-display); font-variant-numeric: tabular-nums; } .ds-bib-value { display: flex; flex-direction: column; align-items: flex-end; text-align: right; } .ds-bib-value b { font: 400 1.625rem/1.1 var(--font-display); font-variant-numeric: tabular-nums; } .ds-bib-value small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-tab { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%; border: 0; border-top: 2px dashed var(--ink); background: var(--cool-blue); color: var(--ink); padding: 0.5rem 0.9rem; font: 700 0.9375rem var(--font-body); text-align: left; cursor: pointer; } .ds-tab:hover { background: var(--cool-blue-deep); } .ds-tab:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-tab svg { width: 1.1rem; height: 1.1rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Peek Bib",
+      "kind": "custom",
+      "refersTo": "bib-band-peek",
+      "description": "The friend just ahead or behind: Cool Blue band with the gap, 2.75rem numeral, human name; tapping steps the field.",
+      "html": "<button class=\"ds-peek\"><span class=\"ds-band\"><span>Ahead</span><span>+8.2 km</span></span><span class=\"ds-peek-row\"><span class=\"ds-numeral\">2</span><span class=\"ds-who\"><b>Sam Okafor</b><small>145.4 km · 14h ago</small></span></span></button>",
+      "css": ".ds-peek { display: flex; flex-direction: column; width: 250px; padding: 0; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper); color: var(--ink); font: inherit; font-family: var(--font-body); text-align: left; cursor: pointer; transition: background-color 160ms var(--ease-out-expo); } .ds-peek:hover { background: var(--cool-blue-soft); } .ds-peek:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-band { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.75rem; background: var(--cool-blue); font: 400 0.75rem/1.3 var(--font-display); text-transform: uppercase; white-space: nowrap; } .ds-peek-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.75rem 0.5rem; } .ds-numeral { font: 400 2.75rem/1 var(--font-display); font-variant-numeric: tabular-nums; } .ds-who { display: flex; flex-direction: column; min-width: 0; } .ds-who small { color: var(--ink-muted); font-size: 0.8125rem; }"
+    },
+    {
+      "name": "Notice",
+      "kind": "card",
+      "refersTo": "",
+      "description": "Cool Blue outlined panel for load errors (with a retry pill) and the two-step leave confirmation.",
+      "html": "<div class=\"ds-notice\" role=\"alert\"><p>We couldn't load this campaign. Check your connection and try again.</p><button class=\"ds-pill\">Try again</button></div>",
+      "css": ".ds-notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem 1rem; border: 2px solid var(--ink); border-radius: 10px; background: var(--cool-blue); color: var(--ink); font-family: var(--font-body); } .ds-notice p { margin: 0; } .ds-pill { border: 2px solid var(--ink); border-radius: 999px; background: var(--paper); color: var(--ink); font: 700 0.875rem var(--font-body); padding: 0.4rem 0.9rem; cursor: pointer; } .ds-pill:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }"
+    },
+    {
+      "name": "Input and Choices",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "2px-outlined 6px input (invalid adds a 1px inset and a bold message), Cool Blue choice cards and metric pills.",
+      "html": "<form class=\"ds-form\"><div class=\"ds-field\"><label for=\"ds-n\">Name</label><input id=\"ds-n\" class=\"ds-input\" aria-invalid=\"true\"><span class=\"ds-err\">Give the campaign a name.</span></div><fieldset class=\"ds-field\"><legend>How it's scored</legend><label class=\"ds-choice\"><input type=\"radio\" name=\"m\" checked><span><b>Each on their own</b><small>Everyone chases the target and is ranked by progress.</small></span></label><label class=\"ds-choice\"><input type=\"radio\" name=\"m\"><span><b>Together</b><small>One shared target.</small></span></label></fieldset><div class=\"ds-metrics\"><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"k\" checked><span>Distance</span></label><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"k\"><span>Elevation</span></label></div></form>",
+      "css": ".ds-form { font-family: var(--font-body); color: var(--ink); max-width: 420px; } .ds-field { display: flex; flex-direction: column; gap: 0.35rem; margin: 0 0 1.25rem; border: 0; padding: 0; } .ds-field label, .ds-field legend { font-weight: 700; font-size: 0.9375rem; padding: 0; } .ds-input { min-height: 2.75rem; border: 2px solid var(--ink); border-radius: 6px; background: var(--paper); color: var(--ink); font: 400 1rem var(--font-body); padding: 0.5rem 0.75rem; } .ds-input:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-input[aria-invalid=\"true\"] { box-shadow: inset 0 0 0 1px var(--ink); } .ds-err { font-weight: 700; font-size: 0.875rem; } .ds-choice { display: flex; align-items: flex-start; gap: 0.65rem; border: 2px solid var(--ink); border-radius: 10px; padding: 0.7rem 0.9rem; cursor: pointer; font-weight: 400; transition: background-color 160ms var(--ease-out-expo); } .ds-choice span { display: flex; flex-direction: column; gap: 0.15rem; } .ds-choice small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-choice input { margin: 0.2rem 0 0; accent-color: var(--ink); } @media (hover: hover) { .ds-choice:hover { background: var(--cool-blue-soft); } } .ds-choice:has(input:checked) { background: var(--cool-blue); } .ds-choice:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-metrics { display: flex; gap: 0.5rem; flex-wrap: wrap; } .ds-choice--pill { align-items: center; border-radius: 999px; padding: 0.45rem 0.9rem 0.45rem 0.7rem; font-weight: 700; font-size: 0.9375rem; } .ds-choice--pill input { margin: 0; }"
+    },
+    {
+      "name": "Start List Sheet",
+      "kind": "custom",
+      "refersTo": "start-list-row-hover",
+      "description": "Signature list: outlined sheet, Tangerine band, NO. / RACE / NEXT GAP columns, Bungee numbers, stretched race links, dashed Cool Blue tear-off footer.",
+      "html": "<section class=\"ds-sheet\"><h2 class=\"ds-band\"><span>Start list · Racing</span><span>2 races</span></h2><div class=\"ds-cols\"><span>No.</span><span>Race</span><span>Next gap</span></div><ol class=\"ds-rows\"><li class=\"ds-row\"><span class=\"ds-no\">3</span><span class=\"ds-race\"><a href=\"#\">October Climb</a><small>of 6 · 14 days left</small></span><span class=\"ds-gap\">470 m<small>to Sam</small></span></li><li class=\"ds-row\"><span class=\"ds-no ds-no--long\">64%</span><span class=\"ds-race\"><a href=\"#\">Lunch Run Club</a><small>Together · 9 days left</small></span><span class=\"ds-gap\">180 km<small>to target</small></span></li></ol><a class=\"ds-tear\" href=\"#\"><span>Closest move: 470 m to catch Sam in October Climb</span><svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M4 10h11M11 5l5 5-5 5\"/></svg></a></section>",
+      "css": ".ds-sheet { max-width: 640px; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--font-body); } .ds-band { display: flex; justify-content: space-between; gap: 0.75rem; margin: 0; padding: 0.3rem 0.75rem; background: var(--tangerine); font: 400 0.75rem/1.3 var(--font-display); text-transform: uppercase; white-space: nowrap; } .ds-cols, .ds-row { display: grid; grid-template-columns: 3.5rem minmax(0,1fr) auto; align-items: center; gap: 0.75rem; padding-inline: 0.75rem; } .ds-cols { padding-block: 0.5rem 0.4rem; border-bottom: 2px solid var(--ink); color: var(--ink-muted); font: 400 0.75rem/1.2 var(--font-display); text-transform: uppercase; } .ds-cols span:last-child { text-align: right; } .ds-rows { list-style: none; margin: 0; padding: 0; } .ds-row { position: relative; padding-block: 0.7rem; border-bottom: 1px solid var(--hairline); transition: background-color 160ms var(--ease-out-expo); } .ds-row:last-child { border-bottom: 0; } .ds-row:has(a:hover) { background: var(--cool-blue-soft); } .ds-no { font: 400 2.5rem/0.9 var(--font-display); font-variant-numeric: tabular-nums; text-align: center; } .ds-no--long { font-size: 1.5rem; } .ds-race { display: flex; flex-direction: column; min-width: 0; } .ds-race a { color: var(--ink); font-weight: 700; font-size: 0.9375rem; text-decoration: none; } .ds-race a::after { content: \"\"; position: absolute; inset: 0; } .ds-race a:focus-visible { outline: none; } .ds-race a:focus-visible::after { outline: 3px solid var(--ink); outline-offset: -3px; } .ds-race small, .ds-gap small { color: var(--ink-muted); font-size: 0.8125rem; font-weight: 400; } .ds-gap { display: flex; flex-direction: column; align-items: flex-end; font-weight: 700; font-size: 0.9375rem; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-tear { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-top: 2px dashed var(--ink); background: var(--cool-blue); color: var(--ink); padding: 0.55rem 0.75rem; font-weight: 700; font-size: 0.9375rem; text-decoration: none; } .ds-tear:hover { background: var(--cool-blue-deep); } .ds-tear:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; } .ds-tear svg { width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Race Bib",
+    "overview": "Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next (\"8.2 km to catch Sam\"). Standing reads in seconds, on a phone after a workout or on a desktop.\n\nEnergy comes from type scale, bold flat colour and 2px Black Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.\n\nThe Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, and campaign create and join run on it. Pages not yet migrated (login, goals) still run the legacy scaffold tokens and classes in `app/ui/src/style.css` (`--bg`, `--surface`, `--border`, `--text`, `--accent`, `.card`, `.btn`, `.field`, `.progress-bar`); they are pending migration, not part of this system.",
+    "keyCharacteristics": [
+      "White ground, Black Cherry ink and outlines, Tangerine and Cool Blue as flat pops.",
+      "Bib anatomy: band, monumental numeral, dashed tear-off tab; the start-list sheet reuses band and tear-off.",
+      "Bungee capitals for numerals, titles and labels; Hanken Grotesk for names and reading.",
+      "Flat surfaces defined by 2px outlines; one hard offset under the bib in focus.",
+      "Tabular figures everywhere a number appears."
+    ],
+    "rules": [
+      {
+        "name": "The Tangerine Is a Fill Rule",
+        "body": "Tangerine never sets text on white (3.1:1 fails AA), and white never sits on Tangerine. Text on Tangerine is Black Cherry (5.0:1). Tangerine may appear as a fill or as a 3px-or-heavier indicator stroke (active underline, your chart line), never as type.",
+        "section": "colors"
+      },
+      {
+        "name": "The No Green Rule",
+        "body": "The palette carries no green in any role, including success and finished states. Finishing is shown in Cool Blue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Strava Orange Is Strava's Rule",
+        "body": "`#fc4c02` appears only inside Strava's official \"Connect with Strava\" button and \"Powered by Strava\" mark. Tangerine stays visibly distinct from it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Names Stay Human Rule",
+        "body": "Bungee is capitals only, so people's names, activity titles and anything user-written are set in Hanken Grotesk. Campaign titles are the one user-written string set in Bungee, as headline and bib band text; in start-list rows the race name is Hanken Grotesk 700, clamped to two lines.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every number uses tabular figures (`font-variant-numeric: tabular-nums`) so values align down lists and across bibs.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Lift Rule",
+        "body": "Only the bib in focus gets the hard offset. Nothing else casts a shadow: preview bibs, empty-state bibs and start-list sheets sit flat. The 1px inset that thickens an invalid input's outline is a stroke, not a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do put the next gap on the bib's tear-off tab (\"8.2 km to catch Sam\").",
+      "Do set every number in tabular figures.",
+      "Do give every swipe interaction a visible button equivalent (\"Ahead\" / \"Behind\").",
+      "Do show \"Powered by Strava\" on every screen that displays Strava data.",
+      "Do mark \"you\" with Tangerine, consistently, on every surface: your band, your rank chip, your chart line.",
+      "Do outline bibs, sheets, chips, pills, inputs and notices in 2px Black Cherry, and focus with a 3px Black Cherry ring at 2px offset.",
+      "Do make a whole bib or start-list row clickable with a stretched link on its name, keeping nested controls above it.",
+      "Do drop trailing zeros in values: \"536 km\" not \"536.0 km\", \"2h\" not \"2h 0m\"."
+    ],
+    "donts": [
+      "Don't set text in Tangerine on white, or white text on Tangerine.",
+      "Don't set people's names, activity titles or other user-written reading text in Bungee.",
+      "Don't introduce green, or Strava orange `#fc4c02`, into Fitter's own UI.",
+      "Don't drift into a dark neon fitness-tracker look or a generic white-card dashboard.",
+      "Don't add texture, gradients or soft shadows. Depth is outline plus the single front-bib offset.",
+      "Don't build new surfaces on the legacy scaffold tokens (`--accent`, `--bg`, `.card`, `.btn`)."
+    ]
+  }
+}

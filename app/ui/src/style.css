@@ -6,8 +6,27 @@
   --text-muted: #667066;
   --accent: #fc4c02; /* Strava orange */
   --accent-dark: #d84200;
+  /* Race Bib world (DESIGN.md). Tangerine is a fill only: never text on white. */
+  --paper: #ffffff;
+  --ink: #351e28;
+  --ink-muted: #5a4a52;
+  --tangerine: #ff5c34;
+  --cool-blue: #d7efff;
+  --cool-blue-soft: #eef8ff;
+  --cool-blue-deep: #c3e6ff;
+  /* Lighter, not darker: Black Cherry text stays above 4.5:1 on hover. */
+  --tangerine-hover: #ff7a59;
+  --hairline: #e9e2e6;
+  --font-display: "Bungee", Impact, sans-serif;
+  --font-body: "Hanken Grotesk Variable", system-ui, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
+}
+
+::selection {
+  background: var(--cool-blue);
+  color: var(--ink);
 }
 
 * {
@@ -77,6 +96,134 @@ a {
   font-size: 0.95rem;
 }
 
+.error {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--cool-blue);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.page-title {
+  font-size: 1.5em;
+  margin: 0.83em 0;
+}
+
+/* Race Bib pill: secondary actions and stepping controls. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.5rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 0.875rem var(--font-body);
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+}
+.pill:hover:not(:disabled) {
+  background: var(--cool-blue);
+}
+.pill:disabled {
+  border-color: var(--hairline);
+  color: var(--ink-muted);
+  cursor: default;
+}
+.pill--quiet {
+  border-style: dashed;
+}
+.pill:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+.pill--primary {
+  background: var(--tangerine);
+  font-size: 0.9375rem;
+  padding-inline: 1.1rem;
+}
+.pill--primary:hover:not(:disabled) {
+  background: var(--tangerine-hover);
+}
+.pill--primary:disabled {
+  border-color: var(--ink);
+  color: var(--ink);
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Race Bib form controls. */
+.rb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0 1.25rem;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+.rb-field > label,
+.rb-field > legend {
+  padding: 0;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+.rb-field small {
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.rb-field .field-error {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1rem var(--font-body);
+  font-variant-numeric: tabular-nums;
+  padding: 0.5rem 0.75rem;
+}
+.input::placeholder {
+  color: var(--ink-muted);
+}
+.input:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+.input[type="number"] {
+  appearance: textfield;
+}
+.input[type="number"]::-webkit-inner-spin-button,
+.input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* 2px border plus a 1px inset reads as a heavier 3px rule without shifting layout. */
+.input[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .muted {
   color: var(--text-muted);
   font-size: 0.85rem;
@@ -86,15 +233,91 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--paper);
+  border-bottom: 2px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+.navbar .wordmark {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--ink);
 }
 
 .navbar nav {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
   align-items: center;
+  min-width: 0;
+}
+
+.navbar nav a {
+  color: var(--ink-muted);
+  font-weight: 600;
+  padding: 0.25rem 0;
+  text-underline-offset: 6px;
+}
+
+.navbar nav a.router-link-active {
+  color: var(--ink);
+  text-decoration: underline 3px var(--tangerine);
+}
+
+.navbar .who {
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 10rem;
+}
+
+.navbar .logout {
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 0.875rem var(--font-body);
+  padding: 0.3rem 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.navbar .logout:hover {
+  background: var(--cool-blue);
+}
+
+.navbar a:focus-visible,
+.navbar .logout:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .navbar .who {
+    display: none;
+  }
+  .navbar nav {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar {
+    padding-inline: 0.75rem;
+  }
+  .navbar .wordmark {
+    font-size: 1.05rem;
+  }
+  .navbar nav {
+    gap: 0.6rem;
+  }
+  .navbar .logout {
+    padding-inline: 0.6rem;
+  }
 }
 
 .progress-bar {

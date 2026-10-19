@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#351e28;--muted:#5a4a52;--t:#ff5c34;--b:#d7efff;--h:#e9e2e6}
+*{box-sizing:border-box}html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#fff;color:var(--ink);font-family:"Hanken Grotesk",sans-serif}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--ink)}
+.wm{font-family:Bungee;font-size:20px}.nav span{font-weight:600;color:var(--muted);margin-left:14px}.nav .on{color:var(--ink);text-decoration:underline 3px var(--t);text-underline-offset:6px}
+.pill{display:inline-block;border:2px solid var(--ink);border-radius:999px;padding:6px 14px;font-weight:700;font-size:15px;background:#fff}.pri{background:var(--t)}
+.head{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 14px}
+h1{margin:0;font:400 26px Bungee}h2{margin:0 16px 10px;font:400 16px Bungee}
+.stage{position:relative;height:330px;margin:0 16px}
+.bib{position:absolute;border:2px solid var(--ink);border-radius:10px;overflow:hidden;background:#fff}
+.band{display:flex;justify-content:space-between;gap:8px;background:var(--t);padding:4px 12px;font:400 12px Bungee}
+.peek{right:0;bottom:0;width:62%}.peek .band{background:var(--b)}
+.peek .row{display:flex;gap:10px;align-items:center;padding:6px 12px}.peek .n{font:400 44px/1 Bungee}
+.front{top:0;left:0;right:6%;box-shadow:0 6px 0 var(--ink);z-index:1}
+.main{display:flex;justify-content:space-between;align-items:flex-end;padding:10px 14px 8px;min-height:130px}
+.num{font:400 104px/0.85 Bungee}
+.val{text-align:right}.val b{display:block;font:400 26px Bungee}.val small{display:block;color:var(--muted);font-size:13px}
+.tab{border-top:2px dashed var(--ink);background:var(--b);padding:8px 14px;font-weight:700;font-size:15px}
+.steps{display:flex;justify-content:center;align-items:center;gap:14px;margin:14px 0 22px}.count{font:400 14px Bungee;color:var(--muted)}
+.rows{margin:0 16px;border-top:2px solid var(--ink)}
+.r{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--h)}
+.r b{display:block}.r small{color:var(--muted);font-size:13px}
+</style></head><body>
+<div class="nav"><span class="wm" style="margin:0;color:var(--ink)">FITTER</span><div><span class="on">Campaigns</span><span>Goals</span></div></div>
+<div class="head"><h1>CAMPAIGNS</h1><span class="pill pri">New campaign</span></div>
+<div class="stage">
+<div class="bib peek"><div class="band"><span>NEXT</span><span>LUNCH RUN CLUB</span></div><div class="row"><span class="n">1</span><span><b>62.3 km</b><br><small>8.2 km clear of Sam</small></span></div></div>
+<div class="bib front"><div class="band"><span>OCTOBER CLIMB</span><span>14 DAYS LEFT</span></div>
+<div class="main"><span class="num">3</span><span class="val"><b>3,420 M</b><small>6 racing</small><small>1,580 m to go</small></span></div>
+<div class="tab">470 m to catch Sam →</div></div>
+</div>
+<div class="steps"><span class="pill" style="color:var(--muted);border-color:var(--h)">← Prev</span><span class="count">1 / 3</span><span class="pill">Next →</span></div>
+<h2>OPEN TO JOIN</h2>
+<div class="rows">
+<div class="r"><span><b>Weekend Long Rides</b><small>Distance · 2,000.0 km together</small></span><span class="pill">Join</span></div>
+<div class="r"><span><b>Hill Repeats November</b><small>Elevation gain · 3,000 m each</small></span><span class="pill">Join</span></div>
+</div>
+</body></html>

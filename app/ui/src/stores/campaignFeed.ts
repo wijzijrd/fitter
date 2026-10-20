@@ -1,36 +1,51 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
 import { feedClient } from "../lib/connect";
-import type { FeedActivity, LeaderboardEntry, TimelineSeries } from "../gen/fitter/v1/feed_pb";
+import type {
+  FeedActivity,
+  LeaderboardGroup,
+  TimelineGroup,
+  TimelineSeries,
+} from "../gen/fitter/v1/feed_pb";
+import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 
 interface CampaignFeedState {
   activities: FeedActivity[];
-  leaderboard: LeaderboardEntry[];
-  pooledProgressValue: number;
-  timelineSeries: TimelineSeries[];
-  timelineTargetValue: number;
+  leaderboardGroups: LeaderboardGroup[];
+  pooledProgressValue?: number;
+  pooledTargetValue?: number;
+  pooledMetric?: ActivityMetric;
+  timelineGroups: TimelineGroup[];
+  pooledTimeline?: TimelineSeries;
   loading: boolean;
+  loaded: boolean;
+  error: string | null;
 }
 
 function emptyState(): CampaignFeedState {
-  return { activities: [], leaderboard: [], pooledProgressValue: 0, timelineSeries: [], timelineTargetValue: 0, loading: false };
+  return {
+    activities: [],
+    leaderboardGroups: [],
+    timelineGroups: [],
+    loading: false,
+    loaded: false,
+    error: null,
+  };
 }
 
 export const useCampaignFeedStore = defineStore("campaignFeed", () => {
   const byCampaign = reactive(new Map<string, CampaignFeedState>());
 
   function stateFor(campaignId: string): CampaignFeedState {
-    let s = byCampaign.get(campaignId);
-    if (!s) {
-      s = emptyState();
-      byCampaign.set(campaignId, s);
-    }
-    return s;
+    // Read back through the reactive map so writes to a fresh entry still trigger updates.
+    if (!byCampaign.has(campaignId)) byCampaign.set(campaignId, emptyState());
+    return byCampaign.get(campaignId)!;
   }
 
   async function fetchAll(campaignId: string): Promise<void> {
     const s = stateFor(campaignId);
     s.loading = true;
+    s.error = null;
     try {
       const [feed, leaderboard, timeline] = await Promise.all([
         feedClient.getCampaignFeed({ campaignId }),
@@ -38,10 +53,16 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
         feedClient.getCampaignTimeline({ campaignId }),
       ]);
       s.activities = feed.activities;
-      s.leaderboard = leaderboard.entries;
+      s.leaderboardGroups = leaderboard.groups;
       s.pooledProgressValue = leaderboard.pooledProgressValue;
-      s.timelineSeries = timeline.series;
-      s.timelineTargetValue = timeline.targetValue;
+      s.pooledTargetValue = leaderboard.pooledTargetValue;
+      s.pooledMetric = leaderboard.pooledMetric;
+      s.timelineGroups = timeline.groups;
+      s.pooledTimeline = timeline.pooled;
+      s.loaded = true;
+    } catch (e) {
+      s.error = e instanceof Error ? e.message : "Failed to load campaign activity.";
+      throw e;
     } finally {
       s.loading = false;
     }
@@ -52,8 +73,10 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
   async function fetchLeaderboard(campaignId: string): Promise<void> {
     const s = stateFor(campaignId);
     const resp = await feedClient.getCampaignLeaderboard({ campaignId });
-    s.leaderboard = resp.entries;
+    s.leaderboardGroups = resp.groups;
     s.pooledProgressValue = resp.pooledProgressValue;
+    s.pooledTargetValue = resp.pooledTargetValue;
+    s.pooledMetric = resp.pooledMetric;
   }
 
   return { byCampaign, stateFor, fetchAll, fetchLeaderboard };

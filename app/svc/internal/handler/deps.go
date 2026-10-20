@@ -20,4 +20,8 @@ type Deps struct {
 	FrontendURL string
 	// PublicBaseURL is this backend's own public URL, used to build the OAuth callback redirect_uri.
 	PublicBaseURL string
+	// AdminStravaAthleteIDs is the bootstrap admin allowlist (ADMIN_STRAVA_ATHLETE_IDS):
+	// a Strava athlete id in this list is (re-)granted role='admin' on every login. See
+	// Callback for why removal from this list never demotes a standing admin.
+	AdminStravaAthleteIDs []int64
 }

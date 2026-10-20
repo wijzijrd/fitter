@@ -6,9 +6,11 @@ import { toDate } from "../../lib/timestamp";
 
 const props = defineProps<{
   series: TimelineSeries[];
-  targetValue: number;
+  // targetValue overrides the series' own targets (the pooled chart).
+  targetValue?: number;
   meId: string | undefined;
   formatValue: (v: number) => string;
+  labelFor?: (s: TimelineSeries) => string;
 }>();
 
 const el = ref<HTMLDivElement | null>(null);
@@ -23,7 +25,13 @@ const OTHERS = [INK, MUTED];
 const DASHES = ["solid", "dashed", "dotted"] as const;
 const FONT = "Hanken Grotesk Variable, system-ui, sans-serif";
 
-const label = (s: TimelineSeries) => (s.userId && s.userId === props.meId ? "You" : s.label);
+const label = (s: TimelineSeries) => props.labelFor?.(s) ?? (s.userId && s.userId === props.meId ? "You" : s.label);
+// One target rule only when every line chases the same number; mixed targets would mislead.
+const target = computed(() => {
+  if (props.targetValue !== undefined) return props.targetValue;
+  const t = props.series[0]?.targetValue;
+  return t && props.series.every((s) => s.targetValue === t) ? t : undefined;
+});
 
 // Full data for screen readers: cumulative value per member on each day that has a point.
 const table = computed(() => {
@@ -32,7 +40,7 @@ const table = computed(() => {
     s.points.forEach((p) => {
       const t = toDate(p.date)?.getTime() ?? 0;
       if (!days.has(t)) days.set(t, new Map());
-      days.get(t)!.set(col, p.cumulativeValue);
+      days.get(t)!.set(col, p.value);
     }),
   );
   return [...days.entries()]
@@ -47,9 +55,10 @@ const table = computed(() => {
 const summary = computed(() => {
   const parts = props.series.map((s) => {
     const last = s.points[s.points.length - 1];
-    return `${label(s)} ${props.formatValue(last?.cumulativeValue ?? 0)}`;
+    return `${label(s)} ${props.formatValue(last?.value ?? 0)}`;
   });
-  return `Cumulative progress over time. Target ${props.formatValue(props.targetValue)}. Latest: ${parts.join(", ")}.`;
+  const t = target.value === undefined ? "" : ` Target ${props.formatValue(target.value)}.`;
+  return `Progress over time.${t} Latest: ${parts.join(", ")}.`;
 });
 
 function render(): void {
@@ -81,7 +90,7 @@ function render(): void {
         padding: [1, 3],
         distance: 8,
       },
-      data: carryForward(s.points.map((p) => [toDate(p.date)?.getTime() ?? 0, p.cumulativeValue]), lastT),
+      data: carryForward(s.points.map((p) => [toDate(p.date)?.getTime() ?? 0, p.value]), lastT),
     };
   });
 
@@ -99,13 +108,15 @@ function render(): void {
       },
       yAxis: {
         type: "value",
+        // Keep the target rule on the chart even while everyone is well short of it.
+        max: target.value === undefined ? undefined : (v: { max: number }) => Math.max(v.max, target.value!),
         // Axis ticks are round numbers; drop the formatter's ".0".
         axisLabel: { color: MUTED, formatter: (v: number) => props.formatValue(v).replace(/\.0(?=\D|$)/, "") },
         splitLine: { lineStyle: { color: "#e9e2e6" } },
       },
       series: [
         ...series,
-        {
+        ...(target.value === undefined ? [] : [{
           name: "Target",
           type: "line",
           // Below the member lines, so end labels print over the target rule, not under it.
@@ -116,9 +127,9 @@ function render(): void {
             silent: true,
             lineStyle: { type: "dashed", color: INK, width: 2 },
             label: { formatter: "Target", position: "insideStartTop", color: INK, fontFamily: FONT, fontWeight: 700 },
-            data: [{ yAxis: props.targetValue }],
+            data: [{ yAxis: target.value }],
           },
-        },
+        }]),
       ],
     },
     true,
@@ -165,17 +176,17 @@ onBeforeUnmount(() => {
   chart?.dispose();
 });
 
-watch(() => [props.series, props.targetValue, props.meId], render, { deep: true });
+watch(() => [props.series, target.value, props.meId], render, { deep: true });
 </script>
 
 <template>
   <div ref="el" role="img" :aria-label="summary" style="width: 100%; height: 320px" />
   <table class="visually-hidden">
-    <caption>Cumulative progress by day</caption>
+    <caption>Progress by day</caption>
     <thead>
       <tr>
         <th scope="col">Day</th>
-        <th v-for="s in series" :key="s.userId || s.label" scope="col">{{ label(s) }}</th>
+        <th v-for="s in series" :key="s.clauseId || s.label" scope="col">{{ label(s) }}</th>
       </tr>
     </thead>
     <tbody>

@@ -3,10 +3,10 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
+import { useCatalogStore } from "../stores/catalog";
 import type { Campaign } from "../gen/fitter/v1/campaign_pb";
-import type { LeaderboardEntry } from "../gen/fitter/v1/feed_pb";
-import { CampaignMode } from "../gen/fitter/v1/common_pb";
-import { metricLabels, formatMetricValue, ordinal } from "../lib/labels";
+import { ordinal } from "../lib/labels";
+import { firstName, gap, lead, myEntries, primary } from "../lib/standings";
 import { toDate } from "../lib/timestamp";
 import { campaignPhase, daysUntil, plural, shortDate } from "../lib/schedule";
 import { errorMessage } from "../lib/errors";
@@ -16,11 +16,11 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
 const auth = useAuthStore();
 const store = useCampaignsStore();
 const feedStore = useCampaignFeedStore();
+const catalog = useCatalogStore();
+const fmt = catalog.format;
 
 const listError = ref("");
 const standing = reactive<Record<string, "loading" | "error" | "ok">>({});
-const joining = reactive<Record<string, boolean>>({});
-const joinError = reactive<Record<string, string>>({});
 
 const meId = computed(() => auth.user?.id);
 const byEnd = (a: Campaign, b: Campaign) => (toDate(a.endDate)?.getTime() ?? 0) - (toDate(b.endDate)?.getTime() ?? 0);
@@ -56,7 +56,7 @@ async function loadStanding(id: string): Promise<void> {
 async function load(): Promise<void> {
   listError.value = "";
   try {
-    await Promise.all([store.fetchCampaigns(), auth.user ? null : auth.fetchCurrentUser()]);
+    await Promise.all([store.fetchCampaigns(), auth.user ? null : auth.fetchCurrentUser(), catalog.ensureLoaded()]);
   } catch (err) {
     listError.value = errorMessage(err, "Campaigns didn't load. Try again.");
     return;
@@ -67,17 +67,25 @@ async function load(): Promise<void> {
 
 onMounted(load);
 
-const pooled = (c: Campaign) => c.mode === CampaignMode.POOLED;
-const firstName = (e: LeaderboardEntry) => e.userName.split(" ")[0];
-
-function rules(c: Campaign): string {
-  return `${formatMetricValue(c.metric, c.targetValue)} ${pooled(c) ? "together" : "each"} · ${plural(c.memberCount, "member")}`;
-}
+// target is the campaign's group target, when it has one.
+const target = (c: Campaign) => (c.metric !== undefined && c.targetValue !== undefined ? { metric: c.metric, value: c.targetValue } : undefined);
+const kind = (c: Campaign) => {
+  const t = target(c);
+  return t ? `${fmt(t.metric, t.value)} together` : "Own goals";
+};
 
 function mine(c: Campaign) {
   const s = feedStore.stateFor(c.id);
-  const i = s.leaderboard.findIndex((e) => e.userId === meId.value);
-  return { entries: s.leaderboard, i, me: s.leaderboard[i] as LeaderboardEntry | undefined, total: s.pooledProgressValue };
+  const placed = myEntries(s.leaderboardGroups, meId.value);
+  const t = target(c);
+  const total = s.pooledProgressValue ?? 0;
+  return {
+    s,
+    placed,
+    best: lead(placed),
+    pooledPct: t && t.value > 0 ? Math.floor((total / t.value) * 100) : undefined,
+    total,
+  };
 }
 
 interface Row {
@@ -87,51 +95,53 @@ interface Row {
   gap: string;
   gapSub: string;
   finisher?: boolean;
-  // closeness is the gap as a share of the target, so races in different units compare.
+  setGoal?: boolean;
+  // closeness is the gap as a share of the goal, so races in different units compare.
   closeness?: number;
   catchLine?: string;
 }
 
 function rowFor(c: Campaign): Row {
-  const fmt = (v: number) => formatMetricValue(c.metric, v);
   const left = daysUntil(toDate(c.endDate));
   const when = left <= 1 ? "last day" : `${left} days left`;
-  if (standing[c.id] !== "ok") return { num: "", meta: `${pooled(c) ? "Together" : metricLabels[c.metric]} · ${when}`, gap: "", gapSub: "" };
+  if (standing[c.id] !== "ok") return { num: "", meta: `${kind(c)} · ${when}`, gap: "", gapSub: "" };
 
-  const { entries, i, me, total } = mine(c);
-  if (pooled(c)) {
-    const pct = c.targetValue > 0 ? Math.floor((total / c.targetValue) * 100) : 0;
-    const done = pct >= 100;
-    return {
-      num: `${pct}%`,
-      numLabel: `Group at ${pct}%`,
-      meta: `Together · ${when}${me ? ` · you ${Math.round(total > 0 ? (me.progressValue / total) * 100 : 0)}%` : ""}`,
-      gap: done ? "Done" : fmt(c.targetValue - total),
-      gapSub: done ? "target hit" : "to target",
-      finisher: done,
-    };
-  }
-  if (!me) return { num: "", meta: `of ${entries.length} · ${when}`, gap: "", gapSub: "No standing yet" };
-
-  const done = me.targetValue > 0 && me.progressValue >= me.targetValue;
-  const row: Row = { num: String(me.rank), numLabel: `${ordinal(me.rank)} of ${entries.length}`, meta: `of ${entries.length} · ${when}`, gap: "", gapSub: "", finisher: done };
-  const ahead = entries[i - 1];
-  const behind = entries[i + 1];
-  if (ahead) {
-    const gap = ahead.progressValue - me.progressValue;
-    row.gap = gap > 0 ? fmt(gap) : "Level";
-    row.gapSub = gap > 0 ? `to ${firstName(ahead)}` : `with ${firstName(ahead)}`;
-    if (gap > 0 && me.targetValue > 0) {
-      row.closeness = gap / me.targetValue;
-      row.catchLine = `${fmt(gap)} to catch ${firstName(ahead)} in ${c.name}`;
+  const { s, placed, best, pooledPct, total } = mine(c);
+  if (!best) {
+    const t = target(c);
+    if (t && pooledPct !== undefined) {
+      const done = pooledPct >= 100;
+      return {
+        num: `${pooledPct}%`,
+        numLabel: `Group at ${pooledPct}%`,
+        meta: `Together · ${when}`,
+        gap: done ? "Done" : fmt(t.metric, t.value - total),
+        gapSub: done ? "target hit" : "to target",
+        finisher: done,
+      };
     }
-  } else if (behind) {
-    row.gap = `+${fmt(me.progressValue - behind.progressValue)}`;
-    row.gapSub = `on ${firstName(behind)}`;
-  } else {
-    row.gap = done ? "Done" : fmt(me.targetValue - me.progressValue);
-    row.gapSub = done ? "target hit" : "to finish";
+    return { num: "", meta: `Own goals · ${when}`, gap: "", gapSub: "", setGoal: true };
   }
+
+  const n = best.group.entries.length;
+  const where = s.leaderboardGroups.length > 1 ? ` · ${best.group.sportGroupLabel}` : "";
+  const more = placed.length > 1 ? ` · +${plural(placed.length - 1, "goal")}` : "";
+  const row: Row = {
+    num: String(best.entry.rank),
+    numLabel: `${ordinal(best.entry.rank)} of ${n}`,
+    meta: `of ${n}${where} · ${when}${more}`,
+    gap: "",
+    gapSub: "",
+    finisher: best.entry.satisfied,
+  };
+  const g = gap(best.group, best.entry, fmt);
+  if (g.kind === "chase") {
+    Object.assign(row, { gap: g.amount, gapSub: `to ${firstName(g.other)}`, closeness: g.closeness });
+    row.catchLine = `${g.amount} to catch ${firstName(g.other)} in ${c.name}`;
+  } else if (g.kind === "level") Object.assign(row, { gap: "Level", gapSub: `with ${firstName(g.other)}` });
+  else if (g.kind === "clear") Object.assign(row, { gap: `+${g.amount}`, gapSub: `on ${firstName(g.other)}` });
+  else if (g.kind === "finish") Object.assign(row, { gap: g.amount, gapSub: "to finish" });
+  else Object.assign(row, { gap: "Done", gapSub: "goal reached" });
   return row;
 }
 
@@ -142,38 +152,27 @@ const closestMove = computed(() => {
     .filter((r) => r.row.closeness !== undefined)
     .sort((a, b) => a.row.closeness! - b.row.closeness!)[0];
   if (best) return { text: `Closest move: ${best.row.catchLine}`, to: `/campaigns/${best.c.id}` };
-  const ready = racingRows.value.filter((r) => r.row.num);
-  return ready.length && ready.length === racingRows.value.length ? { text: "Nobody to catch: you lead every race you're in.", to: "" } : null;
+  const ranked = racingRows.value.filter((r) => r.row.num && !r.row.num.endsWith("%"));
+  const ready = racingRows.value.filter((r) => standing[r.c.id] === "ok");
+  return ranked.length && ready.length === racingRows.value.length ? { text: "Nobody to catch: you lead every race you're in.", to: "" } : null;
 });
 
 function finalResult(c: Campaign): { num: string; numLabel?: string; value: string; finisher: boolean } {
   if (standing[c.id] !== "ok") return { num: "", value: standing[c.id] === "error" ? "Didn't load" : "", finisher: false };
-  const fmt = (v: number) => formatMetricValue(c.metric, v);
-  const { entries, me, total } = mine(c);
-  if (pooled(c)) {
-    const pct = c.targetValue > 0 ? Math.floor((total / c.targetValue) * 100) : 0;
-    return { num: `${pct}%`, numLabel: `Group reached ${pct}%`, value: fmt(total), finisher: pct >= 100 };
+  const { best, pooledPct, total } = mine(c);
+  if (best) {
+    return {
+      num: String(best.entry.rank),
+      numLabel: `Finished ${ordinal(best.entry.rank)} of ${best.group.entries.length}`,
+      value: primary(best.entry, fmt),
+      finisher: best.entry.satisfied,
+    };
   }
-  if (!me) return { num: "", value: "", finisher: false };
-  return {
-    num: String(me.rank),
-    numLabel: `Finished ${ordinal(me.rank)} of ${entries.length}`,
-    value: fmt(me.progressValue),
-    finisher: me.targetValue > 0 && me.progressValue >= me.targetValue,
-  };
-}
-
-async function join(c: Campaign): Promise<void> {
-  joining[c.id] = true;
-  joinError[c.id] = "";
-  try {
-    await store.joinCampaign(c.id);
-    if (campaignPhase(c) === "live") loadStanding(c.id);
-  } catch (err) {
-    joinError[c.id] = errorMessage(err, "Joining didn't work. Try again.");
-  } finally {
-    joining[c.id] = false;
+  const t = target(c);
+  if (t && pooledPct !== undefined) {
+    return { num: `${pooledPct}%`, numLabel: `Group reached ${pooledPct}%`, value: fmt(t.metric, total), finisher: pooledPct >= 100 };
   }
+  return { num: "", value: "", finisher: false };
 }
 </script>
 
@@ -220,6 +219,9 @@ async function join(c: Campaign): Promise<void> {
                   <button type="button" class="retry" @click="loadStanding(c.id)">Try again</button>
                   <small>Didn't load</small>
                 </span>
+                <span v-else-if="row.setGoal" class="gap">
+                  <router-link :to="`/campaigns/${c.id}/join`" class="pill">Set goal<span class="visually-hidden"> in {{ c.name }}</span></router-link>
+                </span>
                 <span v-else class="gap">{{ row.gap }}<small>{{ row.gapSub }}</small></span>
               </li>
             </ol>
@@ -247,20 +249,16 @@ async function join(c: Campaign): Promise<void> {
                     <span class="visually-hidden">Starts in {{ plural(daysUntil(toDate(c.startDate)), "day") }}. </span>You're in · starts {{ shortDate(toDate(c.startDate)) }}
                   </small>
                 </span>
-                <span class="gap"><small>{{ formatMetricValue(c.metric, c.targetValue) }} {{ pooled(c) ? "together" : "each" }}</small></span>
+                <span class="gap"><small>{{ kind(c) }}</small></span>
               </li>
               <li v-for="c in groups.open" :key="c.id" class="row">
                 <span class="no" aria-hidden="true"></span>
                 <span class="race">
                   <router-link :to="`/campaigns/${c.id}`" class="race-link">{{ c.name }}</router-link>
-                  <small>{{ rules(c) }}</small>
-                  <small v-if="joinError[c.id]" class="row-error" role="alert">{{ joinError[c.id] }}</small>
+                  <small>{{ kind(c) }} · {{ plural(c.memberCount, "member") }}</small>
                 </span>
                 <span class="gap">
-                  <button v-if="pooled(c)" type="button" class="pill" :disabled="joining[c.id]" @click="join(c)">
-                    {{ joining[c.id] ? "Joining…" : "Join" }}
-                  </button>
-                  <router-link v-else :to="`/campaigns/${c.id}/join`" class="pill">Join</router-link>
+                  <router-link :to="`/campaigns/${c.id}/join`" class="pill">Join<span class="visually-hidden"> {{ c.name }}</span></router-link>
                 </span>
               </li>
             </ol>
@@ -274,7 +272,7 @@ async function join(c: Campaign): Promise<void> {
                 <span class="race">
                   <router-link :to="`/campaigns/${c.id}`" class="race-link">{{ c.name }}</router-link>
                   <small>
-                    <span v-if="finalResult(c).numLabel" class="visually-hidden">{{ finalResult(c).numLabel }}, </span>Ended {{ shortDate(toDate(c.endDate)) }} · {{ metricLabels[c.metric] }}
+                    <span v-if="finalResult(c).numLabel" class="visually-hidden">{{ finalResult(c).numLabel }}, </span>Ended {{ shortDate(toDate(c.endDate)) }} · {{ kind(c) }}
                   </small>
                   <small v-if="finalResult(c).finisher" class="finisher">Finisher</small>
                 </span>
@@ -425,10 +423,6 @@ h1 {
   color: var(--ink-muted);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
-}
-.race small.row-error {
-  color: var(--ink);
-  font-weight: 700;
 }
 .race small.finisher {
   align-self: flex-start;

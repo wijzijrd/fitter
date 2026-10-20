@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-18T20:54:04+00:00",
+  "generatedAt": "2026-10-20T00:00:00+00:00",
   "title": "Design System: Fitter",
   "extensions": {
     "colorMeta": {
@@ -143,7 +143,7 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Rank numeral on the front bib; 2.75rem on peeks; 2.5rem start-list numbers."
+        "purpose": "Rank numeral on the front bib; percentage on goal and group bibs; 2.75rem on peeks; 2.5rem start-list numbers."
       },
       "headline": {
         "displayName": "Headline",
@@ -151,11 +151,11 @@
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Progress value on the front bib."
+        "purpose": "Progress value on the front bib and goal bibs; in-page Bungee headings; target and condition value inputs."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Bib and sheet band capitals; start-list column labels."
+        "purpose": "Bib and sheet band capitals; start-list column labels; 0.875rem group labels over standings and charts."
       },
       "body": {
         "displayName": "Body",
@@ -196,7 +196,7 @@
       {
         "name": "hover-fill",
         "value": "background-color 160ms ease-out-expo",
-        "purpose": "Pill, peek, linked-bib, start-list row and choice-card hover fills."
+        "purpose": "Pill, peek, linked-bib, start-list row, choice-card and choice-pill hover fills."
       }
     ],
     "breakpoints": [
@@ -299,9 +299,9 @@
       "name": "Input and Choices",
       "kind": "input",
       "refersTo": "input",
-      "description": "2px-outlined 6px input (invalid adds a 1px inset and a bold message), Cool Blue choice cards and metric pills.",
-      "html": "<form class=\"ds-form\"><div class=\"ds-field\"><label for=\"ds-n\">Name</label><input id=\"ds-n\" class=\"ds-input\" aria-invalid=\"true\"><span class=\"ds-err\">Give the campaign a name.</span></div><fieldset class=\"ds-field\"><legend>How it's scored</legend><label class=\"ds-choice\"><input type=\"radio\" name=\"m\" checked><span><b>Each on their own</b><small>Everyone chases the target and is ranked by progress.</small></span></label><label class=\"ds-choice\"><input type=\"radio\" name=\"m\"><span><b>Together</b><small>One shared target.</small></span></label></fieldset><div class=\"ds-metrics\"><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"k\" checked><span>Distance</span></label><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"k\"><span>Elevation</span></label></div></form>",
-      "css": ".ds-form { font-family: var(--font-body); color: var(--ink); max-width: 420px; } .ds-field { display: flex; flex-direction: column; gap: 0.35rem; margin: 0 0 1.25rem; border: 0; padding: 0; } .ds-field label, .ds-field legend { font-weight: 700; font-size: 0.9375rem; padding: 0; } .ds-input { min-height: 2.75rem; border: 2px solid var(--ink); border-radius: 6px; background: var(--paper); color: var(--ink); font: 400 1rem var(--font-body); padding: 0.5rem 0.75rem; } .ds-input:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-input[aria-invalid=\"true\"] { box-shadow: inset 0 0 0 1px var(--ink); } .ds-err { font-weight: 700; font-size: 0.875rem; } .ds-choice { display: flex; align-items: flex-start; gap: 0.65rem; border: 2px solid var(--ink); border-radius: 10px; padding: 0.7rem 0.9rem; cursor: pointer; font-weight: 400; transition: background-color 160ms var(--ease-out-expo); } .ds-choice span { display: flex; flex-direction: column; gap: 0.15rem; } .ds-choice small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-choice input { margin: 0.2rem 0 0; accent-color: var(--ink); } @media (hover: hover) { .ds-choice:hover { background: var(--cool-blue-soft); } } .ds-choice:has(input:checked) { background: var(--cool-blue); } .ds-choice:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-metrics { display: flex; gap: 0.5rem; flex-wrap: wrap; } .ds-choice--pill { align-items: center; border-radius: 999px; padding: 0.45rem 0.9rem 0.45rem 0.7rem; font-weight: 700; font-size: 0.9375rem; } .ds-choice--pill input { margin: 0; }"
+      "description": "2px-outlined 6px input and select with drawn chevron (invalid adds a 1px inset and a bold message), Cool Blue choice cards, and choice pills as used in a goal-builder condition row.",
+      "html": "<form class=\"ds-form\"><div class=\"ds-field\"><label for=\"ds-n\">Name</label><input id=\"ds-n\" class=\"ds-input\" aria-invalid=\"true\"><span class=\"ds-err\">Give the campaign a name.</span></div><fieldset class=\"ds-field\"><legend>How it's scored</legend><label class=\"ds-choice\"><input type=\"radio\" name=\"m\" checked><span><b>Each on their own</b><small>Everyone chases the target and is ranked by progress.</small></span></label><label class=\"ds-choice\"><input type=\"radio\" name=\"m\"><span><b>Together</b><small>One shared target.</small></span></label></fieldset><div class=\"ds-field\"><label for=\"ds-s\">Sport</label><select id=\"ds-s\" class=\"ds-input ds-select\"><option>Run</option><option>All sports</option></select></div><div class=\"ds-metrics\"><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"k\" checked><span>Distance</span></label><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"k\"><span>Elevation</span></label></div><div class=\"ds-metrics\"><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"c\" checked><span>or faster</span></label><label class=\"ds-choice ds-choice--pill\"><input type=\"radio\" name=\"c\"><span>or slower</span></label><span class=\"ds-value\"><input class=\"ds-input ds-input--value\" value=\"4:45\" aria-label=\"Value\"><b>/km</b></span></div></form>",
+      "css": ".ds-form { font-family: var(--font-body); color: var(--ink); max-width: 420px; } .ds-field { display: flex; flex-direction: column; gap: 0.35rem; margin: 0 0 1.25rem; border: 0; padding: 0; } .ds-field label, .ds-field legend { font-weight: 700; font-size: 0.9375rem; padding: 0; } .ds-input { min-height: 2.75rem; border: 2px solid var(--ink); border-radius: 6px; background: var(--paper); color: var(--ink); font: 400 1rem var(--font-body); padding: 0.5rem 0.75rem; } .ds-input:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-input[aria-invalid=\"true\"] { box-shadow: inset 0 0 0 1px var(--ink); } .ds-err { font-weight: 700; font-size: 0.875rem; } .ds-choice { display: flex; align-items: flex-start; gap: 0.65rem; border: 2px solid var(--ink); border-radius: 10px; padding: 0.7rem 0.9rem; cursor: pointer; font-weight: 400; transition: background-color 160ms var(--ease-out-expo); } .ds-choice span { display: flex; flex-direction: column; gap: 0.15rem; } .ds-choice small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-choice input { margin: 0.2rem 0 0; accent-color: var(--ink); } @media (hover: hover) { .ds-choice:hover { background: var(--cool-blue-soft); } } .ds-choice:has(input:checked) { background: var(--cool-blue); } .ds-choice:has(input:focus-visible) { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-metrics { display: flex; gap: 0.5rem; flex-wrap: wrap; } .ds-choice--pill { align-items: center; border-radius: 999px; padding: 0.45rem 0.9rem 0.45rem 0.7rem; font-weight: 700; font-size: 0.9375rem; } .ds-choice--pill input { margin: 0; } .ds-select { appearance: none; padding-right: 2.25rem; background: var(--paper) url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23351e28' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E\") no-repeat right 0.65rem center / 1.1rem; cursor: pointer; } .ds-metrics + .ds-metrics { margin-top: 0.6rem; } .ds-value { flex-basis: 100%; display: inline-flex; align-items: center; gap: 0.4rem; } .ds-input--value { width: 7.5rem; font: 400 1.25rem/1.1 var(--font-display); } .ds-value b { font-size: 0.9375rem; }"
     },
     {
       "name": "Start List Sheet",
@@ -314,7 +314,7 @@
   ],
   "narrative": {
     "northStar": "The Race Bib",
-    "overview": "Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next (\"8.2 km to catch Sam\"). Standing reads in seconds, on a phone after a workout or on a desktop.\n\nEnergy comes from type scale, bold flat colour and 2px Black Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.\n\nThe Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, and campaign create and join run on it. Pages not yet migrated (login, goals) still run the legacy scaffold tokens and classes in `app/ui/src/style.css` (`--bg`, `--surface`, `--border`, `--text`, `--accent`, `.card`, `.btn`, `.field`, `.progress-bar`); they are pending migration, not part of this system.",
+    "overview": "Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next (\"8.2 km to catch Sam\"). Standing reads in seconds, on a phone after a workout or on a desktop.\n\nEnergy comes from type scale, bold flat colour and 2px Black Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.\n\nThe Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, campaign create and join, and goals run on it; goals are flat bibs in a grid, and every goal form (join, \"Add a goal\", create's last step, the goals editor) is the same Goal Builder. The login page has not been migrated and still runs the legacy scaffold tokens and classes in `app/ui/src/style.css` (`--bg`, `--surface`, `--border`, `--text`, `--accent`, `.container`, `.card`, `.btn`, `.field`, `.muted`, `.progress-bar`); they are pending migration, not part of this system.",
     "keyCharacteristics": [
       "White ground, Black Cherry ink and outlines, Tangerine and Cool Blue as flat pops.",
       "Bib anatomy: band, monumental numeral, dashed tear-off tab; the start-list sheet reuses band and tear-off.",
@@ -362,6 +362,7 @@
       "Do mark \"you\" with Tangerine, consistently, on every surface: your band, your rank chip, your chart line.",
       "Do outline bibs, sheets, chips, pills, inputs and notices in 2px Black Cherry, and focus with a 3px Black Cherry ring at 2px offset.",
       "Do make a whole bib or start-list row clickable with a stretched link on its name, keeping nested controls above it.",
+      "Do word lower-is-better comparisons as \"or faster\" / \"or slower\", never \"at most\" a pace.",
       "Do drop trailing zeros in values: \"536 km\" not \"536.0 km\", \"2h\" not \"2h 0m\"."
     ],
     "donts": [

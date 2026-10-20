@@ -1,36 +1,71 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 import { useCampaignsStore } from "../stores/campaigns";
-import { CampaignMode } from "../gen/fitter/v1/common_pb";
-import { metricLabels, targetInputUnits, formatMetricValue } from "../lib/labels";
+import { useCampaignFeedStore } from "../stores/campaignFeed";
+import { useGoalsStore } from "../stores/goals";
+import { useCatalogStore } from "../stores/catalog";
 import { toDate } from "../lib/timestamp";
 import { dateRange, plural } from "../lib/schedule";
+import { blankDraft, draftErrors, draftToInput, inputToDraft, unitDraft } from "../lib/goalInput";
+import { clauseText } from "../lib/labels";
 import { errorMessage } from "../lib/errors";
 import CampaignBib from "../components/CampaignBib.vue";
+import GoalBuilder from "../components/GoalBuilder.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
+const auth = useAuthStore();
 const store = useCampaignsStore();
+const feedStore = useCampaignFeedStore();
+const goals = useGoalsStore();
+const catalog = useCatalogStore();
 
 const loadError = ref("");
-const joinError = ref("");
-const targetError = ref("");
-const joining = ref(false);
-const target = ref<number | "">("");
+const saveError = ref("");
+const saving = ref(false);
+const showErrors = ref(false);
+const goal = ref(blankDraft());
+const copyFrom = ref("");
 
 const campaign = computed(() => store.campaigns.find((c) => c.id === props.id));
-const unit = computed(() => targetInputUnits[campaign.value?.metric ?? 0]);
-const perMember = computed(() => campaign.value?.mode === CampaignMode.PER_MEMBER);
-const fmt = (v: number) => formatMetricValue(campaign.value!.metric, v);
-const rawTarget = computed(() => (Number(target.value) || 0) * unit.value.factor);
+const joined = computed(() => !!campaign.value?.joined);
+const fmt = catalog.format;
+const groupTarget = computed(() => {
+  const c = campaign.value;
+  return c?.metric !== undefined && c.targetValue !== undefined ? fmt(c.metric, c.targetValue) : "";
+});
+
+// Other members' goals, to start from (the leaderboard is members-only, so this is the add-a-goal path).
+const friendGoals = computed(() =>
+  feedStore
+    .stateFor(props.id)
+    .leaderboardGroups.flatMap((g) => g.entries.map((e) => ({ e, group: g.sportGroup })))
+    .filter(({ e }) => e.userId !== auth.user?.id),
+);
+
+function copy(goalId: string): void {
+  const found = friendGoals.value.find(({ e }) => e.goalId === goalId);
+  if (!found) return;
+  const { e, group } = found;
+  goal.value = inputToDraft(
+    { name: e.goalName, sport: group ? { case: "group", value: group } : { case: undefined }, clauses: e.clauseDefs },
+    catalog.unitOf,
+  );
+}
+
+const goalLine = computed(() => {
+  const c = draftToInput(goal.value, catalog.unitOf).clauses.find((c) => c.value > 0);
+  return c ? clauseText(c, catalog.metricInfo(c.metric), fmt) : "Set what you're chasing";
+});
 
 async function load(): Promise<void> {
   loadError.value = "";
   try {
-    const c = await store.getCampaign(props.id);
-    if (c.joined) return void router.replace(`/campaigns/${c.id}`);
-    target.value = Math.round((c.targetValue / targetInputUnits[c.metric].factor) * 10) / 10;
+    if (!auth.user) await auth.fetchCurrentUser();
+    const [c] = await Promise.all([store.getCampaign(props.id), catalog.ensureLoaded()]);
+    if (c.joined) await feedStore.fetchLeaderboard(c.id);
   } catch (err) {
     loadError.value = errorMessage(err, "We couldn't load this campaign. Try again.");
   }
@@ -38,21 +73,24 @@ async function load(): Promise<void> {
 
 onMounted(load);
 
-async function join(): Promise<void> {
-  const c = campaign.value!;
-  targetError.value = perMember.value && !(rawTarget.value > 0) ? "Set a target above zero." : "";
-  if (targetError.value) return;
-  joining.value = true;
-  joinError.value = "";
+async function save(withGoal: boolean): Promise<void> {
+  showErrors.value = withGoal;
+  if (withGoal && draftErrors(goal.value, catalog.unitOf).any) {
+    await nextTick();
+    document.querySelector<HTMLElement>('.cj-body [aria-invalid="true"]')?.focus();
+    return;
+  }
+  const input = draftToInput(goal.value, catalog.unitOf);
+  saving.value = true;
+  saveError.value = "";
   try {
-    // Only send an override when it differs, so a later change to the campaign target still applies.
-    const own = perMember.value && rawTarget.value !== c.targetValue ? rawTarget.value : undefined;
-    await store.joinCampaign(c.id, own);
-    router.push(`/campaigns/${c.id}`);
+    if (joined.value) await goals.createGoal(input, props.id);
+    else await store.joinCampaign(props.id, withGoal ? [input] : []);
+    router.push(`/campaigns/${props.id}`);
   } catch (err) {
-    joinError.value = errorMessage(err, "Joining didn't work. Try again.");
+    saveError.value = errorMessage(err, joined.value ? "The goal wasn't saved. Try again." : "Joining didn't work. Try again.");
   } finally {
-    joining.value = false;
+    saving.value = false;
   }
 }
 </script>
@@ -71,50 +109,46 @@ async function join(): Promise<void> {
       <p v-else-if="!campaign" class="quiet" aria-live="polite">Loading campaign…</p>
 
       <template v-else>
-        <h1>Get your bib</h1>
+        <h1>{{ joined ? "Add a goal" : "Get your bib" }}</h1>
         <p class="meta">
-          {{ campaign.name }} · {{ metricLabels[campaign.metric] }} ·
-          {{ dateRange(toDate(campaign.startDate), toDate(campaign.endDate)) }} · {{ plural(campaign.memberCount, "member") }}
+          {{ campaign.name }} · {{ dateRange(toDate(campaign.startDate), toDate(campaign.endDate)) }} ·
+          {{ plural(campaign.memberCount, "member") }}
         </p>
 
-        <form class="cj-body" novalidate @submit.prevent="join">
+        <form class="cj-body" novalidate @submit.prevent="save(true)">
           <div class="preview" aria-hidden="true">
-            <CampaignBib
-              :band="[campaign.name, 'You']"
-              :tab="perMember ? `Your target: ${fmt(rawTarget)}` : `Group target: ${fmt(campaign.targetValue)}`"
-            >
-              <span class="claim"><b>No. —</b><small>Assigned when you join</small></span>
+            <CampaignBib :band="[campaign.name, 'You']" :tab="groupTarget ? `Group target: ${groupTarget} together` : 'Ranked by how far along you are'">
+              <span class="claim"><b>No. —</b><small>{{ joined ? "Ranked once it's saved" : "Assigned when you join" }}</small></span>
               <span class="claim-value">
-                <b>{{ fmt(0) }}</b>
-                <small>{{ perMember ? `${fmt(rawTarget)} to go` : "Counts toward the group" }}</small>
+                <b>{{ unitDraft(goal) ? fmt(unitDraft(goal)!.metric, 0) : "0%" }}</b>
+                <small>{{ goalLine }}</small>
               </span>
             </CampaignBib>
           </div>
 
           <div>
-            <div v-if="perMember" class="rb-field">
-              <label for="cj-target">Your target ({{ unit.unit }})</label>
-              <input
-                id="cj-target"
-                v-model.number="target"
-                class="input input--target"
-                type="number"
-                min="1"
-                step="any"
-                inputmode="decimal"
-                :aria-invalid="!!targetError"
-                aria-describedby="cj-target-hint"
-              />
-              <small id="cj-target-hint" :class="{ 'field-error': targetError }">
-                {{ targetError || `The campaign target is ${fmt(campaign.targetValue)}. Change it to race your own line; standings still rank by total.` }}
-              </small>
-            </div>
-            <p v-else class="lede">
-              Everyone's activities add up to {{ fmt(campaign.targetValue) }}. Your Strava activities count from the moment you join.
+            <p class="lede">
+              {{ joined ? "Each goal gets its own place in the standings." : "Your Strava activities count from the moment you join." }}
+              <template v-if="groupTarget"> They also add to the group's {{ groupTarget }}.</template>
             </p>
 
-            <p v-if="joinError" class="notice" role="alert">{{ joinError }}</p>
-            <button type="submit" class="pill pill--primary" :disabled="joining">{{ joining ? "Joining…" : "Join campaign" }}</button>
+            <div v-if="joined && friendGoals.length" class="rb-field">
+              <label for="cj-copy">Start from a friend's goal <small>optional</small></label>
+              <select id="cj-copy" v-model="copyFrom" class="input" @change="copy(copyFrom)">
+                <option value="">Start from scratch</option>
+                <option v-for="{ e } in friendGoals" :key="e.goalId" :value="e.goalId">{{ e.userName }}: {{ e.goalName }}</option>
+              </select>
+            </div>
+
+            <GoalBuilder v-model="goal" id-prefix="cj-goal" :show-errors="showErrors" />
+
+            <p v-if="saveError" class="notice" role="alert">{{ saveError }}</p>
+            <div class="actions">
+              <button type="submit" class="pill pill--primary" :disabled="saving">
+                {{ saving ? "Saving…" : joined ? "Add goal" : "Join campaign" }}
+              </button>
+              <button v-if="!joined" type="button" class="pill pill--quiet" :disabled="saving" @click="save(false)">Join without a goal</button>
+            </div>
           </div>
         </form>
       </template>
@@ -185,6 +219,7 @@ h1 {
   font-size: 0.8125rem;
 }
 .claim-value {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -194,9 +229,10 @@ h1 {
   font: 400 1.625rem/1.1 var(--font-display);
   font-variant-numeric: tabular-nums;
 }
-.input--target {
-  max-width: 12rem;
-  font: 400 1.625rem/1.1 var(--font-display);
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 .lede {
   margin: 0 0 1.25rem;

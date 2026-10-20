@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// AdminService manages the custom-sport/custom-metric taxonomy an admin can
+// add on top of internal/sports and internal/metrics' built-in ones (see
+// CatalogService.ListMetrics/ListSports, which merge these in). Every RPC
+// here is gated by requireAdmin server-side; the frontend's own admin-route
+// gate is a UX convenience only, never the real security boundary.
+message CustomSport {
+  string id = 1;
+  string key = 2; // validated at creation: must not collide with any real Strava sport_type
+  string label = 3;
+  string created_by = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message CustomMetric {
+  string id = 1;
+  string key = 2; // validated at creation: must not collide with a built-in metrics.Key or an existing custom key
+  string label = 3;
+  string unit = 4; // free-text display unit, e.g. "kg", "reps"
+  string aggregation = 5; // "sum" | "average" | "max" | "count"
+  bool nullable = 6;
+  bool lower_is_better = 7;
+  bool supports_single_scope = 8;
+  bool supports_aggregate_scope = 9;
+  // Sport groups (curated built-in group keys, e.g. "strength") and/or
+  // custom sport keys this metric is meaningful for. Empty = applies to
+  // every sport, matching CatalogService.MetricInfo.applicable_sport_groups'
+  // empty-means-unrestricted convention.
+  repeated string applicable_sport_refs = 10;
+  string created_by = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message CreateCustomSportRequest {
+  string key = 1;
+  string label = 2;
+}
+
+message CreateCustomSportResponse {
+  CustomSport sport = 1;
+}
+
+message ListCustomSportsRequest {}
+
+message ListCustomSportsResponse {
+  repeated CustomSport sports = 1;
+}
+
+message DeleteCustomSportRequest {
+  string id = 1;
+}
+
+message DeleteCustomSportResponse {}
+
+message CreateCustomMetricRequest {
+  string key = 1;
+  string label = 2;
+  string unit = 3;
+  string aggregation = 4; // "sum" | "average" | "max" | "count"
+  bool nullable = 5;
+  bool lower_is_better = 6;
+  bool supports_single_scope = 7;
+  bool supports_aggregate_scope = 8;
+  repeated string applicable_sport_refs = 9;
+}
+
+message CreateCustomMetricResponse {
+  CustomMetric metric = 1;
+}
+
+message ListCustomMetricsRequest {}
+
+message ListCustomMetricsResponse {
+  repeated CustomMetric metrics = 1;
+}
+
+message DeleteCustomMetricRequest {
+  string id = 1;
+}
+
+message DeleteCustomMetricResponse {}
+
+service AdminService {
+  rpc CreateCustomSport(CreateCustomSportRequest) returns (CreateCustomSportResponse);
+  rpc ListCustomSports(ListCustomSportsRequest) returns (ListCustomSportsResponse);
+  rpc DeleteCustomSport(DeleteCustomSportRequest) returns (DeleteCustomSportResponse);
+  rpc CreateCustomMetric(CreateCustomMetricRequest) returns (CreateCustomMetricResponse);
+  rpc ListCustomMetrics(ListCustomMetricsRequest) returns (ListCustomMetricsResponse);
+  rpc DeleteCustomMetric(DeleteCustomMetricRequest) returns (DeleteCustomMetricResponse);
+}

@@ -4,13 +4,29 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"sort"
 
 	"connectrpc.com/connect"
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
 	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
+	"github.com/fitter/svc/internal/metrics"
+	"github.com/fitter/svc/internal/progress"
+	"github.com/fitter/svc/internal/sports"
 )
+
+// requireAdmin errors unless the current request's role (looked up fresh
+// from the DB per request by the auth interceptor, not from the JWT) is
+// 'admin'. No admin-gated RPC exists yet (that's a later task); this is
+// pure plumbing for those RPCs to call.
+func requireAdmin(ctx context.Context) error {
+	role, ok := auth.RoleFromContext(ctx)
+	if !ok || role != "admin" {
+		return connect.NewError(connect.CodePermissionDenied, errors.New("admin role required"))
+	}
+	return nil
+}
 
 // requireMember loads the campaign and errors unless the current user is a member —
 // campaign feed/leaderboard/timeline are visible only to joined members.
@@ -52,36 +68,71 @@ func (s *FeedService) GetCampaignFeed(ctx context.Context, req *connect.Request[
 	out := make([]*fitterv1.FeedActivity, 0, len(rows))
 	for _, r := range rows {
 		out = append(out, &fitterv1.FeedActivity{
-			Id:            r.ID,
-			UserId:        r.UserID,
-			UserName:      r.UserName,
-			UserAvatarUrl: r.UserAvatarUrl,
-			Type:          r.Type,
-			DistanceM:     r.DistanceM,
-			ElevationM:    r.ElevationM,
-			MovingTimeS:   r.MovingTimeS,
-			StartDate:     unixToTimestamp(r.StartDate),
-			Name:          r.Name,
+			UserId:           r.UserID,
+			UserName:         r.UserName,
+			UserAvatarUrl:    r.UserAvatarUrl,
+			Type:             r.Type,
+			DistanceM:        r.DistanceM,
+			ElevationM:       r.ElevationM,
+			MovingTimeS:      r.MovingTimeS,
+			StartDate:        unixToTimestamp(r.StartDate),
+			Name:             r.Name,
+			StravaActivityId: r.StravaActivityID,
+			SportType:        r.SportType,
+			SportGroup:       string(sports.GroupOf(r.SportType, r.Type)),
+			AverageHeartrate: nullFloatPtr(r.AverageHeartrate),
+			AverageWatts:     nullFloatPtr(r.AverageWatts),
+			SufferScore:      nullFloatPtr(r.SufferScore),
 		})
 	}
 	return connect.NewResponse(&fitterv1.GetCampaignFeedResponse{Activities: out}), nil
 }
 
-// memberTarget returns the target this member is measured against: their
-// per-member override if set, else the campaign's default target.
-func memberTarget(c db.Campaign, m db.ListCampaignMembersRow) float64 {
-	if m.PerMemberTargetValue.Valid {
-		return m.PerMemberTargetValue.Float64
+// pooledActivities returns every campaign member's activities across the
+// campaign's window (ordered by start_date ASC), sport-agnostic — used by
+// both the leaderboard and the timeline's pooled total, which apply
+// club-wide regardless of any individual member's goal sport.
+func (s *FeedService) pooledActivities(ctx context.Context, c db.Campaign) ([]metrics.Activity, error) {
+	members, err := s.Queries.ListCampaignMembers(ctx, c.ID)
+	if err != nil {
+		return nil, err
 	}
-	return c.TargetValue
-}
-
-func (s *FeedService) campaignActivities(ctx context.Context, c db.Campaign, userIDs []string) ([]db.Activity, error) {
-	return s.Queries.ListActivitiesForUsersInRange(ctx, db.ListActivitiesForUsersInRangeParams{
+	userIDs := make([]string, len(members))
+	for i, m := range members {
+		userIDs[i] = m.UserID
+	}
+	rows, err := s.Queries.ListActivitiesForUsersInRange(ctx, db.ListActivitiesForUsersInRangeParams{
 		UserIds:   userIDs,
 		StartFrom: c.StartDate,
 		StartTo:   c.EndDate,
 	})
+	if err != nil {
+		return nil, err
+	}
+	acts := make([]metrics.Activity, len(rows))
+	for i, r := range rows {
+		acts[i] = metrics.FromDB(r)
+	}
+	return acts, nil
+}
+
+// pooledTotal folds every member activity in the campaign window through
+// the campaign metric's Accumulator, for use by both the leaderboard's
+// pooled_progress_value and the timeline's running pooled series.
+func (s *FeedService) pooledTotal(ctx context.Context, c db.Campaign) (def metrics.Def, acts []metrics.Activity, err error) {
+	key := metrics.Key(c.Metric.String)
+	def, ok, err := lookupMetric(ctx, s.Queries, key)
+	if err != nil {
+		return metrics.Def{}, nil, err
+	}
+	if !ok {
+		return metrics.Def{}, nil, fmt.Errorf("campaign %s: unknown pooled metric %q", c.ID, c.Metric.String)
+	}
+	acts, err = s.pooledActivities(ctx, c)
+	if err != nil {
+		return metrics.Def{}, nil, err
+	}
+	return def, acts, nil
 }
 
 func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.Request[fitterv1.GetCampaignLeaderboardRequest]) (*connect.Response[fitterv1.GetCampaignLeaderboardResponse], error) {
@@ -89,53 +140,141 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 	if err != nil {
 		return nil, err
 	}
-	members, err := s.Queries.ListCampaignMembers(ctx, c.ID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	userIDs := make([]string, len(members))
-	for i, m := range members {
-		userIDs[i] = m.UserID
-	}
-	activities, err := s.campaignActivities(ctx, c, userIDs)
+
+	goalRows, err := s.Queries.ListCampaignGoalsWithUsers(ctx, sql.NullString{String: c.ID, Valid: true})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	progressByUser := make(map[string]float64, len(members))
-	for _, a := range activities {
-		progressByUser[a.UserID] += activityMetricValue(a, c.Metric)
-	}
-
-	entries := make([]*fitterv1.LeaderboardEntry, 0, len(members))
-	var pooledTotal float64
-	for _, m := range members {
-		progress := progressByUser[m.UserID]
-		pooledTotal += progress
-		target := memberTarget(c, m)
-		ratio := 0.0
-		if target > 0 {
-			ratio = progress / target
+	goals := make([]db.Goal, len(goalRows))
+	userNameByGoal := make(map[string]string, len(goalRows))
+	avatarByGoal := make(map[string]string, len(goalRows))
+	goalIDs := make([]string, len(goalRows))
+	for i, r := range goalRows {
+		goals[i] = db.Goal{
+			ID:          r.ID,
+			UserID:      r.UserID,
+			CampaignID:  r.CampaignID,
+			Name:        r.Name,
+			SportGroup:  r.SportGroup,
+			SportType:   r.SportType,
+			PeriodStart: r.PeriodStart,
+			PeriodEnd:   r.PeriodEnd,
+			CreatedAt:   r.CreatedAt,
 		}
-		entries = append(entries, &fitterv1.LeaderboardEntry{
-			UserId:        m.UserID,
-			UserName:      m.UserName,
-			UserAvatarUrl: m.UserAvatarUrl,
-			ProgressValue: progress,
-			TargetValue:   target,
-			ProgressRatio: ratio,
+		userNameByGoal[r.ID] = r.UserName
+		avatarByGoal[r.ID] = r.UserAvatarUrl
+		goalIDs[i] = r.ID
+	}
+
+	clauseRows, err := s.Queries.ListGoalClausesForGoals(ctx, goalIDs)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	clausesByGoal := make(map[string][]db.GoalClause, len(goals))
+	for _, cl := range clauseRows {
+		clausesByGoal[cl.GoalID] = append(clausesByGoal[cl.GoalID], cl)
+	}
+	progressClauses := make(map[string][]progress.Clause, len(goals))
+	for gid, cls := range clausesByGoal {
+		pc, err := clausesToProgress(ctx, s.Queries, cls)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		progressClauses[gid] = pc
+	}
+
+	results, err := s.evaluateGoals(ctx, goals, progressClauses)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	entriesByGroup := make(map[string][]*fitterv1.LeaderboardEntry)
+	for _, g := range goals {
+		res := results[g.ID]
+		entriesByGroup[goalGroupKey(g.SportGroup, g.SportType)] = append(entriesByGroup[goalGroupKey(g.SportGroup, g.SportType)], &fitterv1.LeaderboardEntry{
+			UserId:                  g.UserID,
+			UserName:                userNameByGoal[g.ID],
+			UserAvatarUrl:           avatarByGoal[g.ID],
+			GoalId:                  g.ID,
+			GoalName:                g.Name,
+			ProgressRatio:           res.Ratio,
+			Satisfied:               res.Satisfied,
+			Clauses:                 clauseResultsToProto(res.Clauses),
+			ConsideredActivityCount: int32(res.ConsideredCount),
+			ClauseDefs:              clauseDefsToProto(clausesByGoal[g.ID]),
 		})
 	}
-	sort.Slice(entries, func(i, j int) bool { return entries[i].ProgressValue > entries[j].ProgressValue })
-	for i, e := range entries {
-		e.Rank = int32(i + 1)
+
+	order := sportGroupOrder()
+	keys := make([]string, 0, len(entriesByGroup))
+	for k := range entriesByGroup {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return order[keys[i]] < order[keys[j]] })
+
+	groups := make([]*fitterv1.LeaderboardGroup, 0, len(keys))
+	for _, k := range keys {
+		entries := entriesByGroup[k]
+		sort.Slice(entries, func(i, j int) bool {
+			if entries[i].ProgressRatio != entries[j].ProgressRatio {
+				return entries[i].ProgressRatio > entries[j].ProgressRatio
+			}
+			if entries[i].Satisfied != entries[j].Satisfied {
+				return entries[i].Satisfied
+			}
+			if entries[i].UserName != entries[j].UserName {
+				return entries[i].UserName < entries[j].UserName
+			}
+			// Final tie-break: GoalId, so two goals from the same user with
+			// an equal ratio in the same group still sort deterministically
+			// across calls rather than relying on map/slice iteration order.
+			return entries[i].GoalId < entries[j].GoalId
+		})
+		for i, e := range entries {
+			e.Rank = int32(i + 1)
+		}
+		groups = append(groups, &fitterv1.LeaderboardGroup{
+			SportGroup:      k,
+			SportGroupLabel: sportGroupLabel(k),
+			Entries:         entries,
+		})
 	}
 
-	resp := &fitterv1.GetCampaignLeaderboardResponse{Entries: entries}
-	if c.Mode == "pooled" {
-		resp.PooledProgressValue = pooledTotal
+	resp := &fitterv1.GetCampaignLeaderboardResponse{Groups: groups}
+	if c.TargetValue.Valid {
+		def, acts, err := s.pooledTotal(ctx, c)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		acc := def.NewAcc()
+		for _, a := range acts {
+			acc.Add(a)
+		}
+		value, _, ok := acc.Result()
+		if ok {
+			target := c.TargetValue.Float64
+			metricProto := keyToMetric(metrics.Key(c.Metric.String))
+			resp.PooledProgressValue = &value
+			resp.PooledTargetValue = &target
+			resp.PooledMetric = &metricProto
+		}
+		// !ok (e.g. a nullable pooled metric with zero contributing
+		// activities): leave all three pooled fields unset, matching the
+		// existing "omit all three when no target" pattern above, rather
+		// than rendering a misleading pooled_progress_value = 0.
 	}
+
 	return connect.NewResponse(resp), nil
+}
+
+// timelineGroupKey buckets timeline series by (sport group, metric): two
+// members' goals in the same sport group but with different AGGREGATE
+// metrics can't share a y-axis, so grouping by sport group alone (as the
+// leaderboard does, via goalGroupKey) isn't specific enough here.
+type timelineGroupKey struct {
+	sportGroup string
+	metric     metrics.Key
 }
 
 func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Request[fitterv1.GetCampaignTimelineRequest]) (*connect.Response[fitterv1.GetCampaignTimelineResponse], error) {
@@ -143,56 +282,160 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 	if err != nil {
 		return nil, err
 	}
-	members, err := s.Queries.ListCampaignMembers(ctx, c.ID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	userIDs := make([]string, len(members))
-	for i, m := range members {
-		userIDs[i] = m.UserID
-	}
-	// activities come back ordered by start_date ASC, which is what the
-	// cumulative-sum walk below relies on.
-	activities, err := s.campaignActivities(ctx, c, userIDs)
+
+	goalRows, err := s.Queries.ListCampaignGoalsWithUsers(ctx, sql.NullString{String: c.ID, Valid: true})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var series []*fitterv1.TimelineSeries
-	if c.Mode == "pooled" {
-		pooled := &fitterv1.TimelineSeries{Label: "Total"}
-		var running float64
-		for _, a := range activities {
-			running += activityMetricValue(a, c.Metric)
+	goals := make([]db.Goal, len(goalRows))
+	userNameByGoal := make(map[string]string, len(goalRows))
+	goalIDs := make([]string, len(goalRows))
+	for i, r := range goalRows {
+		goals[i] = db.Goal{
+			ID:          r.ID,
+			UserID:      r.UserID,
+			CampaignID:  r.CampaignID,
+			Name:        r.Name,
+			SportGroup:  r.SportGroup,
+			SportType:   r.SportType,
+			PeriodStart: r.PeriodStart,
+			PeriodEnd:   r.PeriodEnd,
+			CreatedAt:   r.CreatedAt,
+		}
+		userNameByGoal[r.ID] = r.UserName
+		goalIDs[i] = r.ID
+	}
+
+	clauseRows, err := s.Queries.ListGoalClausesForGoals(ctx, goalIDs)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	clausesByGoal := make(map[string][]db.GoalClause, len(goals))
+	for _, cl := range clauseRows {
+		clausesByGoal[cl.GoalID] = append(clausesByGoal[cl.GoalID], cl)
+	}
+
+	actsByUser, err := s.batchActivitiesByUser(ctx, goals)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	seriesByGroup := make(map[timelineGroupKey][]*fitterv1.TimelineSeries)
+	for _, g := range goals {
+		sel := sports.Selector{Group: sports.Group(g.SportGroup.String), SportType: g.SportType.String}
+		acts := actsByUser[g.UserID]
+		filtered := make([]metrics.Activity, 0, len(acts))
+		for _, a := range acts {
+			if sports.Matches(sel, a.SportType, a.Type) && g.PeriodStart <= a.StartDate && a.StartDate <= g.PeriodEnd {
+				filtered = append(filtered, a)
+			}
+		}
+
+		for _, cl := range clausesByGoal[g.ID] {
+			// SINGLE-scope clauses aren't cumulative; their state is already
+			// fully captured in the leaderboard's ClauseProgress, so they
+			// produce no timeline series.
+			if cl.Scope != "aggregate" {
+				continue
+			}
+			metricKey := metrics.Key(cl.Metric)
+			def, ok, err := lookupMetric(ctx, s.Queries, metricKey)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			if !ok {
+				// Defensive only: persisted clause rows have already passed
+				// validateClauses. Skip rather than panic on a data bug.
+				continue
+			}
+			// Label combines the user, goal name, and metric so that a user
+			// with two AGGREGATE clauses (even within the same sport group)
+			// never produces two series with an identical label in the
+			// chart legend/tooltip.
+			series := &fitterv1.TimelineSeries{
+				UserId:      g.UserID,
+				Label:       fmt.Sprintf("%s — %s · %s", userNameByGoal[g.ID], g.Name, def.Label),
+				GoalId:      g.ID,
+				ClauseId:    cl.ID,
+				Metric:      keyToMetric(metricKey),
+				Comparator:  comparatorFromDB(cl.Comparator),
+				TargetValue: cl.Value,
+			}
+			acc := def.NewAcc()
+			for _, a := range filtered {
+				acc.Add(a)
+				value, _, ok := acc.Result()
+				if !ok {
+					// e.g. a nullable metric before any activity has
+					// supplied it yet — skip rather than plot a phantom
+					// zero.
+					continue
+				}
+				series.Points = append(series.Points, &fitterv1.TimelinePoint{
+					Date:  unixToTimestamp(a.StartDate),
+					Value: value,
+				})
+			}
+			// Grouped by (sport group, metric): two members in the same
+			// sport group with different AGGREGATE metrics can't share a
+			// y-axis, so they must land in separate TimelineGroups even
+			// though goalGroupKey alone would bucket them together.
+			key := timelineGroupKey{sportGroup: goalGroupKey(g.SportGroup, g.SportType), metric: metricKey}
+			seriesByGroup[key] = append(seriesByGroup[key], series)
+		}
+	}
+
+	order := sportGroupOrder()
+	keys := make([]timelineGroupKey, 0, len(seriesByGroup))
+	for k := range seriesByGroup {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		if order[keys[i].sportGroup] != order[keys[j].sportGroup] {
+			return order[keys[i].sportGroup] < order[keys[j].sportGroup]
+		}
+		return keys[i].metric < keys[j].metric
+	})
+
+	groups := make([]*fitterv1.TimelineGroup, 0, len(keys))
+	for _, k := range keys {
+		groups = append(groups, &fitterv1.TimelineGroup{
+			SportGroup:      k.sportGroup,
+			SportGroupLabel: sportGroupLabel(k.sportGroup),
+			Series:          seriesByGroup[k],
+		})
+	}
+
+	var pooled *fitterv1.TimelineSeries
+	if c.TargetValue.Valid {
+		def, acts, err := s.pooledTotal(ctx, c)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		pooled = &fitterv1.TimelineSeries{
+			Label:       "Total",
+			Metric:      keyToMetric(metrics.Key(c.Metric.String)),
+			TargetValue: c.TargetValue.Float64,
+		}
+		acc := def.NewAcc()
+		for _, a := range acts {
+			acc.Add(a)
+			value, _, ok := acc.Result()
+			if !ok {
+				continue
+			}
 			pooled.Points = append(pooled.Points, &fitterv1.TimelinePoint{
-				Date:            unixToTimestamp(a.StartDate),
-				CumulativeValue: running,
+				Date:  unixToTimestamp(a.StartDate),
+				Value: value,
 			})
-		}
-		series = []*fitterv1.TimelineSeries{pooled}
-	} else {
-		byUser := make(map[string]*fitterv1.TimelineSeries, len(members))
-		running := make(map[string]float64, len(members))
-		for _, m := range members {
-			byUser[m.UserID] = &fitterv1.TimelineSeries{UserId: m.UserID, Label: m.UserName}
-		}
-		for _, a := range activities {
-			running[a.UserID] += activityMetricValue(a, c.Metric)
-			ts := byUser[a.UserID]
-			ts.Points = append(ts.Points, &fitterv1.TimelinePoint{
-				Date:            unixToTimestamp(a.StartDate),
-				CumulativeValue: running[a.UserID],
-			})
-		}
-		for _, uid := range userIDs {
-			series = append(series, byUser[uid])
 		}
 	}
 
 	return connect.NewResponse(&fitterv1.GetCampaignTimelineResponse{
-		Series:      series,
-		TargetValue: c.TargetValue,
-		StartDate:   unixToTimestamp(c.StartDate),
-		EndDate:     unixToTimestamp(c.EndDate),
+		Groups:    groups,
+		Pooled:    pooled,
+		StartDate: unixToTimestamp(c.StartDate),
+		EndDate:   unixToTimestamp(c.EndDate),
 	}), nil
 }

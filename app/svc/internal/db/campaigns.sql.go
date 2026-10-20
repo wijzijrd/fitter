@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const countCampaignGoals = `-- name: CountCampaignGoals :one
+SELECT COUNT(*) FROM goals WHERE campaign_id = $1
+`
+
+func (q *Queries) CountCampaignGoals(ctx context.Context, campaignID sql.NullString) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countCampaignGoals, campaignID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countCampaignMembers = `-- name: CountCampaignMembers :one
 SELECT COUNT(*) AS member_count FROM campaign_members WHERE campaign_id = $1
 `
@@ -22,22 +33,21 @@ func (q *Queries) CountCampaignMembers(ctx context.Context, campaignID string) (
 }
 
 const createCampaign = `-- name: CreateCampaign :one
-INSERT INTO campaigns (id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at
+INSERT INTO campaigns (id, name, description, metric, target_value, start_date, end_date, created_by, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, name, description, metric, target_value, start_date, end_date, created_by, created_at
 `
 
 type CreateCampaignParams struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Mode        string  `json:"mode"`
-	Metric      string  `json:"metric"`
-	TargetValue float64 `json:"target_value"`
-	StartDate   int64   `json:"start_date"`
-	EndDate     int64   `json:"end_date"`
-	CreatedBy   string  `json:"created_by"`
-	CreatedAt   int64   `json:"created_at"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Metric      sql.NullString  `json:"metric"`
+	TargetValue sql.NullFloat64 `json:"target_value"`
+	StartDate   int64           `json:"start_date"`
+	EndDate     int64           `json:"end_date"`
+	CreatedBy   string          `json:"created_by"`
+	CreatedAt   int64           `json:"created_at"`
 }
 
 func (q *Queries) CreateCampaign(ctx context.Context, arg CreateCampaignParams) (Campaign, error) {
@@ -45,7 +55,6 @@ func (q *Queries) CreateCampaign(ctx context.Context, arg CreateCampaignParams) 
 		arg.ID,
 		arg.Name,
 		arg.Description,
-		arg.Mode,
 		arg.Metric,
 		arg.TargetValue,
 		arg.StartDate,
@@ -58,7 +67,6 @@ func (q *Queries) CreateCampaign(ctx context.Context, arg CreateCampaignParams) 
 		&i.ID,
 		&i.Name,
 		&i.Description,
-		&i.Mode,
 		&i.Metric,
 		&i.TargetValue,
 		&i.StartDate,
@@ -69,8 +77,22 @@ func (q *Queries) CreateCampaign(ctx context.Context, arg CreateCampaignParams) 
 	return i, err
 }
 
+const deleteGoalsForUserInCampaign = `-- name: DeleteGoalsForUserInCampaign :exec
+DELETE FROM goals WHERE campaign_id = $1 AND user_id = $2
+`
+
+type DeleteGoalsForUserInCampaignParams struct {
+	CampaignID sql.NullString `json:"campaign_id"`
+	UserID     string         `json:"user_id"`
+}
+
+func (q *Queries) DeleteGoalsForUserInCampaign(ctx context.Context, arg DeleteGoalsForUserInCampaignParams) error {
+	_, err := q.db.ExecContext(ctx, deleteGoalsForUserInCampaign, arg.CampaignID, arg.UserID)
+	return err
+}
+
 const getCampaign = `-- name: GetCampaign :one
-SELECT id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at FROM campaigns WHERE id = $1
+SELECT id, name, description, metric, target_value, start_date, end_date, created_by, created_at FROM campaigns WHERE id = $1
 `
 
 func (q *Queries) GetCampaign(ctx context.Context, id string) (Campaign, error) {
@@ -80,7 +102,6 @@ func (q *Queries) GetCampaign(ctx context.Context, id string) (Campaign, error) 
 		&i.ID,
 		&i.Name,
 		&i.Description,
-		&i.Mode,
 		&i.Metric,
 		&i.TargetValue,
 		&i.StartDate,
@@ -92,7 +113,7 @@ func (q *Queries) GetCampaign(ctx context.Context, id string) (Campaign, error) 
 }
 
 const getCampaignMember = `-- name: GetCampaignMember :one
-SELECT campaign_id, user_id, joined_at, per_member_target_value FROM campaign_members WHERE campaign_id = $1 AND user_id = $2
+SELECT campaign_id, user_id, joined_at FROM campaign_members WHERE campaign_id = $1 AND user_id = $2
 `
 
 type GetCampaignMemberParams struct {
@@ -103,12 +124,7 @@ type GetCampaignMemberParams struct {
 func (q *Queries) GetCampaignMember(ctx context.Context, arg GetCampaignMemberParams) (CampaignMember, error) {
 	row := q.db.QueryRowContext(ctx, getCampaignMember, arg.CampaignID, arg.UserID)
 	var i CampaignMember
-	err := row.Scan(
-		&i.CampaignID,
-		&i.UserID,
-		&i.JoinedAt,
-		&i.PerMemberTargetValue,
-	)
+	err := row.Scan(&i.CampaignID, &i.UserID, &i.JoinedAt)
 	return i, err
 }
 
@@ -129,25 +145,19 @@ func (q *Queries) IsCampaignMember(ctx context.Context, arg IsCampaignMemberPara
 }
 
 const joinCampaign = `-- name: JoinCampaign :exec
-INSERT INTO campaign_members (campaign_id, user_id, joined_at, per_member_target_value)
-VALUES ($1, $2, $3, $4)
-ON CONFLICT (campaign_id, user_id) DO UPDATE SET per_member_target_value = excluded.per_member_target_value
+INSERT INTO campaign_members (campaign_id, user_id, joined_at)
+VALUES ($1, $2, $3)
+ON CONFLICT (campaign_id, user_id) DO NOTHING
 `
 
 type JoinCampaignParams struct {
-	CampaignID           string          `json:"campaign_id"`
-	UserID               string          `json:"user_id"`
-	JoinedAt             int64           `json:"joined_at"`
-	PerMemberTargetValue sql.NullFloat64 `json:"per_member_target_value"`
+	CampaignID string `json:"campaign_id"`
+	UserID     string `json:"user_id"`
+	JoinedAt   int64  `json:"joined_at"`
 }
 
 func (q *Queries) JoinCampaign(ctx context.Context, arg JoinCampaignParams) error {
-	_, err := q.db.ExecContext(ctx, joinCampaign,
-		arg.CampaignID,
-		arg.UserID,
-		arg.JoinedAt,
-		arg.PerMemberTargetValue,
-	)
+	_, err := q.db.ExecContext(ctx, joinCampaign, arg.CampaignID, arg.UserID, arg.JoinedAt)
 	return err
 }
 
@@ -166,7 +176,7 @@ func (q *Queries) LeaveCampaign(ctx context.Context, arg LeaveCampaignParams) er
 }
 
 const listCampaignMembers = `-- name: ListCampaignMembers :many
-SELECT cm.campaign_id, cm.user_id, cm.joined_at, cm.per_member_target_value,
+SELECT cm.campaign_id, cm.user_id, cm.joined_at,
        u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM campaign_members cm
 JOIN users u ON u.id = cm.user_id
@@ -174,12 +184,11 @@ WHERE cm.campaign_id = $1
 `
 
 type ListCampaignMembersRow struct {
-	CampaignID           string          `json:"campaign_id"`
-	UserID               string          `json:"user_id"`
-	JoinedAt             int64           `json:"joined_at"`
-	PerMemberTargetValue sql.NullFloat64 `json:"per_member_target_value"`
-	UserName             string          `json:"user_name"`
-	UserAvatarUrl        string          `json:"user_avatar_url"`
+	CampaignID    string `json:"campaign_id"`
+	UserID        string `json:"user_id"`
+	JoinedAt      int64  `json:"joined_at"`
+	UserName      string `json:"user_name"`
+	UserAvatarUrl string `json:"user_avatar_url"`
 }
 
 func (q *Queries) ListCampaignMembers(ctx context.Context, campaignID string) ([]ListCampaignMembersRow, error) {
@@ -195,7 +204,6 @@ func (q *Queries) ListCampaignMembers(ctx context.Context, campaignID string) ([
 			&i.CampaignID,
 			&i.UserID,
 			&i.JoinedAt,
-			&i.PerMemberTargetValue,
 			&i.UserName,
 			&i.UserAvatarUrl,
 		); err != nil {
@@ -213,7 +221,7 @@ func (q *Queries) ListCampaignMembers(ctx context.Context, campaignID string) ([
 }
 
 const listCampaigns = `-- name: ListCampaigns :many
-SELECT id, name, description, mode, metric, target_value, start_date, end_date, created_by, created_at FROM campaigns ORDER BY created_at DESC
+SELECT id, name, description, metric, target_value, start_date, end_date, created_by, created_at FROM campaigns ORDER BY created_at DESC
 `
 
 func (q *Queries) ListCampaigns(ctx context.Context) ([]Campaign, error) {
@@ -229,7 +237,6 @@ func (q *Queries) ListCampaigns(ctx context.Context) ([]Campaign, error) {
 			&i.ID,
 			&i.Name,
 			&i.Description,
-			&i.Mode,
 			&i.Metric,
 			&i.TargetValue,
 			&i.StartDate,

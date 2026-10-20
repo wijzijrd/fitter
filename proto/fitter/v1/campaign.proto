@@ -3,15 +3,17 @@ syntax = "proto3";
 package fitter.v1;
 
 import "fitter/v1/common.proto";
+import "fitter/v1/goal.proto";
 import "google/protobuf/timestamp.proto";
 
 message Campaign {
   string id = 1;
   string name = 2;
   string description = 3;
-  CampaignMode mode = 4;
-  ActivityMetric metric = 5;
-  double target_value = 6;
+  reserved 4;
+  reserved "mode";
+  optional ActivityMetric metric = 5; // unset = no pooled target
+  optional double target_value = 6;
   google.protobuf.Timestamp start_date = 7;
   google.protobuf.Timestamp end_date = 8;
   string created_by = 9;
@@ -19,14 +21,16 @@ message Campaign {
   // joined is true if the requesting user is a member.
   bool joined = 11;
   int32 member_count = 12;
+  int32 goal_count = 13;
 }
 
 message CreateCampaignRequest {
   string name = 1;
   string description = 2;
-  CampaignMode mode = 3;
-  ActivityMetric metric = 4;
-  double target_value = 5;
+  reserved 3;
+  reserved "mode";
+  optional ActivityMetric metric = 4; // both set or both unset — enforced in Task 7
+  optional double target_value = 5;
   google.protobuf.Timestamp start_date = 6;
   google.protobuf.Timestamp end_date = 7;
 }
@@ -51,13 +55,14 @@ message GetCampaignResponse {
 
 message JoinCampaignRequest {
   string campaign_id = 1;
-  // per_member_target_value overrides the campaign default target for this member.
-  // Only meaningful in CAMPAIGN_MODE_PER_MEMBER; ignored otherwise.
-  optional double per_member_target_value = 2;
+  reserved 2;
+  reserved "per_member_target_value";
+  repeated CreateGoalRequest goals = 3; // campaign_id on each is ignored, overwritten server-side
 }
 
 message JoinCampaignResponse {
   Campaign campaign = 1;
+  repeated Goal goals = 2;
 }
 
 message LeaveCampaignRequest {

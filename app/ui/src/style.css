@@ -35,7 +35,7 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--text);
 }
 
@@ -213,6 +213,68 @@ a {
 /* 2px border plus a 1px inset reads as a heavier 3px rule without shifting layout. */
 .input[aria-invalid="true"] {
   box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+select.input {
+  appearance: none;
+  padding-right: 2.25rem;
+  /* Chevron in Black Cherry, drawn rather than the platform's arrow. */
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23351e28' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 0.65rem center / 1.1rem;
+  cursor: pointer;
+}
+
+/* Choice cards and pills: radio inputs styled as Race Bib selections. */
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out-expo);
+}
+@media (hover: hover) {
+  .choice:hover {
+    background: var(--cool-blue-soft);
+  }
+}
+.choice:has(input:checked) {
+  background: var(--cool-blue);
+}
+.choice:has(input:focus-visible) {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+.choice input {
+  margin: 0.2rem 0 0;
+  accent-color: var(--ink);
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: none;
+}
+.choice > span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.choice b {
+  font-size: 1rem;
+}
+.choice small {
+  max-width: 50ch;
+}
+.choice--pill {
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem 0.45rem 0.7rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+}
+.choice--pill input {
+  margin: 0;
 }
 
 .visually-hidden {

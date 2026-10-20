@@ -5,11 +5,15 @@ import { useAuthStore } from "../stores/auth";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
 import { useGoalsStore } from "../stores/goals";
-import { metricLabels, formatMetricValue, activityMetricValue } from "../lib/labels";
+import { useCatalogStore } from "../stores/catalog";
+import { activityMetricValue } from "../lib/labels";
+import { lead, myEntries, primary, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
+import { plural } from "../lib/schedule";
 import TimelineChart from "../components/charts/TimelineChart.vue";
 import BibStack from "../components/BibStack.vue";
-import { CampaignMode } from "../gen/fitter/v1/common_pb";
+import { ActivityMetric } from "../gen/fitter/v1/common_pb";
+import type { FeedActivity, LeaderboardEntry, TimelineSeries } from "../gen/fitter/v1/feed_pb";
 import { errorMessage } from "../lib/errors";
 import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black.svg";
 
@@ -20,6 +24,7 @@ const auth = useAuthStore();
 const campaignsStore = useCampaignsStore();
 const feedStore = useCampaignFeedStore();
 const goalsStore = useGoalsStore();
+const catalog = useCatalogStore();
 
 type Tab = "standings" | "feed" | "timeline";
 const tabs: { id: Tab; label: string }[] = [
@@ -29,8 +34,6 @@ const tabs: { id: Tab; label: string }[] = [
 ];
 const tab = ref<Tab>("standings");
 const loadError = ref("");
-const joinError = ref("");
-const joining = ref(false);
 const leaving = ref(false);
 const confirmLeave = ref(false);
 const leaveError = ref("");
@@ -39,8 +42,15 @@ const stack = ref<InstanceType<typeof BibStack> | null>(null);
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
 const feed = computed(() => feedStore.stateFor(props.id));
 const meId = computed(() => auth.user?.id);
-const pooled = computed(() => campaign.value?.mode === CampaignMode.POOLED);
-const fmt = (v: number) => formatMetricValue(campaign.value!.metric, v);
+const fmt = catalog.format;
+
+const pooled = computed(() => {
+  const c = campaign.value;
+  if (c?.metric === undefined || c.targetValue === undefined) return undefined;
+  // The server leaves the total unset until an activity carries the metric.
+  return { metric: c.metric, target: c.targetValue, value: feed.value.pooledProgressValue ?? 0 };
+});
+const mine = computed(() => myEntries(feed.value.leaderboardGroups, meId.value));
 
 const DAY = 86_400_000;
 const schedule = computed(() => {
@@ -70,45 +80,57 @@ const lastActive = computed(() => {
   return m;
 });
 
+// The metrics this campaign is about for you: your goals' and the group target's.
+const myMetrics = computed(() => {
+  const set = new Set<ActivityMetric>(mine.value.flatMap((p) => p.entry.clauseDefs.map((c) => c.metric)));
+  if (pooled.value) set.add(pooled.value.metric);
+  return set;
+});
+
+// A private personal goal running now that measures something this campaign does.
 const privateGoal = computed(() => {
-  const c = campaign.value;
-  if (!c) return null;
   const now = new Date();
   const g = goalsStore.goals.find((g) => {
     const s = toDate(g.periodStart);
     const e = toDate(g.periodEnd);
-    return g.metric === c.metric && s && e && s <= now && now <= e;
+    return s && e && s <= now && now <= e && g.clauses.some((c) => myMetrics.value.has(c.metric));
   });
   if (!g) return null;
-  const pct = g.targetValue > 0 ? Math.round((g.progressValue / g.targetValue) * 100) : 0;
+  const pct = Math.floor((g.progress?.progressRatio ?? 0) * 100);
   const by = toDate(g.periodEnd)!.toLocaleDateString(undefined, { day: "numeric", month: "short" });
-  return `Your goal: ${fmt(g.targetValue)} by ${by} · ${pct}%`;
+  return `${g.name} by ${by} · ${pct}%`;
 });
+
+// Feed rows show the measure you're racing on, falling back to time, which every activity has.
+const feedMetric = computed(
+  () => lead(mine.value)?.entry.clauseDefs[0]?.metric ?? pooled.value?.metric ?? ActivityMetric.DISTANCE,
+);
+function activityValue(a: FeedActivity): string {
+  const v = activityMetricValue(a, feedMetric.value);
+  return v === undefined ? fmt(ActivityMetric.MOVING_TIME, Number(a.movingTimeS)) : fmt(feedMetric.value, v);
+}
+
+const goalNames = computed(() => {
+  const m = new Map<string, LeaderboardEntry>();
+  for (const g of feed.value.leaderboardGroups) for (const e of g.entries) m.set(e.goalId, e);
+  return m;
+});
+function seriesLabel(s: TimelineSeries, all: TimelineSeries[]): string {
+  const who = s.userId === meId.value ? "You" : (goalNames.value.get(s.goalId)?.userName.split(" ")[0] ?? s.label);
+  // Name the goal only when one person has two lines on the same chart.
+  const twice = all.filter((x) => x.userId === s.userId).length > 1;
+  return twice ? `${who} · ${goalNames.value.get(s.goalId)?.goalName ?? ""}` : who;
+}
 
 async function load(): Promise<void> {
   loadError.value = "";
   try {
     if (!auth.user) await auth.fetchCurrentUser();
-    const c = await campaignsStore.getCampaign(props.id);
+    const [c] = await Promise.all([campaignsStore.getCampaign(props.id), catalog.ensureLoaded()]);
     // Standings, feed and timeline are members-only on the server.
     if (c.joined) await feedStore.fetchAll(props.id);
   } catch (err) {
     loadError.value = errorMessage(err, "We couldn't load this campaign. Check your connection and try again.");
-  }
-}
-
-async function join(): Promise<void> {
-  // Per-member campaigns let you set your own target first.
-  if (!pooled.value) return void router.push(`/campaigns/${props.id}/join`);
-  joining.value = true;
-  joinError.value = "";
-  try {
-    await campaignsStore.joinCampaign(props.id);
-    await feedStore.fetchAll(props.id);
-  } catch (err) {
-    joinError.value = errorMessage(err, "Joining didn't work. Try again in a moment.");
-  } finally {
-    joining.value = false;
   }
 }
 
@@ -132,12 +154,15 @@ function selectTab(ev: KeyboardEvent): void {
   (document.getElementById(`tab-${tab.value}`) as HTMLElement | null)?.focus();
 }
 
-function rowNote(userId: string, progress: number): string {
-  const last = lastActive.value.get(userId);
+function rowNote(e: LeaderboardEntry): string {
+  const last = lastActive.value.get(e.userId);
   // The feed only carries recent activities, so progress without one in it is just older.
-  if (last) return `Active ${formatRelative(last)}`;
-  return progress > 0 ? "" : "No activity yet";
+  if (last) return `${e.goalName} · active ${formatRelative(last)}`;
+  return e.progressRatio > 0 ? e.goalName : `${e.goalName} · no activity yet`;
 }
+
+// Units on the left already say how far; the share says how far along the goal that is.
+const rowShare = (e: LeaderboardEntry) => (unitClause(e) ? `${Math.floor(e.progressRatio * 100)}%` : "");
 
 onMounted(() => {
   load();
@@ -163,9 +188,9 @@ onMounted(() => {
         <header class="cd-head">
           <h1>{{ campaign.name }}</h1>
           <p class="meta">
-            {{ pooled ? "Pooled" : "Per member" }} · {{ metricLabels[campaign.metric] }}
+            {{ pooled ? `Group target ${fmt(pooled.metric, pooled.target)}` : "Own goals" }}
             <template v-if="schedule.meta"> · {{ schedule.meta }}</template>
-            · {{ campaign.memberCount }} {{ campaign.memberCount === 1 ? "member" : "members" }}
+            · {{ plural(campaign.memberCount, "member") }}
           </p>
           <p v-if="campaign.description" class="desc">{{ campaign.description }}</p>
         </header>
@@ -188,24 +213,23 @@ onMounted(() => {
           </div>
 
           <section class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Your bib">
-            <p v-if="feed.loading && !feed.leaderboard.length" class="quiet">Loading standings…</p>
+            <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
             <BibStack
               v-else
               ref="stack"
-              :entries="feed.leaderboard"
-              :metric="campaign.metric"
+              :groups="feed.leaderboardGroups"
+              :pooled="pooled"
+              :campaign-id="campaign.id"
               :campaign-name="campaign.name"
               :me-id="meId"
-              :pooled="pooled"
-              :pooled-value="feed.pooledProgressValue"
-              :pooled-target="campaign.targetValue"
               :joined="campaign.joined"
-              :joining="joining"
               :time-note="schedule.note"
-            :last-active="lastActive"
-              @join="join"
+              :last-active="lastActive"
             />
-            <p v-if="joinError" class="notice-inline" role="alert">{{ joinError }}</p>
+            <!-- Without a goal and without a group target, the bib itself asks for one. -->
+            <router-link v-if="campaign.joined && (mine.length || pooled)" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>{{ mine.length ? "Add a goal" : "Set your goal" }}
+            </router-link>
             <p v-if="privateGoal && campaign.joined" class="private">
               <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="1.5" /><path d="M7 9V6.5a3 3 0 0 1 6 0V9" /></svg>
               <span><b>Private</b> · {{ privateGoal }}</span>
@@ -214,30 +238,33 @@ onMounted(() => {
 
           <section v-if="campaign.joined" id="cd-panel" class="cd-panel" role="tabpanel" :aria-labelledby="`tab-${tab}`">
             <template v-if="tab === 'standings'">
-              <p v-if="!feed.leaderboard.length && !feed.loading" class="quiet">Nobody has joined yet.</p>
-              <ol v-else class="rows">
-                <li v-for="e in feed.leaderboard" :key="e.userId" :class="{ me: e.userId === meId }">
-                  <component
-                    :is="pooled || !campaign.joined ? 'div' : 'button'"
-                    :type="pooled || !campaign.joined ? undefined : 'button'"
-                    class="row"
-                    @click="stack?.focusUser(e.userId)"
-                  >
-                    <span class="chip">{{ e.rank }}</span>
-                    <span class="who">
-                      <b>{{ e.userId === meId ? "You" : e.userName }}</b>
-                      <small v-if="e.targetValue > 0 && e.progressValue >= e.targetValue" class="finisher">Finisher</small>
-                    <small v-else>{{ rowNote(e.userId, e.progressValue) }}</small>
-                    </span>
-                    <span class="val">
-                      {{ fmt(e.progressValue) }}
-                      <small v-if="pooled && feed.pooledProgressValue > 0">
-                        {{ Math.round((e.progressValue / feed.pooledProgressValue) * 100) }}%
-                      </small>
-                    </span>
-                  </component>
-                </li>
-              </ol>
+              <div v-if="pooled" class="together">
+                <h3>Together</h3>
+                <p class="val">
+                  {{ fmt(pooled.metric, pooled.value) }}
+                  <small>of {{ fmt(pooled.metric, pooled.target) }} · {{ Math.floor((pooled.value / pooled.target) * 100) }}%</small>
+                </p>
+              </div>
+              <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">No goals set yet. Standings appear once members set theirs.</p>
+              <section v-for="g in feed.leaderboardGroups" :key="g.sportGroup" class="standings-group">
+                <h3 v-if="feed.leaderboardGroups.length > 1 || pooled">{{ g.sportGroupLabel }}</h3>
+                <ol class="rows">
+                  <li v-for="e in g.entries" :key="e.goalId" :class="{ me: e.userId === meId }">
+                    <button type="button" class="row" @click="stack?.focusGoal(e.goalId)">
+                      <span class="chip">{{ e.rank }}</span>
+                      <span class="who">
+                        <b>{{ e.userId === meId ? "You" : e.userName }}</b>
+                        <small>{{ rowNote(e) }}</small>
+                        <small v-if="e.satisfied" class="finisher">Finisher</small>
+                      </span>
+                      <span class="val">
+                        {{ primary(e, catalog.format) }}
+                        <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
+                      </span>
+                    </button>
+                  </li>
+                </ol>
+              </section>
             </template>
 
             <template v-else-if="tab === 'feed'">
@@ -245,26 +272,37 @@ onMounted(() => {
                 No activities yet. Members' Strava uploads appear here as they sync.
               </p>
               <ol v-else class="rows">
-                <li v-for="a in feed.activities" :key="a.id" class="activity">
+                <li v-for="a in feed.activities" :key="String(a.stravaActivityId)" class="activity">
                   <span class="who">
                     <b>{{ a.userId === meId ? "You" : a.userName }}</b>
                     <span class="act-name">{{ a.name }}</span>
-                    <small>{{ a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}</small>
+                    <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}</small>
                   </span>
-                  <span class="val">{{ fmt(activityMetricValue(a, campaign.metric)) }}</span>
+                  <span class="val">{{ activityValue(a) }}</span>
                 </li>
               </ol>
             </template>
 
             <template v-else>
-              <p v-if="!feed.timelineSeries.length" class="quiet">No progress to chart yet.</p>
-              <TimelineChart
-                v-else
-                :series="feed.timelineSeries"
-                :target-value="feed.timelineTargetValue"
-                :me-id="meId"
-                :format-value="fmt"
-              />
+              <p v-if="!feed.timelineGroups.length && !feed.pooledTimeline?.points.length" class="quiet">No progress to chart yet.</p>
+              <section v-if="feed.pooledTimeline?.points.length" class="chart">
+                <h3>Together</h3>
+                <TimelineChart
+                  :series="[feed.pooledTimeline]"
+                  :target-value="feed.pooledTimeline.targetValue"
+                  :me-id="meId"
+                  :format-value="(v) => fmt(feed.pooledTimeline!.metric, v)"
+                />
+              </section>
+              <section v-for="g in feed.timelineGroups" :key="`${g.sportGroup}:${g.series[0]?.metric}`" class="chart">
+                <h3>{{ g.sportGroupLabel }} · {{ catalog.metricLabel(g.series[0]?.metric ?? 0) }}</h3>
+                <TimelineChart
+                  :series="g.series"
+                  :me-id="meId"
+                  :format-value="(v) => fmt(g.series[0]?.metric ?? 0, v)"
+                  :label-for="(s) => seriesLabel(s, g.series)"
+                />
+              </section>
             </template>
           </section>
         </div>
@@ -483,6 +521,34 @@ button.row:hover .who b {
   padding: 0.7rem 0;
 }
 
+.add-goal {
+  margin-top: 1rem;
+}
+.add-goal svg {
+  width: 1rem;
+  height: 1rem;
+}
+h3 {
+  margin: 0 0 0.25rem;
+  font: 400 0.875rem/1.3 var(--font-display);
+  text-transform: uppercase;
+}
+.standings-group + .standings-group,
+.together + .standings-group,
+.chart + .chart {
+  margin-top: 1.75rem;
+}
+.together {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 2px solid var(--ink);
+}
+.together .val {
+  margin: 0;
+}
 .private {
   display: flex;
   align-items: center;

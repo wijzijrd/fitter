@@ -5,29 +5,66 @@ package fitter.v1;
 import "fitter/v1/common.proto";
 import "google/protobuf/timestamp.proto";
 
-// Goal is a private, personal fitness target — never shared with other users.
+message GoalClause {
+  string id = 1; // ignored on create; server-assigned
+  int32 position = 2;
+  ClauseScope scope = 3;
+  ActivityMetric metric = 4;
+  Comparator comparator = 5;
+  double value = 6;
+}
+
+message ClauseProgress {
+  string clause_id = 1;
+  int32 position = 2;
+  double current_value = 3;
+  bool has_value = 4;
+  bool satisfied = 5;
+  double progress_ratio = 6;
+  int32 considered_activity_count = 7;
+  int32 counted_activity_count = 8;
+}
+
+message GoalProgress {
+  bool satisfied = 1;
+  double progress_ratio = 2; // min over clause ratios
+  repeated ClauseProgress clauses = 3;
+  int32 considered_activity_count = 4;
+  optional int64 qualifying_activity_id = 5;
+  optional int64 best_attempt_activity_id = 6;
+}
+
+// Goal is a private, personal fitness target — never shared with other
+// users — unless it belongs to a campaign, in which case it becomes one of
+// that campaign's shared goals.
 message Goal {
   string id = 1;
-  ActivityMetric metric = 2;
-  double target_value = 3;
-  google.protobuf.Timestamp period_start = 4;
-  google.protobuf.Timestamp period_end = 5;
-  double progress_value = 6;
-  google.protobuf.Timestamp created_at = 7;
+  optional string campaign_id = 2;
+  string name = 3;
+  SportSelector sport = 4; // unset = all sports
+  google.protobuf.Timestamp period_start = 5;
+  google.protobuf.Timestamp period_end = 6;
+  repeated GoalClause clauses = 7;
+  GoalProgress progress = 8;
+  google.protobuf.Timestamp created_at = 9;
 }
 
 message CreateGoalRequest {
-  ActivityMetric metric = 1;
-  double target_value = 2;
-  google.protobuf.Timestamp period_start = 3;
-  google.protobuf.Timestamp period_end = 4;
+  optional string campaign_id = 1; // period is forced to the campaign window when set (see Global Constraints)
+  string name = 2;
+  SportSelector sport = 3;
+  google.protobuf.Timestamp period_start = 4;
+  google.protobuf.Timestamp period_end = 5;
+  repeated GoalClause clauses = 6;
 }
 
 message CreateGoalResponse {
   Goal goal = 1;
 }
 
-message ListGoalsRequest {}
+message ListGoalsRequest {
+  optional string campaign_id = 1; // unset = personal goals only
+}
 
 message ListGoalsResponse {
   repeated Goal goals = 1;
@@ -35,9 +72,11 @@ message ListGoalsResponse {
 
 message UpdateGoalRequest {
   string goal_id = 1;
-  double target_value = 2;
-  google.protobuf.Timestamp period_start = 3;
-  google.protobuf.Timestamp period_end = 4;
+  string name = 2;
+  SportSelector sport = 3;
+  google.protobuf.Timestamp period_start = 4;
+  google.protobuf.Timestamp period_end = 5;
+  repeated GoalClause clauses = 6; // full replacement, not a patch
 }
 
 message UpdateGoalResponse {

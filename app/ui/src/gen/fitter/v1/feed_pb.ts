@@ -4,6 +4,10 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { ActivityMetric, Comparator } from "./common_pb";
+import { file_fitter_v1_common } from "./common_pb";
+import type { ClauseProgress, GoalClause } from "./goal_pb";
+import { file_fitter_v1_goal } from "./goal_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,17 +16,12 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/feed.proto.
  */
 export const file_fitter_v1_feed: GenFile = /*@__PURE__*/
-  fileDesc("ChRmaXR0ZXIvdjEvZmVlZC5wcm90bxIJZml0dGVyLnYxIuMBCgxGZWVkQWN0aXZpdHkSCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIRCgl1c2VyX25hbWUYAyABKAkSFwoPdXNlcl9hdmF0YXJfdXJsGAQgASgJEgwKBHR5cGUYBSABKAkSEgoKZGlzdGFuY2VfbRgGIAEoARITCgtlbGV2YXRpb25fbRgHIAEoARIVCg1tb3ZpbmdfdGltZV9zGAggASgDEi4KCnN0YXJ0X2RhdGUYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEgwKBG5hbWUYCiABKAkiLQoWR2V0Q2FtcGFpZ25GZWVkUmVxdWVzdBITCgtjYW1wYWlnbl9pZBgBIAEoCSJGChdHZXRDYW1wYWlnbkZlZWRSZXNwb25zZRIrCgphY3Rpdml0aWVzGAEgAygLMhcuZml0dGVyLnYxLkZlZWRBY3Rpdml0eSKjAQoQTGVhZGVyYm9hcmRFbnRyeRIPCgd1c2VyX2lkGAEgASgJEhEKCXVzZXJfbmFtZRgCIAEoCRIXCg91c2VyX2F2YXRhcl91cmwYAyABKAkSFgoOcHJvZ3Jlc3NfdmFsdWUYBCABKAESFAoMdGFyZ2V0X3ZhbHVlGAUgASgBEhYKDnByb2dyZXNzX3JhdGlvGAYgASgBEgwKBHJhbmsYByABKAUiNAodR2V0Q2FtcGFpZ25MZWFkZXJib2FyZFJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAkibQoeR2V0Q2FtcGFpZ25MZWFkZXJib2FyZFJlc3BvbnNlEiwKB2VudHJpZXMYASADKAsyGy5maXR0ZXIudjEuTGVhZGVyYm9hcmRFbnRyeRIdChVwb29sZWRfcHJvZ3Jlc3NfdmFsdWUYAiABKAEiUwoNVGltZWxpbmVQb2ludBIoCgRkYXRlGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIYChBjdW11bGF0aXZlX3ZhbHVlGAIgASgBIloKDlRpbWVsaW5lU2VyaWVzEg8KB3VzZXJfaWQYASABKAkSDQoFbGFiZWwYAiABKAkSKAoGcG9pbnRzGAMgAygLMhguZml0dGVyLnYxLlRpbWVsaW5lUG9pbnQiMQoaR2V0Q2FtcGFpZ25UaW1lbGluZVJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAkivAEKG0dldENhbXBhaWduVGltZWxpbmVSZXNwb25zZRIpCgZzZXJpZXMYASADKAsyGS5maXR0ZXIudjEuVGltZWxpbmVTZXJpZXMSFAoMdGFyZ2V0X3ZhbHVlGAIgASgBEi4KCnN0YXJ0X2RhdGUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKCGVuZF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcDK8AgoLRmVlZFNlcnZpY2USWAoPR2V0Q2FtcGFpZ25GZWVkEiEuZml0dGVyLnYxLkdldENhbXBhaWduRmVlZFJlcXVlc3QaIi5maXR0ZXIudjEuR2V0Q2FtcGFpZ25GZWVkUmVzcG9uc2USbQoWR2V0Q2FtcGFpZ25MZWFkZXJib2FyZBIoLmZpdHRlci52MS5HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVxdWVzdBopLmZpdHRlci52MS5HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVzcG9uc2USZAoTR2V0Q2FtcGFpZ25UaW1lbGluZRIlLmZpdHRlci52MS5HZXRDYW1wYWlnblRpbWVsaW5lUmVxdWVzdBomLmZpdHRlci52MS5HZXRDYW1wYWlnblRpbWVsaW5lUmVzcG9uc2VCjQEKDWNvbS5maXR0ZXIudjFCCUZlZWRQcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChRmaXR0ZXIvdjEvZmVlZC5wcm90bxIJZml0dGVyLnYxIrYDCgxGZWVkQWN0aXZpdHkSDwoHdXNlcl9pZBgCIAEoCRIRCgl1c2VyX25hbWUYAyABKAkSFwoPdXNlcl9hdmF0YXJfdXJsGAQgASgJEgwKBHR5cGUYBSABKAkSEgoKZGlzdGFuY2VfbRgGIAEoARITCgtlbGV2YXRpb25fbRgHIAEoARIVCg1tb3ZpbmdfdGltZV9zGAggASgDEi4KCnN0YXJ0X2RhdGUYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEgwKBG5hbWUYCiABKAkSGgoSc3RyYXZhX2FjdGl2aXR5X2lkGAsgASgDEhIKCnNwb3J0X3R5cGUYDCABKAkSEwoLc3BvcnRfZ3JvdXAYDSABKAkSHgoRYXZlcmFnZV9oZWFydHJhdGUYDiABKAFIAIgBARIaCg1hdmVyYWdlX3dhdHRzGA8gASgBSAGIAQESGQoMc3VmZmVyX3Njb3JlGBAgASgBSAKIAQFCFAoSX2F2ZXJhZ2VfaGVhcnRyYXRlQhAKDl9hdmVyYWdlX3dhdHRzQg8KDV9zdWZmZXJfc2NvcmVKBAgBEAJSAmlkIi0KFkdldENhbXBhaWduRmVlZFJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAkiRgoXR2V0Q2FtcGFpZ25GZWVkUmVzcG9uc2USKwoKYWN0aXZpdGllcxgBIAMoCzIXLmZpdHRlci52MS5GZWVkQWN0aXZpdHkipwIKEExlYWRlcmJvYXJkRW50cnkSDwoHdXNlcl9pZBgBIAEoCRIRCgl1c2VyX25hbWUYAiABKAkSFwoPdXNlcl9hdmF0YXJfdXJsGAMgASgJEg8KB2dvYWxfaWQYBCABKAkSEQoJZ29hbF9uYW1lGAUgASgJEhYKDnByb2dyZXNzX3JhdGlvGAYgASgBEhEKCXNhdGlzZmllZBgHIAEoCBIMCgRyYW5rGAggASgFEioKB2NsYXVzZXMYCSADKAsyGS5maXR0ZXIudjEuQ2xhdXNlUHJvZ3Jlc3MSIQoZY29uc2lkZXJlZF9hY3Rpdml0eV9jb3VudBgKIAEoBRIqCgtjbGF1c2VfZGVmcxgLIAMoCzIVLmZpdHRlci52MS5Hb2FsQ2xhdXNlInAKEExlYWRlcmJvYXJkR3JvdXASEwoLc3BvcnRfZ3JvdXAYASABKAkSGQoRc3BvcnRfZ3JvdXBfbGFiZWwYAiABKAkSLAoHZW50cmllcxgDIAMoCzIbLmZpdHRlci52MS5MZWFkZXJib2FyZEVudHJ5IjQKHUdldENhbXBhaWduTGVhZGVyYm9hcmRSZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJIo4CCh5HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVzcG9uc2USKwoGZ3JvdXBzGAEgAygLMhsuZml0dGVyLnYxLkxlYWRlcmJvYXJkR3JvdXASIgoVcG9vbGVkX3Byb2dyZXNzX3ZhbHVlGAIgASgBSACIAQESIAoTcG9vbGVkX3RhcmdldF92YWx1ZRgDIAEoAUgBiAEBEjUKDXBvb2xlZF9tZXRyaWMYBCABKA4yGS5maXR0ZXIudjEuQWN0aXZpdHlNZXRyaWNIAogBAUIYChZfcG9vbGVkX3Byb2dyZXNzX3ZhbHVlQhYKFF9wb29sZWRfdGFyZ2V0X3ZhbHVlQhAKDl9wb29sZWRfbWV0cmljIkgKDVRpbWVsaW5lUG9pbnQSKAoEZGF0ZRgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFdmFsdWUYAiABKAEi6gEKDlRpbWVsaW5lU2VyaWVzEg8KB3VzZXJfaWQYASABKAkSDQoFbGFiZWwYAiABKAkSDwoHZ29hbF9pZBgDIAEoCRIRCgljbGF1c2VfaWQYBCABKAkSKQoGbWV0cmljGAUgASgOMhkuZml0dGVyLnYxLkFjdGl2aXR5TWV0cmljEikKCmNvbXBhcmF0b3IYBiABKA4yFS5maXR0ZXIudjEuQ29tcGFyYXRvchIUCgx0YXJnZXRfdmFsdWUYByABKAESKAoGcG9pbnRzGAggAygLMhguZml0dGVyLnYxLlRpbWVsaW5lUG9pbnQiagoNVGltZWxpbmVHcm91cBITCgtzcG9ydF9ncm91cBgBIAEoCRIZChFzcG9ydF9ncm91cF9sYWJlbBgCIAEoCRIpCgZzZXJpZXMYAyADKAsyGS5maXR0ZXIudjEuVGltZWxpbmVTZXJpZXMiMQoaR2V0Q2FtcGFpZ25UaW1lbGluZVJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAki9AEKG0dldENhbXBhaWduVGltZWxpbmVSZXNwb25zZRIoCgZncm91cHMYASADKAsyGC5maXR0ZXIudjEuVGltZWxpbmVHcm91cBIuCgZwb29sZWQYAiABKAsyGS5maXR0ZXIudjEuVGltZWxpbmVTZXJpZXNIAIgBARIuCgpzdGFydF9kYXRlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfZGF0ZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCCQoHX3Bvb2xlZEoECAUQBlIMdGFyZ2V0X3ZhbHVlMrwCCgtGZWVkU2VydmljZRJYCg9HZXRDYW1wYWlnbkZlZWQSIS5maXR0ZXIudjEuR2V0Q2FtcGFpZ25GZWVkUmVxdWVzdBoiLmZpdHRlci52MS5HZXRDYW1wYWlnbkZlZWRSZXNwb25zZRJtChZHZXRDYW1wYWlnbkxlYWRlcmJvYXJkEiguZml0dGVyLnYxLkdldENhbXBhaWduTGVhZGVyYm9hcmRSZXF1ZXN0GikuZml0dGVyLnYxLkdldENhbXBhaWduTGVhZGVyYm9hcmRSZXNwb25zZRJkChNHZXRDYW1wYWlnblRpbWVsaW5lEiUuZml0dGVyLnYxLkdldENhbXBhaWduVGltZWxpbmVSZXF1ZXN0GiYuZml0dGVyLnYxLkdldENhbXBhaWduVGltZWxpbmVSZXNwb25zZUKNAQoNY29tLmZpdHRlci52MUIJRmVlZFByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z", [file_fitter_v1_common, file_fitter_v1_goal, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message fitter.v1.FeedActivity
  */
 export type FeedActivity = Message<"fitter.v1.FeedActivity"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-
   /**
    * @generated from field: string user_id = 2;
    */
@@ -67,6 +66,40 @@ export type FeedActivity = Message<"fitter.v1.FeedActivity"> & {
    * @generated from field: string name = 10;
    */
   name: string;
+
+  /**
+   * replaces the old string id — see Task 4's schema note
+   *
+   * @generated from field: int64 strava_activity_id = 11;
+   */
+  stravaActivityId: bigint;
+
+  /**
+   * @generated from field: string sport_type = 12;
+   */
+  sportType: string;
+
+  /**
+   * resolved server-side via internal/sports
+   *
+   * @generated from field: string sport_group = 13;
+   */
+  sportGroup: string;
+
+  /**
+   * @generated from field: optional double average_heartrate = 14;
+   */
+  averageHeartrate?: number | undefined;
+
+  /**
+   * @generated from field: optional double average_watts = 15;
+   */
+  averageWatts?: number | undefined;
+
+  /**
+   * @generated from field: optional double suffer_score = 16;
+   */
+  sufferScore?: number | undefined;
 };
 
 /**
@@ -130,14 +163,16 @@ export type LeaderboardEntry = Message<"fitter.v1.LeaderboardEntry"> & {
   userAvatarUrl: string;
 
   /**
-   * @generated from field: double progress_value = 4;
+   * entries are now per-goal, not per-user
+   *
+   * @generated from field: string goal_id = 4;
    */
-  progressValue: number;
+  goalId: string;
 
   /**
-   * @generated from field: double target_value = 5;
+   * @generated from field: string goal_name = 5;
    */
-  targetValue: number;
+  goalName: string;
 
   /**
    * @generated from field: double progress_ratio = 6;
@@ -145,9 +180,37 @@ export type LeaderboardEntry = Message<"fitter.v1.LeaderboardEntry"> & {
   progressRatio: number;
 
   /**
-   * @generated from field: int32 rank = 7;
+   * @generated from field: bool satisfied = 7;
+   */
+  satisfied: boolean;
+
+  /**
+   * rank within its LeaderboardGroup
+   *
+   * @generated from field: int32 rank = 8;
    */
   rank: number;
+
+  /**
+   * @generated from field: repeated fitter.v1.ClauseProgress clauses = 9;
+   */
+  clauses: ClauseProgress[];
+
+  /**
+   * @generated from field: int32 considered_activity_count = 10;
+   */
+  consideredActivityCount: number;
+
+  /**
+   * Clause DEFINITIONS (scope/metric/comparator/value) for this entry's
+   * goal, in the same order/position as `clauses`. Populated for every
+   * entry — including other members' — since ListGoals only ever returns
+   * the caller's own goals, leaving no other way for the frontend to label
+   * another member's clause progress.
+   *
+   * @generated from field: repeated fitter.v1.GoalClause clause_defs = 11;
+   */
+  clauseDefs: GoalClause[];
 };
 
 /**
@@ -156,6 +219,35 @@ export type LeaderboardEntry = Message<"fitter.v1.LeaderboardEntry"> & {
  */
 export const LeaderboardEntrySchema: GenMessage<LeaderboardEntry> = /*@__PURE__*/
   messageDesc(file_fitter_v1_feed, 3);
+
+/**
+ * @generated from message fitter.v1.LeaderboardGroup
+ */
+export type LeaderboardGroup = Message<"fitter.v1.LeaderboardGroup"> & {
+  /**
+   * "" = goals with no sport filter ("all sports")
+   *
+   * @generated from field: string sport_group = 1;
+   */
+  sportGroup: string;
+
+  /**
+   * @generated from field: string sport_group_label = 2;
+   */
+  sportGroupLabel: string;
+
+  /**
+   * @generated from field: repeated fitter.v1.LeaderboardEntry entries = 3;
+   */
+  entries: LeaderboardEntry[];
+};
+
+/**
+ * Describes the message fitter.v1.LeaderboardGroup.
+ * Use `create(LeaderboardGroupSchema)` to create a new message.
+ */
+export const LeaderboardGroupSchema: GenMessage<LeaderboardGroup> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_feed, 4);
 
 /**
  * @generated from message fitter.v1.GetCampaignLeaderboardRequest
@@ -172,23 +264,33 @@ export type GetCampaignLeaderboardRequest = Message<"fitter.v1.GetCampaignLeader
  * Use `create(GetCampaignLeaderboardRequestSchema)` to create a new message.
  */
 export const GetCampaignLeaderboardRequestSchema: GenMessage<GetCampaignLeaderboardRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 4);
+  messageDesc(file_fitter_v1_feed, 5);
 
 /**
  * @generated from message fitter.v1.GetCampaignLeaderboardResponse
  */
 export type GetCampaignLeaderboardResponse = Message<"fitter.v1.GetCampaignLeaderboardResponse"> & {
   /**
-   * @generated from field: repeated fitter.v1.LeaderboardEntry entries = 1;
+   * @generated from field: repeated fitter.v1.LeaderboardGroup groups = 1;
    */
-  entries: LeaderboardEntry[];
+  groups: LeaderboardGroup[];
 
   /**
-   * pooled_progress_value is set only for CAMPAIGN_MODE_POOLED campaigns.
+   * only when the campaign has a target
    *
-   * @generated from field: double pooled_progress_value = 2;
+   * @generated from field: optional double pooled_progress_value = 2;
    */
-  pooledProgressValue: number;
+  pooledProgressValue?: number | undefined;
+
+  /**
+   * @generated from field: optional double pooled_target_value = 3;
+   */
+  pooledTargetValue?: number | undefined;
+
+  /**
+   * @generated from field: optional fitter.v1.ActivityMetric pooled_metric = 4;
+   */
+  pooledMetric?: ActivityMetric | undefined;
 };
 
 /**
@@ -196,7 +298,7 @@ export type GetCampaignLeaderboardResponse = Message<"fitter.v1.GetCampaignLeade
  * Use `create(GetCampaignLeaderboardResponseSchema)` to create a new message.
  */
 export const GetCampaignLeaderboardResponseSchema: GenMessage<GetCampaignLeaderboardResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 5);
+  messageDesc(file_fitter_v1_feed, 6);
 
 /**
  * @generated from message fitter.v1.TimelinePoint
@@ -208,9 +310,11 @@ export type TimelinePoint = Message<"fitter.v1.TimelinePoint"> & {
   date?: Timestamp | undefined;
 
   /**
-   * @generated from field: double cumulative_value = 2;
+   * renamed from cumulative_value — see Task 7, not every aggregation is cumulative
+   *
+   * @generated from field: double value = 2;
    */
-  cumulativeValue: number;
+  value: number;
 };
 
 /**
@@ -218,14 +322,14 @@ export type TimelinePoint = Message<"fitter.v1.TimelinePoint"> & {
  * Use `create(TimelinePointSchema)` to create a new message.
  */
 export const TimelinePointSchema: GenMessage<TimelinePoint> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 6);
+  messageDesc(file_fitter_v1_feed, 7);
 
 /**
  * @generated from message fitter.v1.TimelineSeries
  */
 export type TimelineSeries = Message<"fitter.v1.TimelineSeries"> & {
   /**
-   * user_id is empty for the pooled series in CAMPAIGN_MODE_POOLED campaigns.
+   * "" for the pooled series
    *
    * @generated from field: string user_id = 1;
    */
@@ -237,7 +341,32 @@ export type TimelineSeries = Message<"fitter.v1.TimelineSeries"> & {
   label: string;
 
   /**
-   * @generated from field: repeated fitter.v1.TimelinePoint points = 3;
+   * @generated from field: string goal_id = 3;
+   */
+  goalId: string;
+
+  /**
+   * @generated from field: string clause_id = 4;
+   */
+  clauseId: string;
+
+  /**
+   * @generated from field: fitter.v1.ActivityMetric metric = 5;
+   */
+  metric: ActivityMetric;
+
+  /**
+   * @generated from field: fitter.v1.Comparator comparator = 6;
+   */
+  comparator: Comparator;
+
+  /**
+   * @generated from field: double target_value = 7;
+   */
+  targetValue: number;
+
+  /**
+   * @generated from field: repeated fitter.v1.TimelinePoint points = 8;
    */
   points: TimelinePoint[];
 };
@@ -247,7 +376,34 @@ export type TimelineSeries = Message<"fitter.v1.TimelineSeries"> & {
  * Use `create(TimelineSeriesSchema)` to create a new message.
  */
 export const TimelineSeriesSchema: GenMessage<TimelineSeries> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 7);
+  messageDesc(file_fitter_v1_feed, 8);
+
+/**
+ * @generated from message fitter.v1.TimelineGroup
+ */
+export type TimelineGroup = Message<"fitter.v1.TimelineGroup"> & {
+  /**
+   * @generated from field: string sport_group = 1;
+   */
+  sportGroup: string;
+
+  /**
+   * @generated from field: string sport_group_label = 2;
+   */
+  sportGroupLabel: string;
+
+  /**
+   * @generated from field: repeated fitter.v1.TimelineSeries series = 3;
+   */
+  series: TimelineSeries[];
+};
+
+/**
+ * Describes the message fitter.v1.TimelineGroup.
+ * Use `create(TimelineGroupSchema)` to create a new message.
+ */
+export const TimelineGroupSchema: GenMessage<TimelineGroup> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_feed, 9);
 
 /**
  * @generated from message fitter.v1.GetCampaignTimelineRequest
@@ -264,21 +420,21 @@ export type GetCampaignTimelineRequest = Message<"fitter.v1.GetCampaignTimelineR
  * Use `create(GetCampaignTimelineRequestSchema)` to create a new message.
  */
 export const GetCampaignTimelineRequestSchema: GenMessage<GetCampaignTimelineRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 8);
+  messageDesc(file_fitter_v1_feed, 10);
 
 /**
  * @generated from message fitter.v1.GetCampaignTimelineResponse
  */
 export type GetCampaignTimelineResponse = Message<"fitter.v1.GetCampaignTimelineResponse"> & {
   /**
-   * @generated from field: repeated fitter.v1.TimelineSeries series = 1;
+   * @generated from field: repeated fitter.v1.TimelineGroup groups = 1;
    */
-  series: TimelineSeries[];
+  groups: TimelineGroup[];
 
   /**
-   * @generated from field: double target_value = 2;
+   * @generated from field: optional fitter.v1.TimelineSeries pooled = 2;
    */
-  targetValue: number;
+  pooled?: TimelineSeries | undefined;
 
   /**
    * @generated from field: google.protobuf.Timestamp start_date = 3;
@@ -296,7 +452,7 @@ export type GetCampaignTimelineResponse = Message<"fitter.v1.GetCampaignTimeline
  * Use `create(GetCampaignTimelineResponseSchema)` to create a new message.
  */
 export const GetCampaignTimelineResponseSchema: GenMessage<GetCampaignTimelineResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 9);
+  messageDesc(file_fitter_v1_feed, 11);
 
 /**
  * @generated from service fitter.v1.FeedService

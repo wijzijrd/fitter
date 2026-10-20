@@ -17,6 +17,10 @@ export function daysUntil(d: Date | null, now = Date.now()): number {
   return d ? Math.max(0, Math.ceil((d.getTime() - now) / DAY)) : 0;
 }
 
+// Dates are typed as local calendar days; parsing "YYYY-MM-DD" as UTC would shift them a day west of Greenwich.
+export const isoDay = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+export const localDay = (s: string) => new Date(`${s}T00:00:00`);
+
 export function plural(n: number, word: string): string {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }

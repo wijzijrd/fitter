@@ -1,83 +1,105 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useCampaignsStore } from "../stores/campaigns";
-import { ActivityMetric, CampaignMode } from "../gen/fitter/v1/common_pb";
-import { metricLabels, targetInputUnits, formatMetricValue } from "../lib/labels";
-import { DAY, plural, dateRange } from "../lib/schedule";
+import { useGoalsStore } from "../stores/goals";
+import { useCatalogStore } from "../stores/catalog";
+import { ActivityMetric, MetricAggregation } from "../gen/fitter/v1/common_pb";
+import { DAY, plural, dateRange, isoDay, localDay } from "../lib/schedule";
+import { editStringToBaseValue, editUnitHint } from "../lib/metricFormat";
+import { blankDraft, draftErrors, draftToInput, unitDraft } from "../lib/goalInput";
+import { clauseText } from "../lib/labels";
 import { errorMessage } from "../lib/errors";
 import CampaignBib from "../components/CampaignBib.vue";
+import GoalBuilder from "../components/GoalBuilder.vue";
 
 const router = useRouter();
 const store = useCampaignsStore();
+const goals = useGoalsStore();
+const catalog = useCatalogStore();
+onMounted(() => catalog.ensureLoaded().catch(() => {}));
 
-const steps = ["Name it", "Set the window", "Set the rules"] as const;
+const steps = ["Name it", "Set the window", "Group target", "Your goal"] as const;
 const step = ref(0);
 const heading = ref<HTMLElement | null>(null);
 const creating = ref(false);
 const createError = ref("");
 const errors = reactive({ name: "", dates: "", target: "" });
-
-// Dates are typed as local calendar days; parsing "YYYY-MM-DD" as UTC would shift them a day west of Greenwich.
-const isoDay = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
-const localDay = (s: string) => new Date(`${s}T00:00:00`);
+const showGoalErrors = ref(false);
 
 const form = reactive({
   name: "",
   description: "",
-  mode: CampaignMode.PER_MEMBER,
+  hasTarget: false,
   metric: ActivityMetric.DISTANCE,
-  target: 100,
+  target: "500",
   start: isoDay(new Date()),
   end: isoDay(new Date(Date.now() + 30 * DAY)),
 });
+const goal = ref(blankDraft());
 
-const metrics = [ActivityMetric.DISTANCE, ActivityMetric.ELEVATION, ActivityMetric.TIME, ActivityMetric.COUNT];
-const unit = computed(() => targetInputUnits[form.metric]);
-const rawTarget = computed(() => (Number(form.target) || 0) * unit.value.factor);
-const fmt = (v: number) => formatMetricValue(form.metric, v);
+// A group target adds everyone's activities together, so only metrics that sum make sense.
+const targetMetrics = computed(() =>
+  catalog.metrics.filter((m) => m.aggregation === MetricAggregation.SUM || m.aggregation === MetricAggregation.COUNT),
+);
+const unit = computed(() => catalog.unitOf(form.metric));
+const rawTarget = computed(() => editStringToBaseValue(unit.value, form.target) ?? 0);
+const fmt = catalog.format;
 // The preview holds the last valid target while the field is empty or invalid.
-const lastTarget = ref(100 * targetInputUnits[ActivityMetric.DISTANCE].factor);
+const lastTarget = ref(500_000);
 watch(rawTarget, (v) => v > 0 && (lastTarget.value = v));
+watch(() => form.metric, () => (form.target = ""));
 const shownTarget = computed(() => (rawTarget.value > 0 ? rawTarget.value : lastTarget.value));
-const pooled = computed(() => form.mode === CampaignMode.POOLED);
 const days = computed(() => Math.max(0, Math.round((localDay(form.end).getTime() - localDay(form.start).getTime()) / DAY) + 1));
 const range = computed(() => dateRange(localDay(form.start), localDay(form.end)));
+const groupLine = computed(() => `${fmt(form.metric, shownTarget.value)} together`);
+
+// goalLine reads the first finished condition of the draft goal.
+const goalLine = computed(() => {
+  const input = draftToInput(goal.value, catalog.unitOf);
+  const c = input.clauses.find((c) => c.value > 0);
+  return c ? clauseText(c, catalog.metricInfo(c.metric), fmt) : "";
+});
 
 const preview = computed(() => {
   const name = form.name.trim() || "Your campaign";
   const length = plural(days.value, "day");
-  if (pooled.value)
+  if (step.value === 3 || !form.hasTarget) {
+    const c = unitDraft(goal.value);
     return {
-      band: [name, "Group"] as [string, string],
-      numeral: "0%",
-      value: fmt(0),
-      subs: [`of ${fmt(shownTarget.value)}`, length],
-      tab: `${fmt(shownTarget.value)} together · ${range.value}`,
+      band: [name, "You"] as [string, string],
+      numeral: "1",
+      value: c ? fmt(c.metric, 0) : "0%",
+      subs: [goal.value.name.trim() || "Your goal", goalLine.value || length],
+      tab: form.hasTarget ? `Group: ${groupLine.value}` : `Own goals · ${range.value}`,
     };
+  }
   return {
-    band: [name, "You"] as [string, string],
-    numeral: "1",
-    value: fmt(0),
-    subs: [`${fmt(shownTarget.value)} to go`, length],
-    tab: `${fmt(shownTarget.value)} each · ${range.value}`,
+    band: [name, "Group"] as [string, string],
+    numeral: "0%",
+    value: fmt(form.metric, 0),
+    subs: [`of ${fmt(form.metric, shownTarget.value)}`, length],
+    tab: `${groupLine.value} · ${range.value}`,
   };
 });
 
-const summary = computed(
-  () =>
-    `${form.name.trim()}: ${fmt(shownTarget.value)} of ${metricLabels[form.metric].toLowerCase()} ${pooled.value ? "together" : "each"}, ${range.value} (${plural(days.value, "day")}).`,
-);
+const summary = computed(() => {
+  const target = form.hasTarget ? `a group target of ${fmt(form.metric, shownTarget.value)} ${catalog.metricLabel(form.metric).toLowerCase()}` : "no group target";
+  return `${form.name.trim()}: ${range.value} (${plural(days.value, "day")}), ${target}.`;
+});
 
 function validate(): boolean {
   errors.name = step.value === 0 && !form.name.trim() ? "Give the campaign a name." : "";
   errors.dates = step.value === 1 && form.end < form.start ? "The end date can't be before the start date." : "";
-  errors.target = step.value === 2 && !(rawTarget.value > 0) ? "Set a target above zero." : "";
-  return !errors.name && !errors.dates && !errors.target;
+  errors.target = step.value === 2 && form.hasTarget && !(rawTarget.value > 0) ? "Set a target above zero." : "";
+  showGoalErrors.value = step.value === 3;
+  const goalBad = step.value === 3 && draftErrors(goal.value, catalog.unitOf).any;
+  return !errors.name && !errors.dates && !errors.target && !goalBad;
 }
 
 async function go(to: number): Promise<void> {
   step.value = to;
+  showGoalErrors.value = false;
   await nextTick();
   heading.value?.focus();
 }
@@ -92,21 +114,29 @@ async function next(): Promise<void> {
     return;
   }
   if (step.value < steps.length - 1) return go(step.value + 1);
+  await create(true);
+}
+
+async function create(withGoal: boolean): Promise<void> {
   creating.value = true;
   createError.value = "";
+  let id = "";
   try {
     const c = await store.createCampaign({
       name: form.name.trim(),
       description: form.description.trim(),
-      mode: form.mode,
-      metric: form.metric,
-      targetValue: rawTarget.value,
+      metric: form.hasTarget ? form.metric : undefined,
+      targetValue: form.hasTarget ? rawTarget.value : undefined,
       startDate: localDay(form.start),
       // The end day counts in full: the server includes activities up to end_date.
       endDate: new Date(localDay(form.end).getTime() + DAY - 1),
     });
+    id = c.id;
+    if (withGoal) await goals.createGoal(draftToInput(goal.value, catalog.unitOf), c.id);
     router.push(`/campaigns/${c.id}`);
   } catch (err) {
+    // The campaign exists but the goal didn't save: send them to add it there.
+    if (id) return void router.push(`/campaigns/${id}/join`);
     createError.value = errorMessage(err, "The campaign wasn't created. Try again.");
   } finally {
     creating.value = false;
@@ -175,46 +205,48 @@ async function next(): Promise<void> {
             </p>
           </template>
 
-          <template v-else>
+          <template v-else-if="step === 2">
             <fieldset class="rb-field">
-              <legend>How it's scored</legend>
+              <legend>Is there a shared number?</legend>
               <label class="choice">
-                <input v-model.number="form.mode" type="radio" name="mode" :value="CampaignMode.PER_MEMBER" />
-                <span><b>Each on their own</b><small>Everyone chases the target and is ranked by progress. Members can set their own target when they join.</small></span>
+                <input v-model="form.hasTarget" type="radio" name="has-target" :value="false" />
+                <span><b>No group target</b><small>Everyone races their own goal, ranked by how far along they are.</small></span>
               </label>
               <label class="choice">
-                <input v-model.number="form.mode" type="radio" name="mode" :value="CampaignMode.POOLED" />
-                <span><b>Together</b><small>One shared target. Everyone's activities add up to it.</small></span>
+                <input v-model="form.hasTarget" type="radio" name="has-target" :value="true" />
+                <span><b>Group target</b><small>One shared number. Everyone's activities add up to it, on top of their own goals.</small></span>
               </label>
             </fieldset>
 
-            <fieldset class="rb-field">
-              <legend>What counts</legend>
-              <div class="metrics">
-                <label v-for="m in metrics" :key="m" class="choice choice--pill">
-                  <input v-model.number="form.metric" type="radio" name="metric" :value="m" />
-                  <span>{{ metricLabels[m] }}</span>
-                </label>
+            <template v-if="form.hasTarget">
+              <div class="rb-field">
+                <label for="cc-metric">What counts</label>
+                <select id="cc-metric" v-model.number="form.metric" class="input input--metric">
+                  <option v-for="m in targetMetrics" :key="m.metric" :value="m.metric">{{ m.label }}</option>
+                </select>
               </div>
-            </fieldset>
-
-            <div class="rb-field">
-              <label for="cc-target">{{ pooled ? "Group target" : "Target for each member" }} ({{ unit.unit }})</label>
-              <input
-                id="cc-target"
-                v-model.number="form.target"
-                class="input input--target"
-                type="number"
-                min="1"
-                step="any"
-                inputmode="decimal"
-                :aria-invalid="!!errors.target"
-                aria-describedby="cc-target-error"
-              />
-              <span id="cc-target-error" class="field-error" role="alert">{{ errors.target }}</span>
-            </div>
+              <div class="rb-field">
+                <label for="cc-target">Group target ({{ editUnitHint(unit) || "total" }})</label>
+                <input
+                  id="cc-target"
+                  v-model="form.target"
+                  class="input input--target"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  :aria-invalid="!!errors.target"
+                  aria-describedby="cc-target-error"
+                />
+                <span id="cc-target-error" class="field-error" role="alert">{{ errors.target }}</span>
+              </div>
+            </template>
 
             <p class="summary">{{ summary }}</p>
+          </template>
+
+          <template v-else>
+            <p class="lede">You're in from the start. Set what you're chasing; friends see it on the standings.</p>
+            <GoalBuilder v-model="goal" id-prefix="cc-goal" :show-errors="showGoalErrors" />
+            <button type="button" class="pill pill--quiet" :disabled="creating" @click="create(false)">Create without a goal</button>
           </template>
 
           <p v-if="createError" class="notice" role="alert">{{ createError }}</p>
@@ -321,64 +353,16 @@ legend {
   font-weight: 700;
 }
 
-.choice {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  padding: 0.7rem 0.9rem;
-  cursor: pointer;
-  transition: background-color 160ms var(--ease-out-expo);
-}
-@media (hover: hover) {
-  .choice:hover {
-    background: var(--cool-blue-soft);
-  }
-}
-.choice:has(input:checked) {
-  background: var(--cool-blue);
-}
-.choice:has(input:focus-visible) {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-}
-.choice input {
-  margin: 0.2rem 0 0;
-  accent-color: var(--ink);
-  width: 1.05rem;
-  height: 1.05rem;
-  flex: none;
-}
-.choice span {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-.choice b {
-  font-size: 1rem;
-}
-.choice small {
-  max-width: 50ch;
-}
-.metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.choice--pill {
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.45rem 0.9rem 0.45rem 0.7rem;
-  font-weight: 700;
-  font-size: 0.9375rem;
-}
-.choice--pill input {
-  margin: 0;
+.input--metric {
+  max-width: 20rem;
 }
 .input--target {
   max-width: 12rem;
   font: 400 1.625rem/1.1 var(--font-display);
+}
+.lede {
+  margin: 0 0 1.25rem;
+  max-width: 50ch;
 }
 .summary {
   margin: 0 0 1.25rem;

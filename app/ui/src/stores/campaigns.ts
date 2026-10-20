@@ -1,16 +1,19 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { campaignClient } from "../lib/connect";
-import type { Campaign } from "../gen/fitter/v1/campaign_pb";
-import { ActivityMetric, CampaignMode } from "../gen/fitter/v1/common_pb";
+import type { Campaign, JoinCampaignResponse } from "../gen/fitter/v1/campaign_pb";
+import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
+import type { GoalFormInput } from "../lib/goalInput";
+import { toCreateGoalInit } from "../lib/goalInput";
 import { fromDate } from "../lib/timestamp";
 
 export interface CreateCampaignInput {
   name: string;
   description: string;
-  mode: CampaignMode;
-  metric: ActivityMetric;
-  targetValue: number;
+  // Both set or both unset — a pooled target is optional (Task 7's server
+  // rule); there is no "mode" any more.
+  metric?: ActivityMetric;
+  targetValue?: number;
   startDate: Date;
   endDate: Date;
 }
@@ -33,7 +36,6 @@ export const useCampaignsStore = defineStore("campaigns", () => {
     const resp = await campaignClient.createCampaign({
       name: input.name,
       description: input.description,
-      mode: input.mode,
       metric: input.metric,
       targetValue: input.targetValue,
       startDate: fromDate(input.startDate),
@@ -43,9 +45,16 @@ export const useCampaignsStore = defineStore("campaigns", () => {
     return resp.campaign!;
   }
 
-  async function joinCampaign(campaignId: string, perMemberTargetValue?: number): Promise<void> {
-    const resp = await campaignClient.joinCampaign({ campaignId, perMemberTargetValue });
+  // joinCampaign submits 1+ goals (from the join-campaign dialog's
+  // ClauseBuilder-backed sub-forms) alongside membership — see
+  // JoinCampaignRequest.goals in campaign_pb.ts.
+  async function joinCampaign(campaignId: string, goals: GoalFormInput[]): Promise<JoinCampaignResponse> {
+    const resp = await campaignClient.joinCampaign({
+      campaignId,
+      goals: goals.map((g) => toCreateGoalInit(g, campaignId)),
+    });
     upsertLocal(resp.campaign);
+    return resp;
   }
 
   async function leaveCampaign(campaignId: string): Promise<void> {

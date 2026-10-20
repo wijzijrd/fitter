@@ -3,14 +3,16 @@ package main
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
+	dbfs "github.com/fitter/svc/db"
 	"github.com/fitter/svc/gen/fitter/v1/fitterv1connect"
 	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
@@ -22,9 +24,6 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
-
-//go:embed db/migrations/*.sql
-var migrationsFS embed.FS
 
 // Advisory lock key held for the duration of the migration run. Rollouts overlap: the
 // new container starts while the old one is still serving, and two new containers can
@@ -63,21 +62,23 @@ func main() {
 	})
 
 	svcDeps := &service.Deps{
+		DB:        sqlDB,
 		Queries:   queries,
 		Strava:    stravaClient,
 		JWTSecret: cfg.jwtSecret,
 		JWTTTL:    cfg.jwtTTL,
 	}
 	handlerDeps := &handler.Deps{
-		Queries:       queries,
-		Strava:        stravaClient,
-		JWTSecret:     cfg.jwtSecret,
-		JWTTTL:        cfg.jwtTTL,
-		FrontendURL:   cfg.frontendURL,
-		PublicBaseURL: cfg.publicBaseURL,
+		Queries:               queries,
+		Strava:                stravaClient,
+		JWTSecret:             cfg.jwtSecret,
+		JWTTTL:                cfg.jwtTTL,
+		FrontendURL:           cfg.frontendURL,
+		PublicBaseURL:         cfg.publicBaseURL,
+		AdminStravaAthleteIDs: cfg.adminStravaAthleteIDs,
 	}
 
-	authInterceptor := auth.NewInterceptor(cfg.jwtSecret)
+	authInterceptor := auth.NewInterceptor(cfg.jwtSecret, queries)
 	connectOpts := connect.WithInterceptors(authInterceptor)
 
 	api := http.NewServeMux()
@@ -86,6 +87,8 @@ func main() {
 	registerService(fitterv1connect.NewCampaignServiceHandler(service.NewCampaignService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewGoalServiceHandler(service.NewGoalService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewFeedServiceHandler(service.NewFeedService(svcDeps), connectOpts))
+	registerService(fitterv1connect.NewCatalogServiceHandler(service.NewCatalogService(svcDeps), connectOpts))
+	registerService(fitterv1connect.NewAdminServiceHandler(service.NewAdminService(svcDeps), connectOpts))
 
 	api.HandleFunc("/auth/strava/login", handlerDeps.Login)
 	api.HandleFunc("/auth/strava/callback", handlerDeps.Callback)
@@ -142,11 +145,11 @@ func migrateUp(ctx context.Context, dsn string) error {
 		}
 	}()
 
-	goose.SetBaseFS(migrationsFS)
+	goose.SetBaseFS(dbfs.FS)
 	if err := goose.SetDialect("postgres"); err != nil {
 		return fmt.Errorf("set goose dialect: %w", err)
 	}
-	if err := goose.UpContext(ctx, mdb, "db/migrations"); err != nil {
+	if err := goose.UpContext(ctx, mdb, "migrations"); err != nil {
 		return fmt.Errorf("apply migrations: %w", err)
 	}
 	return nil
@@ -165,6 +168,7 @@ type config struct {
 	publicBaseURL            string
 	corsOrigin               string
 	originSharedSecret       string
+	adminStravaAthleteIDs    []int64
 }
 
 func loadConfig() config {
@@ -192,6 +196,7 @@ func loadConfig() config {
 		publicBaseURL:            mustEnv("PUBLIC_BASE_URL"),
 		corsOrigin:               envOr("CORS_ORIGIN", frontendURL),
 		originSharedSecret:       originSharedSecret,
+		adminStravaAthleteIDs:    parseInt64CSV("ADMIN_STRAVA_ATHLETE_IDS", os.Getenv("ADMIN_STRAVA_ATHLETE_IDS")),
 	}
 }
 
@@ -209,4 +214,25 @@ func mustEnv(key string) string {
 		os.Exit(1)
 	}
 	return v
+}
+
+// parseInt64CSV parses a comma-separated list of int64s, e.g.
+// ADMIN_STRAVA_ATHLETE_IDS="123,456". Blank entries (from a trailing comma
+// or an unset/empty env var) are skipped rather than erroring. key is only
+// used to make a malformed-value error message actionable.
+func parseInt64CSV(key, raw string) []int64 {
+	var ids []int64
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		id, err := strconv.ParseInt(part, 10, 64)
+		if err != nil {
+			slog.Error("invalid env var: not a comma-separated list of integers", "key", key, "value", raw)
+			os.Exit(1)
+		}
+		ids = append(ids, id)
+	}
+	return ids
 }

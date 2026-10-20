@@ -10,7 +10,7 @@ import (
 
 	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
-	"github.com/fitter/svc/internal/strava"
+	"github.com/fitter/svc/internal/ingest"
 	"github.com/google/uuid"
 )
 
@@ -64,16 +64,36 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := d.Queries.UpsertUserByStravaID(r.Context(), db.UpsertUserByStravaIDParams{
-		ID:              uuid.NewString(),
-		StravaAthleteID: tok.Athlete.ID,
-		Name:            tok.Athlete.Name(),
-		AvatarUrl:       tok.Athlete.ProfileURL,
-		AccessToken:     tok.AccessToken,
-		RefreshToken:    tok.RefreshToken,
-		TokenExpiresAt:  tok.ExpiresAt,
-		CreatedAt:       time.Now().Unix(),
-	})
+	var u db.User
+	if d.isBootstrapAdmin(tok.Athlete.ID) {
+		// Explicitly (re-)grants admin on every login for a listed athlete
+		// id. Never the other branch: removing an id from the env var only
+		// stops future re-grants via this path, it never demotes a
+		// standing admin (see UpsertUserByStravaID's own doc comment).
+		u, err = d.Queries.UpsertUserByStravaIDAsAdmin(r.Context(), db.UpsertUserByStravaIDAsAdminParams{
+			ID:              uuid.NewString(),
+			StravaAthleteID: tok.Athlete.ID,
+			Name:            tok.Athlete.Name(),
+			AvatarUrl:       tok.Athlete.ProfileURL,
+			AccessToken:     tok.AccessToken,
+			RefreshToken:    tok.RefreshToken,
+			TokenExpiresAt:  tok.ExpiresAt,
+			CreatedAt:       time.Now().Unix(),
+		})
+	} else {
+		// Never mentions role at all, so an existing user's role (in
+		// particular a promoted admin's) is left untouched here.
+		u, err = d.Queries.UpsertUserByStravaID(r.Context(), db.UpsertUserByStravaIDParams{
+			ID:              uuid.NewString(),
+			StravaAthleteID: tok.Athlete.ID,
+			Name:            tok.Athlete.Name(),
+			AvatarUrl:       tok.Athlete.ProfileURL,
+			AccessToken:     tok.AccessToken,
+			RefreshToken:    tok.RefreshToken,
+			TokenExpiresAt:  tok.ExpiresAt,
+			CreatedAt:       time.Now().Unix(),
+		})
+	}
 	if err != nil {
 		slog.Error("upsert user failed", "err", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -91,53 +111,30 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, d.FrontendURL+"/auth/callback#token="+jwtToken, http.StatusFound)
 }
 
-// backfillActivities pulls recent history for a newly (re-)authorized user.
-// Runs detached from the request so the OAuth redirect isn't held up by
-// however many pages Strava takes to page through.
+// backfillActivities pulls recent history for a newly (re-)authorized user
+// via internal/ingest.Backfill — the single Strava write path. Runs detached
+// from the request so the OAuth redirect isn't held up by however many pages
+// Strava takes to page through.
 func (d *Deps) backfillActivities(u db.User) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
-	const perPage = 50
-	const maxPages = 4 // ~200 most recent activities
-	for page := 1; page <= maxPages; page++ {
-		activities, err := d.Strava.ListActivities(ctx, u.AccessToken, page, perPage)
-		if err != nil {
-			slog.Error("backfill list activities failed", "user_id", u.ID, "page", page, "err", err)
-			return
-		}
-		if len(activities) == 0 {
-			return
-		}
-		for _, a := range activities {
-			if err := upsertStravaActivity(ctx, d.Queries, u.ID, a); err != nil {
-				slog.Error("backfill upsert activity failed", "user_id", u.ID, "activity_id", a.ID, "err", err)
-			}
-		}
-		if len(activities) < perPage {
-			return
-		}
+	count, err := ingest.Backfill(ctx, d.Queries, d.Strava, u, 0)
+	if err != nil {
+		slog.Error("backfill activities failed", "user_id", u.ID, "err", err)
+		return
 	}
+	slog.Info("backfill activities complete", "user_id", u.ID, "count", count)
 }
 
-func upsertStravaActivity(ctx context.Context, q *db.Queries, userID string, a strava.Activity) error {
-	startDate, err := time.Parse(time.RFC3339, a.StartDate)
-	if err != nil {
-		startDate = time.Now()
+// isBootstrapAdmin reports whether athleteID is in ADMIN_STRAVA_ATHLETE_IDS.
+func (d *Deps) isBootstrapAdmin(athleteID int64) bool {
+	for _, id := range d.AdminStravaAthleteIDs {
+		if id == athleteID {
+			return true
+		}
 	}
-	_, err = q.UpsertActivity(ctx, db.UpsertActivityParams{
-		ID:               uuid.NewString(),
-		UserID:           userID,
-		StravaActivityID: a.ID,
-		Type:             a.Type,
-		DistanceM:        a.Distance,
-		ElevationM:       a.TotalElevationGain,
-		MovingTimeS:      a.MovingTime,
-		StartDate:        startDate.Unix(),
-		Name:             a.Name,
-		CreatedAt:        time.Now().Unix(),
-	})
-	return err
+	return false
 }
 
 func randomState() string {

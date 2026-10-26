@@ -128,7 +128,8 @@ function peekBand(slot: "ahead" | "behind", e: LeaderboardEntry): [string, strin
   if (!browsable.value) return [slot === "ahead" ? "Top" : "2nd", primary(e, fmt)];
   const f = front.value!;
   const d = Math.abs(e.progressRatio - f.progressRatio);
-  return [slot === "ahead" ? "Ahead" : "Behind", `${slot === "ahead" ? "+" : "−"}${amount(f, d, fmt, e)}`];
+  const delta = d > 0 ? `${slot === "ahead" ? "+" : "−"}${amount(f, d, fmt, e)}` : "Level";
+  return [slot === "ahead" ? "Ahead" : "Behind", delta];
 }
 
 const announcement = computed(() => {

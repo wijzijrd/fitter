@@ -71,6 +71,12 @@ describe("standings", () => {
     expect(primary(p, fmt)).toBe("50%");
   });
 
+  it("measures against other people, not your own other goals", () => {
+    const g = group("", entry("me", "1", 0.9, 1), entry("me", "2", 0.9, 2), entry("ana", "3", 0.5, 3));
+    expect(gap(g, g.entries[0], fmt)).toMatchObject({ kind: "clear", other: { userId: "ana" } });
+    expect(gap(g, g.entries[1], fmt)).toMatchObject({ kind: "clear", other: { userId: "ana" } });
+  });
+
   it("reports level and done", () => {
     const g = group("", entry("a", "1", 1, 1), entry("me", "2", 1, 2));
     expect(gap(g, g.entries[1], fmt).kind).toBe("level");

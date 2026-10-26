@@ -74,13 +74,15 @@ export type Gap =
   | { kind: "finish"; amount: string }
   | { kind: "done" };
 
-// gap compares an entry with the one directly ahead in its group (or, when
-// it leads, the one behind). closeness is the ratio gap, so gaps in
-// different units and goals still compare.
+// gap compares an entry with the nearest other person ahead in its group
+// (or, when nobody is, the nearest behind); your own other goals in the same
+// group aren't rivals. closeness is the ratio gap, so gaps in different units
+// and goals still compare.
 export function gap(group: LeaderboardGroup, e: LeaderboardEntry, fmt: Fmt): Gap {
   const i = group.entries.findIndex((x) => x.goalId === e.goalId);
-  const ahead = group.entries[i - 1];
-  const behind = group.entries[i + 1];
+  const rival = (x: LeaderboardEntry) => x.userId !== e.userId;
+  const ahead = group.entries.slice(0, Math.max(i, 0)).reverse().find(rival);
+  const behind = group.entries.slice(i + 1).find(rival);
   if (ahead) {
     const d = ahead.progressRatio - e.progressRatio;
     return d > 0 ? { kind: "chase", other: ahead, amount: amount(e, d, fmt, ahead), closeness: d } : { kind: "level", other: ahead };

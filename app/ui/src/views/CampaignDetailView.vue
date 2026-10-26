@@ -7,7 +7,7 @@ import { useCampaignFeedStore } from "../stores/campaignFeed";
 import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { activityMetricValue } from "../lib/labels";
-import { lead, myEntries, primary, unitClause } from "../lib/standings";
+import { lead, myEntries, primary, share, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
 import { plural } from "../lib/schedule";
 import TimelineChart from "../components/charts/TimelineChart.vue";
@@ -38,6 +38,7 @@ const leaving = ref(false);
 const confirmLeave = ref(false);
 const leaveError = ref("");
 const stack = ref<InstanceType<typeof BibStack> | null>(null);
+const stackEl = ref<HTMLElement | null>(null);
 
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
 const feed = computed(() => feedStore.stateFor(props.id));
@@ -57,17 +58,17 @@ const schedule = computed(() => {
   const c = campaign.value;
   const start = toDate(c?.startDate);
   const end = toDate(c?.endDate);
-  if (!start || !end) return { meta: "", note: "" };
+  if (!start || !end) return { meta: "", note: "", ended: false };
   const now = Date.now();
   if (now < start.getTime()) {
     const days = Math.ceil((start.getTime() - now) / DAY);
-    return { meta: `Starts in ${days} ${days === 1 ? "day" : "days"}`, note: "" };
+    return { meta: `Starts in ${days} ${days === 1 ? "day" : "days"}`, note: "", ended: false };
   }
-  if (now > end.getTime()) return { meta: "Final standings", note: "" };
+  if (now > end.getTime()) return { meta: "Final standings", note: "", ended: true };
   const total = Math.max(1, Math.round((end.getTime() - start.getTime()) / DAY));
   const day = Math.min(total, Math.floor((now - start.getTime()) / DAY) + 1);
   const left = Math.ceil((end.getTime() - now) / DAY);
-  return { meta: `Day ${day} of ${total}`, note: `${left} ${left === 1 ? "day" : "days"} left` };
+  return { meta: `Day ${day} of ${total}`, note: `${left} ${left === 1 ? "day" : "days"} left`, ended: false };
 });
 
 const lastActive = computed(() => {
@@ -148,10 +149,23 @@ async function leave(): Promise<void> {
 
 function selectTab(ev: KeyboardEvent): void {
   const i = tabs.findIndex((t) => t.id === tab.value);
-  const next = ev.key === "ArrowRight" ? i + 1 : ev.key === "ArrowLeft" ? i - 1 : -2;
-  if (next === -2) return;
+  const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[ev.key];
+  if (next === undefined) return;
+  ev.preventDefault();
   tab.value = tabs[(next + tabs.length) % tabs.length].id;
   (document.getElementById(`tab-${tab.value}`) as HTMLElement | null)?.focus();
+}
+
+// On a phone the stack sits above the list, so a tapped row would swap a bib you can't see.
+// A keyboard activation (detail 0) keeps you where you are; the stack announces the change.
+function showBib(ev: MouseEvent, goalId: string): void {
+  stack.value?.focusGoal(goalId);
+  const el = stackEl.value;
+  if (!el || ev.detail === 0) return;
+  const r = el.getBoundingClientRect();
+  if (r.top >= 0 && r.bottom <= window.innerHeight) return;
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
 }
 
 function rowNote(e: LeaderboardEntry): string {
@@ -161,8 +175,21 @@ function rowNote(e: LeaderboardEntry): string {
   return e.progressRatio > 0 ? e.goalName : `${e.goalName} · no activity yet`;
 }
 
+// Once the campaign is over, the top three ranks that actually scored get a Cool Blue chip.
+const onPodium = (rank: number, scored: number) => schedule.value.ended && rank <= 3 && scored > 0;
+
+// Members who added the same amount share a rank, like the goal standings.
+const contributionRows = computed(() =>
+  feed.value.pooledContributions.map((c, _i, all) => ({ ...c, rank: all.findIndex((x) => x.value === c.value) + 1 })),
+);
+function contributionNote(userId: string, value: number): string {
+  const last = lastActive.value.get(userId);
+  if (last) return `active ${formatRelative(last)}`;
+  return value > 0 ? "" : "no activity yet";
+}
+
 // Units on the left already say how far; the share says how far along the goal that is.
-const rowShare = (e: LeaderboardEntry) => (unitClause(e) ? `${Math.floor(e.progressRatio * 100)}%` : "");
+const rowShare = (e: LeaderboardEntry) => (unitClause(e) ? `${share(e.progressRatio, 1)}%` : "");
 
 onMounted(() => {
   load();
@@ -212,23 +239,25 @@ onMounted(() => {
             </button>
           </div>
 
-          <section class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Your bib">
+          <section ref="stackEl" class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Bib stack">
             <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
             <BibStack
               v-else
               ref="stack"
               :groups="feed.leaderboardGroups"
               :pooled="pooled"
+              :contributions="feed.pooledContributions"
               :campaign-id="campaign.id"
               :campaign-name="campaign.name"
               :me-id="meId"
               :joined="campaign.joined"
               :time-note="schedule.note"
+              :ended="schedule.ended"
               :last-active="lastActive"
             />
             <!-- Without a goal and without a group target, the bib itself asks for one. -->
-            <router-link v-if="campaign.joined && (mine.length || pooled)" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>{{ mine.length ? "Add a goal" : "Set your goal" }}
+            <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Set your goal
             </router-link>
             <p v-if="privateGoal && campaign.joined" class="private">
               <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="1.5" /><path d="M7 9V6.5a3 3 0 0 1 6 0V9" /></svg>
@@ -238,19 +267,30 @@ onMounted(() => {
 
           <section v-if="campaign.joined" id="cd-panel" class="cd-panel" role="tabpanel" :aria-labelledby="`tab-${tab}`">
             <template v-if="tab === 'standings'">
-              <div v-if="pooled" class="together">
-                <h3>Together</h3>
-                <p class="val">
-                  {{ fmt(pooled.metric, pooled.value) }}
-                  <small>of {{ fmt(pooled.metric, pooled.target) }} · {{ Math.floor((pooled.value / pooled.target) * 100) }}%</small>
-                </p>
-              </div>
+              <section v-if="pooled && contributionRows.length" class="standings-group">
+                <h2>Together</h2>
+                <ol class="rows">
+                  <li v-for="c in contributionRows" :key="c.userId" :class="{ me: c.userId === meId, podium: onPodium(c.rank, c.value) }">
+                    <div class="row">
+                      <span class="chip">{{ c.rank }}</span>
+                      <span class="who">
+                        <b>{{ c.userId === meId ? "You" : c.userName }}</b>
+                        <small>{{ contributionNote(c.userId, c.value) }}</small>
+                      </span>
+                      <span class="val">
+                        {{ fmt(pooled.metric, c.value) }}
+                        <small>{{ share(c.value, pooled.value) }}%</small>
+                      </span>
+                    </div>
+                  </li>
+                </ol>
+              </section>
               <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">No goals set yet. Standings appear once members set theirs.</p>
               <section v-for="g in feed.leaderboardGroups" :key="g.sportGroup" class="standings-group">
-                <h3 v-if="feed.leaderboardGroups.length > 1 || pooled">{{ g.sportGroupLabel }}</h3>
+                <h2 v-if="feed.leaderboardGroups.length > 1 || pooled">{{ g.sportGroupLabel }}</h2>
                 <ol class="rows">
-                  <li v-for="e in g.entries" :key="e.goalId" :class="{ me: e.userId === meId }">
-                    <button type="button" class="row" @click="stack?.focusGoal(e.goalId)">
+                  <li v-for="e in g.entries" :key="e.goalId" :class="{ me: e.userId === meId, podium: onPodium(e.rank, e.progressRatio) }">
+                    <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
                       <span class="chip">{{ e.rank }}</span>
                       <span class="who">
                         <b>{{ e.userId === meId ? "You" : e.userName }}</b>
@@ -265,6 +305,9 @@ onMounted(() => {
                   </li>
                 </ol>
               </section>
+              <router-link v-if="mine.length && !schedule.ended" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Add a goal
+              </router-link>
             </template>
 
             <template v-else-if="tab === 'feed'">
@@ -286,7 +329,7 @@ onMounted(() => {
             <template v-else>
               <p v-if="!feed.timelineGroups.length && !feed.pooledTimeline?.points.length" class="quiet">No progress to chart yet.</p>
               <section v-if="feed.pooledTimeline?.points.length" class="chart">
-                <h3>Together</h3>
+                <h2>Together</h2>
                 <TimelineChart
                   :series="[feed.pooledTimeline]"
                   :target-value="feed.pooledTimeline.targetValue"
@@ -295,7 +338,7 @@ onMounted(() => {
                 />
               </section>
               <section v-for="g in feed.timelineGroups" :key="`${g.sportGroup}:${g.series[0]?.metric}`" class="chart">
-                <h3>{{ g.sportGroupLabel }} · {{ catalog.metricLabel(g.series[0]?.metric ?? 0) }}</h3>
+                <h2>{{ g.sportGroupLabel }} · {{ catalog.metricLabel(g.series[0]?.metric ?? 0) }}</h2>
                 <TimelineChart
                   :series="g.series"
                   :me-id="meId"
@@ -346,6 +389,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
+  min-height: 2.5rem;
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-weight: 600;
@@ -389,7 +433,7 @@ h1 {
 .cd-tabs button {
   border: 0;
   background: none;
-  padding: 0.5rem 0 0.6rem;
+  padding: 0.6rem 0 0.7rem;
   margin-bottom: -2px;
   border-bottom: 3px solid transparent;
   color: var(--ink-muted);
@@ -402,6 +446,7 @@ h1 {
 }
 .cd-stack {
   grid-area: stack;
+  scroll-margin-top: 1rem;
 }
 .cd-panel {
   grid-area: panel;
@@ -447,10 +492,13 @@ h1 {
   grid-template-columns: 2.25rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
-  width: 100%;
+  /* The inline padding gives the selected fill room without moving the columns. */
+  width: calc(100% + 1rem);
+  margin-inline: -0.5rem;
   border: 0;
+  border-radius: 6px;
   background: none;
-  padding: 0.7rem 0;
+  padding: 0.7rem 0.5rem;
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -458,9 +506,14 @@ h1 {
 button.row {
   cursor: pointer;
 }
-button.row:hover .who b {
-  text-decoration: underline 2px var(--cool-blue);
-  text-underline-offset: 4px;
+/* The row on the bib in focus fills Cool Blue, like a checked choice. */
+.row[aria-current="true"] {
+  background: var(--cool-blue);
+}
+@media (hover: hover) {
+  button.row:hover:not([aria-current="true"]) {
+    background: var(--cool-blue-soft);
+  }
 }
 .chip {
   display: grid;
@@ -470,6 +523,9 @@ button.row:hover .who b {
   border-radius: 6px;
   font: 400 0.9375rem var(--font-display);
   font-variant-numeric: tabular-nums;
+}
+.podium .chip {
+  background: var(--cool-blue);
 }
 .me .chip {
   background: var(--tangerine);
@@ -528,26 +584,14 @@ button.row:hover .who b {
   width: 1rem;
   height: 1rem;
 }
-h3 {
+h2 {
   margin: 0 0 0.25rem;
   font: 400 0.875rem/1.3 var(--font-display);
   text-transform: uppercase;
 }
 .standings-group + .standings-group,
-.together + .standings-group,
 .chart + .chart {
   margin-top: 1.75rem;
-}
-.together {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-bottom: 0.7rem;
-  border-bottom: 2px solid var(--ink);
-}
-.together .val {
-  margin: 0;
 }
 .private {
   display: flex;

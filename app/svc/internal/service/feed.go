@@ -135,6 +135,39 @@ func (s *FeedService) pooledTotal(ctx context.Context, c db.Campaign) (def metri
 	return def, acts, nil
 }
 
+// pooledContributions splits an additive pooled total by member, largest first.
+// Every member appears, with 0 when they added nothing. An average or maximum
+// has no per-member share, so those metrics return nil.
+func pooledContributions(def metrics.Def, acts []metrics.Activity, members []db.ListCampaignMembersRow) []*fitterv1.PooledContribution {
+	if def.Aggregation != metrics.AggSum && def.Aggregation != metrics.AggCount {
+		return nil
+	}
+	accs := make(map[string]metrics.Accumulator, len(members))
+	for _, m := range members {
+		accs[m.UserID] = def.NewAcc()
+	}
+	for _, a := range acts {
+		if acc, ok := accs[a.UserID]; ok {
+			acc.Add(a)
+		}
+	}
+	out := make([]*fitterv1.PooledContribution, len(members))
+	for i, m := range members {
+		v, _, _ := accs[m.UserID].Result()
+		out[i] = &fitterv1.PooledContribution{UserId: m.UserID, UserName: m.UserName, Value: v}
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Value != out[j].Value {
+			return out[i].Value > out[j].Value
+		}
+		if out[i].UserName != out[j].UserName {
+			return out[i].UserName < out[j].UserName
+		}
+		return out[i].UserId < out[j].UserId
+	})
+	return out
+}
+
 func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.Request[fitterv1.GetCampaignLeaderboardRequest]) (*connect.Response[fitterv1.GetCampaignLeaderboardResponse], error) {
 	c, _, err := s.requireMember(ctx, req.Msg.GetCampaignId())
 	if err != nil {
@@ -258,6 +291,11 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			resp.PooledProgressValue = &value
 			resp.PooledTargetValue = &target
 			resp.PooledMetric = &metricProto
+			members, err := s.Queries.ListCampaignMembers(ctx, c.ID)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			resp.PooledContributions = pooledContributions(def, acts, members)
 		}
 		// !ok (e.g. a nullable pooled metric with zero contributing
 		// activities): leave all three pooled fields unset, matching the

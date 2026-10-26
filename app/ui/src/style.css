@@ -130,10 +130,11 @@ a {
   padding: 0.35rem 0.9rem;
   cursor: pointer;
 }
-.pill:hover:not(:disabled) {
+.pill:hover:not(:disabled):not([aria-disabled="true"]) {
   background: var(--cool-blue);
 }
-.pill:disabled {
+.pill:disabled,
+.pill[aria-disabled="true"] {
   border-color: var(--hairline);
   color: var(--ink-muted);
   cursor: default;

@@ -49,6 +49,9 @@ export function unitClause(e: LeaderboardEntry): GoalClause | undefined {
 // The epsilon keeps float noise (1 - 0.42 = 0.57999…) from flooring a whole point away.
 const pct = (ratio: number) => `${Math.floor(ratio * 100 + 1e-9)}%`;
 
+// share is a part's whole-number percentage of a total, 0 when there is no total yet.
+export const share = (part: number, total: number) => (total > 0 ? Math.floor((part / total) * 100 + 1e-9) : 0);
+
 // primary is the headline value on a bib: units for a unit clause, else the share done.
 export function primary(e: LeaderboardEntry, fmt: Fmt): string {
   const u = unitClause(e);
@@ -92,6 +95,14 @@ export function gap(group: LeaderboardGroup, e: LeaderboardEntry, fmt: Fmt): Gap
     return d > 0 ? { kind: "clear", other: behind, amount: amount(e, d, fmt, behind) } : { kind: "level", other: behind };
   }
   return e.satisfied ? { kind: "done" } : { kind: "finish", amount: amount(e, 1 - e.progressRatio, fmt) };
+}
+
+// pickGroup keeps the current bib group while it still exists, else opens on
+// your best standing's group, else the first one. "" is a real key (goals with
+// no sport filter), so only null means "nothing chosen yet".
+export function pickGroup(keys: string[], current: string | null, leadKey: string | undefined): string | null {
+  if (current !== null && keys.includes(current)) return current;
+  return leadKey ?? keys[0] ?? null;
 }
 
 export function closeness(g: Gap): number | undefined {

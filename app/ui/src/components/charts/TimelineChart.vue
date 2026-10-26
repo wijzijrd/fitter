@@ -181,30 +181,22 @@ watch(() => [props.series, target.value, props.meId], render, { deep: true });
 
 <template>
   <div ref="el" role="img" :aria-label="summary" style="width: 100%; height: 320px" />
-  <table class="visually-hidden">
-    <caption>Progress by day</caption>
-    <thead>
-      <tr>
-        <th scope="col">Day</th>
-        <th v-for="s in series" :key="s.clauseId || s.label" scope="col">{{ label(s) }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="row in table" :key="row.day">
-        <th scope="row">{{ row.day }}</th>
-        <td v-for="(v, i) in row.values" :key="i">{{ v }}</td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- A table ignores width and overflow, so the wrapper is what clips it; hiding the table itself still widens the page. -->
+  <div class="visually-hidden">
+    <table>
+      <caption>Progress by day</caption>
+      <thead>
+        <tr>
+          <th scope="col">Day</th>
+          <th v-for="s in series" :key="s.clauseId || s.label" scope="col">{{ label(s) }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="row in table" :key="row.day">
+          <th scope="row">{{ row.day }}</th>
+          <td v-for="(v, i) in row.values" :key="i">{{ v }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
-
-<style scoped>
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-</style>

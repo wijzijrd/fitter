@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
 import { ActivityMetric, ClauseScope, Comparator } from "../gen/fitter/v1/common_pb";
 import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1/feed_pb";
-import { amount, gap, lead, myEntries, primary, unitClause } from "./standings";
+import { amount, gap, lead, myEntries, pickGroup, primary, share, unitClause } from "./standings";
 
 const fmt = (_m: ActivityMetric, v: number) => `${Math.round(v / 1000)} km`;
 const distance = (target: number) => ({
@@ -82,5 +82,34 @@ describe("standings", () => {
     expect(gap(g, g.entries[1], fmt).kind).toBe("level");
     const solo = group("", entry("me", "3", 1, 1));
     expect(gap(solo, solo.entries[0], fmt).kind).toBe("done");
+  });
+});
+
+describe("pickGroup", () => {
+  it("opens on your best standing even when the all-sports key is empty", () => {
+    expect(pickGroup(["", "ride"], null, "ride")).toBe("ride");
+  });
+
+  it("keeps the current group, including the empty all-sports key", () => {
+    expect(pickGroup(["", "ride"], "", "ride")).toBe("");
+    expect(pickGroup(["", "ride"], "ride", undefined)).toBe("ride");
+  });
+
+  it("falls back to the first group, then to nothing", () => {
+    expect(pickGroup(["__together__", ""], null, undefined)).toBe("__together__");
+    expect(pickGroup(["run"], "gone", undefined)).toBe("run");
+    expect(pickGroup([], "gone", undefined)).toBeNull();
+  });
+});
+
+describe("share", () => {
+  it("floors to a whole percent and survives float noise", () => {
+    expect(share(39, 201)).toBe(19);
+    expect(share(58, 100)).toBe(58);
+    expect(share(0.58 * 100, 100)).toBe(58);
+  });
+
+  it("is 0 before anything is pooled", () => {
+    expect(share(5, 0)).toBe(0);
   });
 });

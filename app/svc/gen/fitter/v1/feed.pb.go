@@ -499,19 +499,83 @@ func (x *GetCampaignLeaderboardRequest) GetCampaignId() string {
 	return ""
 }
 
+// One member's share of pooled_progress_value, in the campaign metric's units.
+type PooledContribution struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserName      string                 `protobuf:"bytes,2,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	Value         float64                `protobuf:"fixed64,3,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PooledContribution) Reset() {
+	*x = PooledContribution{}
+	mi := &file_fitter_v1_feed_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PooledContribution) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PooledContribution) ProtoMessage() {}
+
+func (x *PooledContribution) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_feed_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PooledContribution.ProtoReflect.Descriptor instead.
+func (*PooledContribution) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PooledContribution) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *PooledContribution) GetUserName() string {
+	if x != nil {
+		return x.UserName
+	}
+	return ""
+}
+
+func (x *PooledContribution) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
 type GetCampaignLeaderboardResponse struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Groups              []*LeaderboardGroup    `protobuf:"bytes,1,rep,name=groups,proto3" json:"groups,omitempty"`
 	PooledProgressValue *float64               `protobuf:"fixed64,2,opt,name=pooled_progress_value,json=pooledProgressValue,proto3,oneof" json:"pooled_progress_value,omitempty"` // only when the campaign has a target
 	PooledTargetValue   *float64               `protobuf:"fixed64,3,opt,name=pooled_target_value,json=pooledTargetValue,proto3,oneof" json:"pooled_target_value,omitempty"`
 	PooledMetric        *ActivityMetric        `protobuf:"varint,4,opt,name=pooled_metric,json=pooledMetric,proto3,enum=fitter.v1.ActivityMetric,oneof" json:"pooled_metric,omitempty"`
+	// Every member, largest contribution first. Empty unless the pooled metric
+	// adds up across activities (sum or count): an average has no per-member share.
+	PooledContributions []*PooledContribution `protobuf:"bytes,5,rep,name=pooled_contributions,json=pooledContributions,proto3" json:"pooled_contributions,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
 
 func (x *GetCampaignLeaderboardResponse) Reset() {
 	*x = GetCampaignLeaderboardResponse{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[6]
+	mi := &file_fitter_v1_feed_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -523,7 +587,7 @@ func (x *GetCampaignLeaderboardResponse) String() string {
 func (*GetCampaignLeaderboardResponse) ProtoMessage() {}
 
 func (x *GetCampaignLeaderboardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[6]
+	mi := &file_fitter_v1_feed_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -536,7 +600,7 @@ func (x *GetCampaignLeaderboardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignLeaderboardResponse.ProtoReflect.Descriptor instead.
 func (*GetCampaignLeaderboardResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{6}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetCampaignLeaderboardResponse) GetGroups() []*LeaderboardGroup {
@@ -567,6 +631,13 @@ func (x *GetCampaignLeaderboardResponse) GetPooledMetric() ActivityMetric {
 	return ActivityMetric_ACTIVITY_METRIC_UNSPECIFIED
 }
 
+func (x *GetCampaignLeaderboardResponse) GetPooledContributions() []*PooledContribution {
+	if x != nil {
+		return x.PooledContributions
+	}
+	return nil
+}
+
 type TimelinePoint struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Date          *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
@@ -577,7 +648,7 @@ type TimelinePoint struct {
 
 func (x *TimelinePoint) Reset() {
 	*x = TimelinePoint{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[7]
+	mi := &file_fitter_v1_feed_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -589,7 +660,7 @@ func (x *TimelinePoint) String() string {
 func (*TimelinePoint) ProtoMessage() {}
 
 func (x *TimelinePoint) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[7]
+	mi := &file_fitter_v1_feed_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -602,7 +673,7 @@ func (x *TimelinePoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimelinePoint.ProtoReflect.Descriptor instead.
 func (*TimelinePoint) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{7}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TimelinePoint) GetDate() *timestamppb.Timestamp {
@@ -635,7 +706,7 @@ type TimelineSeries struct {
 
 func (x *TimelineSeries) Reset() {
 	*x = TimelineSeries{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[8]
+	mi := &file_fitter_v1_feed_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -647,7 +718,7 @@ func (x *TimelineSeries) String() string {
 func (*TimelineSeries) ProtoMessage() {}
 
 func (x *TimelineSeries) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[8]
+	mi := &file_fitter_v1_feed_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -660,7 +731,7 @@ func (x *TimelineSeries) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimelineSeries.ProtoReflect.Descriptor instead.
 func (*TimelineSeries) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{8}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *TimelineSeries) GetUserId() string {
@@ -730,7 +801,7 @@ type TimelineGroup struct {
 
 func (x *TimelineGroup) Reset() {
 	*x = TimelineGroup{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[9]
+	mi := &file_fitter_v1_feed_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -742,7 +813,7 @@ func (x *TimelineGroup) String() string {
 func (*TimelineGroup) ProtoMessage() {}
 
 func (x *TimelineGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[9]
+	mi := &file_fitter_v1_feed_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -755,7 +826,7 @@ func (x *TimelineGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimelineGroup.ProtoReflect.Descriptor instead.
 func (*TimelineGroup) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{9}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *TimelineGroup) GetSportGroup() string {
@@ -788,7 +859,7 @@ type GetCampaignTimelineRequest struct {
 
 func (x *GetCampaignTimelineRequest) Reset() {
 	*x = GetCampaignTimelineRequest{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[10]
+	mi := &file_fitter_v1_feed_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -800,7 +871,7 @@ func (x *GetCampaignTimelineRequest) String() string {
 func (*GetCampaignTimelineRequest) ProtoMessage() {}
 
 func (x *GetCampaignTimelineRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[10]
+	mi := &file_fitter_v1_feed_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -813,7 +884,7 @@ func (x *GetCampaignTimelineRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignTimelineRequest.ProtoReflect.Descriptor instead.
 func (*GetCampaignTimelineRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{10}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetCampaignTimelineRequest) GetCampaignId() string {
@@ -835,7 +906,7 @@ type GetCampaignTimelineResponse struct {
 
 func (x *GetCampaignTimelineResponse) Reset() {
 	*x = GetCampaignTimelineResponse{}
-	mi := &file_fitter_v1_feed_proto_msgTypes[11]
+	mi := &file_fitter_v1_feed_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -847,7 +918,7 @@ func (x *GetCampaignTimelineResponse) String() string {
 func (*GetCampaignTimelineResponse) ProtoMessage() {}
 
 func (x *GetCampaignTimelineResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_feed_proto_msgTypes[11]
+	mi := &file_fitter_v1_feed_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -860,7 +931,7 @@ func (x *GetCampaignTimelineResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCampaignTimelineResponse.ProtoReflect.Descriptor instead.
 func (*GetCampaignTimelineResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{11}
+	return file_fitter_v1_feed_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetCampaignTimelineResponse) GetGroups() []*TimelineGroup {
@@ -949,12 +1020,17 @@ const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\aentries\x18\x03 \x03(\v2\x1b.fitter.v1.LeaderboardEntryR\aentries\"@\n" +
 	"\x1dGetCampaignLeaderboardRequest\x12\x1f\n" +
 	"\vcampaign_id\x18\x01 \x01(\tR\n" +
-	"campaignId\"\xcc\x02\n" +
+	"campaignId\"`\n" +
+	"\x12PooledContribution\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
+	"\tuser_name\x18\x02 \x01(\tR\buserName\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\x01R\x05value\"\x9e\x03\n" +
 	"\x1eGetCampaignLeaderboardResponse\x123\n" +
 	"\x06groups\x18\x01 \x03(\v2\x1b.fitter.v1.LeaderboardGroupR\x06groups\x127\n" +
 	"\x15pooled_progress_value\x18\x02 \x01(\x01H\x00R\x13pooledProgressValue\x88\x01\x01\x123\n" +
 	"\x13pooled_target_value\x18\x03 \x01(\x01H\x01R\x11pooledTargetValue\x88\x01\x01\x12C\n" +
-	"\rpooled_metric\x18\x04 \x01(\x0e2\x19.fitter.v1.ActivityMetricH\x02R\fpooledMetric\x88\x01\x01B\x18\n" +
+	"\rpooled_metric\x18\x04 \x01(\x0e2\x19.fitter.v1.ActivityMetricH\x02R\fpooledMetric\x88\x01\x01\x12P\n" +
+	"\x14pooled_contributions\x18\x05 \x03(\v2\x1d.fitter.v1.PooledContributionR\x13pooledContributionsB\x18\n" +
 	"\x16_pooled_progress_valueB\x16\n" +
 	"\x14_pooled_target_valueB\x10\n" +
 	"\x0e_pooled_metric\"U\n" +
@@ -1006,7 +1082,7 @@ func file_fitter_v1_feed_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_feed_proto_rawDescData
 }
 
-var file_fitter_v1_feed_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_fitter_v1_feed_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_fitter_v1_feed_proto_goTypes = []any{
 	(*FeedActivity)(nil),                   // 0: fitter.v1.FeedActivity
 	(*GetCampaignFeedRequest)(nil),         // 1: fitter.v1.GetCampaignFeedRequest
@@ -1014,46 +1090,48 @@ var file_fitter_v1_feed_proto_goTypes = []any{
 	(*LeaderboardEntry)(nil),               // 3: fitter.v1.LeaderboardEntry
 	(*LeaderboardGroup)(nil),               // 4: fitter.v1.LeaderboardGroup
 	(*GetCampaignLeaderboardRequest)(nil),  // 5: fitter.v1.GetCampaignLeaderboardRequest
-	(*GetCampaignLeaderboardResponse)(nil), // 6: fitter.v1.GetCampaignLeaderboardResponse
-	(*TimelinePoint)(nil),                  // 7: fitter.v1.TimelinePoint
-	(*TimelineSeries)(nil),                 // 8: fitter.v1.TimelineSeries
-	(*TimelineGroup)(nil),                  // 9: fitter.v1.TimelineGroup
-	(*GetCampaignTimelineRequest)(nil),     // 10: fitter.v1.GetCampaignTimelineRequest
-	(*GetCampaignTimelineResponse)(nil),    // 11: fitter.v1.GetCampaignTimelineResponse
-	(*timestamppb.Timestamp)(nil),          // 12: google.protobuf.Timestamp
-	(*ClauseProgress)(nil),                 // 13: fitter.v1.ClauseProgress
-	(*GoalClause)(nil),                     // 14: fitter.v1.GoalClause
-	(ActivityMetric)(0),                    // 15: fitter.v1.ActivityMetric
-	(Comparator)(0),                        // 16: fitter.v1.Comparator
+	(*PooledContribution)(nil),             // 6: fitter.v1.PooledContribution
+	(*GetCampaignLeaderboardResponse)(nil), // 7: fitter.v1.GetCampaignLeaderboardResponse
+	(*TimelinePoint)(nil),                  // 8: fitter.v1.TimelinePoint
+	(*TimelineSeries)(nil),                 // 9: fitter.v1.TimelineSeries
+	(*TimelineGroup)(nil),                  // 10: fitter.v1.TimelineGroup
+	(*GetCampaignTimelineRequest)(nil),     // 11: fitter.v1.GetCampaignTimelineRequest
+	(*GetCampaignTimelineResponse)(nil),    // 12: fitter.v1.GetCampaignTimelineResponse
+	(*timestamppb.Timestamp)(nil),          // 13: google.protobuf.Timestamp
+	(*ClauseProgress)(nil),                 // 14: fitter.v1.ClauseProgress
+	(*GoalClause)(nil),                     // 15: fitter.v1.GoalClause
+	(ActivityMetric)(0),                    // 16: fitter.v1.ActivityMetric
+	(Comparator)(0),                        // 17: fitter.v1.Comparator
 }
 var file_fitter_v1_feed_proto_depIdxs = []int32{
-	12, // 0: fitter.v1.FeedActivity.start_date:type_name -> google.protobuf.Timestamp
+	13, // 0: fitter.v1.FeedActivity.start_date:type_name -> google.protobuf.Timestamp
 	0,  // 1: fitter.v1.GetCampaignFeedResponse.activities:type_name -> fitter.v1.FeedActivity
-	13, // 2: fitter.v1.LeaderboardEntry.clauses:type_name -> fitter.v1.ClauseProgress
-	14, // 3: fitter.v1.LeaderboardEntry.clause_defs:type_name -> fitter.v1.GoalClause
+	14, // 2: fitter.v1.LeaderboardEntry.clauses:type_name -> fitter.v1.ClauseProgress
+	15, // 3: fitter.v1.LeaderboardEntry.clause_defs:type_name -> fitter.v1.GoalClause
 	3,  // 4: fitter.v1.LeaderboardGroup.entries:type_name -> fitter.v1.LeaderboardEntry
 	4,  // 5: fitter.v1.GetCampaignLeaderboardResponse.groups:type_name -> fitter.v1.LeaderboardGroup
-	15, // 6: fitter.v1.GetCampaignLeaderboardResponse.pooled_metric:type_name -> fitter.v1.ActivityMetric
-	12, // 7: fitter.v1.TimelinePoint.date:type_name -> google.protobuf.Timestamp
-	15, // 8: fitter.v1.TimelineSeries.metric:type_name -> fitter.v1.ActivityMetric
-	16, // 9: fitter.v1.TimelineSeries.comparator:type_name -> fitter.v1.Comparator
-	7,  // 10: fitter.v1.TimelineSeries.points:type_name -> fitter.v1.TimelinePoint
-	8,  // 11: fitter.v1.TimelineGroup.series:type_name -> fitter.v1.TimelineSeries
-	9,  // 12: fitter.v1.GetCampaignTimelineResponse.groups:type_name -> fitter.v1.TimelineGroup
-	8,  // 13: fitter.v1.GetCampaignTimelineResponse.pooled:type_name -> fitter.v1.TimelineSeries
-	12, // 14: fitter.v1.GetCampaignTimelineResponse.start_date:type_name -> google.protobuf.Timestamp
-	12, // 15: fitter.v1.GetCampaignTimelineResponse.end_date:type_name -> google.protobuf.Timestamp
-	1,  // 16: fitter.v1.FeedService.GetCampaignFeed:input_type -> fitter.v1.GetCampaignFeedRequest
-	5,  // 17: fitter.v1.FeedService.GetCampaignLeaderboard:input_type -> fitter.v1.GetCampaignLeaderboardRequest
-	10, // 18: fitter.v1.FeedService.GetCampaignTimeline:input_type -> fitter.v1.GetCampaignTimelineRequest
-	2,  // 19: fitter.v1.FeedService.GetCampaignFeed:output_type -> fitter.v1.GetCampaignFeedResponse
-	6,  // 20: fitter.v1.FeedService.GetCampaignLeaderboard:output_type -> fitter.v1.GetCampaignLeaderboardResponse
-	11, // 21: fitter.v1.FeedService.GetCampaignTimeline:output_type -> fitter.v1.GetCampaignTimelineResponse
-	19, // [19:22] is the sub-list for method output_type
-	16, // [16:19] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	16, // 6: fitter.v1.GetCampaignLeaderboardResponse.pooled_metric:type_name -> fitter.v1.ActivityMetric
+	6,  // 7: fitter.v1.GetCampaignLeaderboardResponse.pooled_contributions:type_name -> fitter.v1.PooledContribution
+	13, // 8: fitter.v1.TimelinePoint.date:type_name -> google.protobuf.Timestamp
+	16, // 9: fitter.v1.TimelineSeries.metric:type_name -> fitter.v1.ActivityMetric
+	17, // 10: fitter.v1.TimelineSeries.comparator:type_name -> fitter.v1.Comparator
+	8,  // 11: fitter.v1.TimelineSeries.points:type_name -> fitter.v1.TimelinePoint
+	9,  // 12: fitter.v1.TimelineGroup.series:type_name -> fitter.v1.TimelineSeries
+	10, // 13: fitter.v1.GetCampaignTimelineResponse.groups:type_name -> fitter.v1.TimelineGroup
+	9,  // 14: fitter.v1.GetCampaignTimelineResponse.pooled:type_name -> fitter.v1.TimelineSeries
+	13, // 15: fitter.v1.GetCampaignTimelineResponse.start_date:type_name -> google.protobuf.Timestamp
+	13, // 16: fitter.v1.GetCampaignTimelineResponse.end_date:type_name -> google.protobuf.Timestamp
+	1,  // 17: fitter.v1.FeedService.GetCampaignFeed:input_type -> fitter.v1.GetCampaignFeedRequest
+	5,  // 18: fitter.v1.FeedService.GetCampaignLeaderboard:input_type -> fitter.v1.GetCampaignLeaderboardRequest
+	11, // 19: fitter.v1.FeedService.GetCampaignTimeline:input_type -> fitter.v1.GetCampaignTimelineRequest
+	2,  // 20: fitter.v1.FeedService.GetCampaignFeed:output_type -> fitter.v1.GetCampaignFeedResponse
+	7,  // 21: fitter.v1.FeedService.GetCampaignLeaderboard:output_type -> fitter.v1.GetCampaignLeaderboardResponse
+	12, // 22: fitter.v1.FeedService.GetCampaignTimeline:output_type -> fitter.v1.GetCampaignTimelineResponse
+	20, // [20:23] is the sub-list for method output_type
+	17, // [17:20] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_feed_proto_init() }
@@ -1064,15 +1142,15 @@ func file_fitter_v1_feed_proto_init() {
 	file_fitter_v1_common_proto_init()
 	file_fitter_v1_goal_proto_init()
 	file_fitter_v1_feed_proto_msgTypes[0].OneofWrappers = []any{}
-	file_fitter_v1_feed_proto_msgTypes[6].OneofWrappers = []any{}
-	file_fitter_v1_feed_proto_msgTypes[11].OneofWrappers = []any{}
+	file_fitter_v1_feed_proto_msgTypes[7].OneofWrappers = []any{}
+	file_fitter_v1_feed_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_feed_proto_rawDesc), len(file_fitter_v1_feed_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

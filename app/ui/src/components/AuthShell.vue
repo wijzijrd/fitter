@@ -4,7 +4,7 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
 
 <template>
   <main class="auth">
-    <!-- Decorative ground: horizontal and vertical dumbbells interlocked on a 148px grid, alternating running shoes and bicycles in the big gaps, on a 296px double tile. Corner copies are clipped by the tile and complete each other. -->
+    <!-- Decorative ground: dumbbells interlocked on a 148px grid and turned 45 degrees into a lattice. Shoes, bikes and kettlebells fill the big diamond gaps, each type in its own vertical column (three-column repeat, hence the 444px tile). Corner copies are clipped by the tile and complete each other. -->
     <svg class="weights" aria-hidden="true" focusable="false">
       <defs>
         <g id="dumbbell">
@@ -25,18 +25,49 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
           <path d="M-30 10 L-6 10 L-12 -12 L22 -14 L30 10 M-6 10 L22 -14 M-30 10 L-12 -12 M22 -14 L20 -21 L28 -21 M-18 -16 L-6 -16" />
           <circle cx="-6" cy="10" r="4.5" style="fill: var(--hairline)" />
         </g>
-        <pattern id="weights-tile" width="296" height="148" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <g id="kettlebell" transform="scale(1.15)">
+          <path d="M-13 -6 V-17 C-13 -35 13 -35 13 -17 V-6" style="fill: none; stroke: var(--hairline); stroke-width: 6.5; stroke-linecap: round; stroke-linejoin: round" />
+          <circle cy="10" r="20" />
+          <rect x="-14" y="26" width="28" height="7" rx="2" />
+        </g>
+        <pattern id="weights-tile" width="444" height="444" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <use href="#dumbbell" />
-          <use href="#dumbbell" x="148" />
-          <use href="#dumbbell" x="296" />
           <use href="#dumbbell" y="148" />
+          <use href="#dumbbell" y="296" />
+          <use href="#dumbbell" y="444" />
+          <use href="#dumbbell" x="148" />
           <use href="#dumbbell" x="148" y="148" />
+          <use href="#dumbbell" x="148" y="296" />
+          <use href="#dumbbell" x="148" y="444" />
+          <use href="#dumbbell" x="296" />
           <use href="#dumbbell" x="296" y="148" />
+          <use href="#dumbbell" x="296" y="296" />
+          <use href="#dumbbell" x="296" y="444" />
+          <use href="#dumbbell" x="444" />
+          <use href="#dumbbell" x="444" y="148" />
+          <use href="#dumbbell" x="444" y="296" />
+          <use href="#dumbbell" x="444" y="444" />
           <use href="#dumbbell" transform="translate(74 74) rotate(90)" />
+          <use href="#dumbbell" transform="translate(74 222) rotate(90)" />
+          <use href="#dumbbell" transform="translate(74 370) rotate(90)" />
           <use href="#dumbbell" transform="translate(222 74) rotate(90)" />
+          <use href="#dumbbell" transform="translate(222 222) rotate(90)" />
+          <use href="#dumbbell" transform="translate(222 370) rotate(90)" />
+          <use href="#dumbbell" transform="translate(370 74) rotate(90)" />
+          <use href="#dumbbell" transform="translate(370 222) rotate(90)" />
+          <use href="#dumbbell" transform="translate(370 370) rotate(90)" />
           <use href="#shoe" transform="translate(0 74) rotate(-45)" />
-          <use href="#shoe" transform="translate(296 74) rotate(-45)" />
+          <use href="#kettlebell" transform="translate(0 222) rotate(-45)" />
+          <use href="#bicycle" transform="translate(0 370) rotate(-45)" />
           <use href="#bicycle" transform="translate(148 74) rotate(-45)" />
+          <use href="#shoe" transform="translate(148 222) rotate(-45)" />
+          <use href="#kettlebell" transform="translate(148 370) rotate(-45)" />
+          <use href="#kettlebell" transform="translate(296 74) rotate(-45)" />
+          <use href="#bicycle" transform="translate(296 222) rotate(-45)" />
+          <use href="#shoe" transform="translate(296 370) rotate(-45)" />
+          <use href="#shoe" transform="translate(444 74) rotate(-45)" />
+          <use href="#kettlebell" transform="translate(444 222) rotate(-45)" />
+          <use href="#bicycle" transform="translate(444 370) rotate(-45)" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#weights-tile)" />
@@ -81,11 +112,7 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
 }
 /* Same size as the navbar wordmark: the bib below is the page's hero. */
 h1 {
-  /* Paper backing keeps the wordmark and Strava's logo off the pattern. */
-  display: table;
-  margin: 0 0 1rem -0.5rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--paper);
+  margin: 0 0 1rem;
   font: 400 1.25rem / 1.1 var(--font-display);
   text-transform: uppercase;
 }
@@ -100,10 +127,9 @@ h1 {
   }
 }
 .attribution {
-  display: table;
-  margin: 1rem 0 0 -0.5rem;
-  padding: 0.5rem;
-  background: var(--paper);
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
 }
 .attribution img {
   display: block;

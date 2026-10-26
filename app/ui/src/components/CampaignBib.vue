@@ -10,6 +10,8 @@ defineProps<{
   subs?: string[];
   tab?: string;
   finisher?: boolean;
+  // blue sets a Cool Blue band without the FINISHER meaning (e.g. when Tangerine would compete with a nearby CTA).
+  blue?: boolean;
   pending?: boolean;
   // to turns the campaign name into a link whose hit area covers the whole bib.
   to?: string;
@@ -18,7 +20,7 @@ defineProps<{
 
 <template>
   <article class="rbib" :class="{ 'rbib--link': to }">
-    <div class="band" :class="{ 'band--blue': finisher }">
+    <div class="band" :class="{ 'band--blue': finisher || blue }">
       <RouterLink v-if="to" :to="to" class="name">{{ band[0] }}</RouterLink>
       <span v-else class="name">{{ band[0] }}</span>
       <span>{{ band[1] }}</span>

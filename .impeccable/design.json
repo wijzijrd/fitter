@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-20T00:00:00+00:00",
+  "generatedAt": "2026-10-26T17:44:09+00:00",
   "title": "Design System: Fitter",
   "extensions": {
     "colorMeta": {
@@ -259,17 +259,17 @@
       "name": "Rank Chip and Finisher Tag",
       "kind": "chip",
       "refersTo": "rank-chip",
-      "description": "Outlined Bungee rank chip (Tangerine for you) and the Cool Blue FINISHER tag.",
-      "html": "<div class=\"ds-chips\"><span class=\"ds-chip\">1</span><span class=\"ds-chip ds-chip--you\">3</span><span class=\"ds-tag\">Finisher</span></div>",
-      "css": ".ds-chips { display: flex; gap: 0.75rem; align-items: center; } .ds-chip { display: grid; place-items: center; width: 2.25rem; height: 2rem; border: 2px solid var(--ink); border-radius: 6px; color: var(--ink); font: 400 0.9375rem var(--font-display); font-variant-numeric: tabular-nums; } .ds-chip--you { background: var(--tangerine); } .ds-tag { padding: 0.05rem 0.4rem; border-radius: 4px; background: var(--cool-blue); color: var(--ink); font: 400 0.6875rem/1.4 var(--font-display); text-transform: uppercase; }"
+      "description": "Outlined Bungee rank chip (Tangerine for you, Cool Blue for the podium once a campaign ends) and the Cool Blue FINISHER tag.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-chip\">1</span><span class=\"ds-chip ds-chip--you\">3</span><span class=\"ds-chip ds-chip--podium\">2</span><span class=\"ds-tag\">Finisher</span></div>",
+      "css": ".ds-chips { display: flex; gap: 0.75rem; align-items: center; } .ds-chip { display: grid; place-items: center; width: 2.25rem; height: 2rem; border: 2px solid var(--ink); border-radius: 6px; color: var(--ink); font: 400 0.9375rem var(--font-display); font-variant-numeric: tabular-nums; } .ds-chip--you { background: var(--tangerine); } .ds-tag { padding: 0.05rem 0.4rem; border-radius: 4px; background: var(--cool-blue); color: var(--ink); font: 400 0.6875rem/1.4 var(--font-display); text-transform: uppercase; } .ds-chip--podium { background: var(--cool-blue); }"
     },
     {
       "name": "Standings Row",
       "kind": "card",
       "refersTo": "",
-      "description": "Rank chip, human name with note, right-aligned tabular value over a Hairline divider.",
-      "html": "<ol class=\"ds-rows\"><li><span class=\"ds-chip\">2</span><span class=\"ds-who\"><b>Sam Okafor</b><small>Active 14h ago</small></span><span class=\"ds-val\">145.4 km</span></li><li class=\"is-me\"><span class=\"ds-chip\">3</span><span class=\"ds-who\"><b>You</b><small>Active 2h ago</small></span><span class=\"ds-val\">137.2 km</span></li></ol>",
-      "css": ".ds-rows { list-style: none; margin: 0; padding: 0; font-family: var(--font-body); color: var(--ink); } .ds-rows li { display: grid; grid-template-columns: 2.25rem minmax(0,1fr) auto; align-items: center; gap: 0.75rem; padding: 0.7rem 0; border-bottom: 1px solid var(--hairline); } .ds-rows li:hover b { text-decoration: underline 2px var(--cool-blue); text-underline-offset: 4px; } .ds-chip { display: grid; place-items: center; height: 2rem; border: 2px solid var(--ink); border-radius: 6px; font: 400 0.9375rem var(--font-display); font-variant-numeric: tabular-nums; } .is-me .ds-chip { background: var(--tangerine); } .ds-who { display: flex; flex-direction: column; min-width: 0; } .ds-who small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-val { font-weight: 700; font-variant-numeric: tabular-nums; }"
+      "description": "Rank chip, human name with note, right-aligned tabular value over a Hairline divider; the row on the bib in front fills Cool Blue, others fill Cool Blue Soft on hover.",
+      "html": "<ol class=\"ds-rows\"><li><span class=\"ds-chip\">2</span><span class=\"ds-who\"><b>Sam Okafor</b><small>Active 14h ago</small></span><span class=\"ds-val\">145.4 km</span></li><li class=\"is-me is-current\"><span class=\"ds-chip\">3</span><span class=\"ds-who\"><b>You</b><small>Active 2h ago</small></span><span class=\"ds-val\">137.2 km</span></li></ol>",
+      "css": ".ds-rows { list-style: none; margin: 0; padding: 0; font-family: var(--font-body); color: var(--ink); } .ds-rows li { display: grid; grid-template-columns: 2.25rem minmax(0,1fr) auto; align-items: center; gap: 0.75rem; padding-block: 0.7rem; border-bottom: 1px solid var(--hairline); } @media (hover: hover) { .ds-rows li:hover:not(.is-current) { background: var(--cool-blue-soft); } } .ds-rows li.is-current { background: var(--cool-blue); } .ds-rows li { margin-inline: -0.5rem; padding-inline: 0.5rem; border-radius: 6px; } .ds-chip { display: grid; place-items: center; height: 2rem; border: 2px solid var(--ink); border-radius: 6px; font: 400 0.9375rem var(--font-display); font-variant-numeric: tabular-nums; } .is-me .ds-chip { background: var(--tangerine); } .ds-who { display: flex; flex-direction: column; min-width: 0; } .ds-who small { color: var(--ink-muted); font-size: 0.8125rem; } .ds-val { font-weight: 700; font-variant-numeric: tabular-nums; }"
     },
     {
       "name": "Front Bib",
@@ -283,7 +283,7 @@
       "name": "Peek Bib",
       "kind": "custom",
       "refersTo": "bib-band-peek",
-      "description": "The friend just ahead or behind: Cool Blue band with the gap, 2.75rem numeral, human name; tapping steps the field.",
+      "description": "The friend just ahead or behind (or, on the Group bib, a top contributor): Cool Blue band with the gap, 2.75rem numeral, human name; tapping steps the field, out of the tab order.",
       "html": "<button class=\"ds-peek\"><span class=\"ds-band\"><span>Ahead</span><span>+8.2 km</span></span><span class=\"ds-peek-row\"><span class=\"ds-numeral\">2</span><span class=\"ds-who\"><b>Sam Okafor</b><small>145.4 km · 14h ago</small></span></span></button>",
       "css": ".ds-peek { display: flex; flex-direction: column; width: 250px; padding: 0; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper); color: var(--ink); font: inherit; font-family: var(--font-body); text-align: left; cursor: pointer; transition: background-color 160ms var(--ease-out-expo); } .ds-peek:hover { background: var(--cool-blue-soft); } .ds-peek:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; } .ds-band { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.75rem; background: var(--cool-blue); font: 400 0.75rem/1.3 var(--font-display); text-transform: uppercase; white-space: nowrap; } .ds-peek-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.75rem 0.5rem; } .ds-numeral { font: 400 2.75rem/1 var(--font-display); font-variant-numeric: tabular-nums; } .ds-who { display: flex; flex-direction: column; min-width: 0; } .ds-who small { color: var(--ink-muted); font-size: 0.8125rem; }"
     },
@@ -310,11 +310,19 @@
       "description": "Signature list: outlined sheet, Tangerine band, NO. / RACE / NEXT GAP columns, Bungee numbers, stretched race links, dashed Cool Blue tear-off footer.",
       "html": "<section class=\"ds-sheet\"><h2 class=\"ds-band\"><span>Start list · Racing</span><span>2 races</span></h2><div class=\"ds-cols\"><span>No.</span><span>Race</span><span>Next gap</span></div><ol class=\"ds-rows\"><li class=\"ds-row\"><span class=\"ds-no\">3</span><span class=\"ds-race\"><a href=\"#\">October Climb</a><small>of 6 · 14 days left</small></span><span class=\"ds-gap\">470 m<small>to Sam</small></span></li><li class=\"ds-row\"><span class=\"ds-no ds-no--long\">64%</span><span class=\"ds-race\"><a href=\"#\">Lunch Run Club</a><small>Together · 9 days left</small></span><span class=\"ds-gap\">180 km<small>to target</small></span></li></ol><a class=\"ds-tear\" href=\"#\"><span>Closest move: 470 m to catch Sam in October Climb</span><svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M4 10h11M11 5l5 5-5 5\"/></svg></a></section>",
       "css": ".ds-sheet { max-width: 640px; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--font-body); } .ds-band { display: flex; justify-content: space-between; gap: 0.75rem; margin: 0; padding: 0.3rem 0.75rem; background: var(--tangerine); font: 400 0.75rem/1.3 var(--font-display); text-transform: uppercase; white-space: nowrap; } .ds-cols, .ds-row { display: grid; grid-template-columns: 3.5rem minmax(0,1fr) auto; align-items: center; gap: 0.75rem; padding-inline: 0.75rem; } .ds-cols { padding-block: 0.5rem 0.4rem; border-bottom: 2px solid var(--ink); color: var(--ink-muted); font: 400 0.75rem/1.2 var(--font-display); text-transform: uppercase; } .ds-cols span:last-child { text-align: right; } .ds-rows { list-style: none; margin: 0; padding: 0; } .ds-row { position: relative; padding-block: 0.7rem; border-bottom: 1px solid var(--hairline); transition: background-color 160ms var(--ease-out-expo); } .ds-row:last-child { border-bottom: 0; } .ds-row:has(a:hover) { background: var(--cool-blue-soft); } .ds-no { font: 400 2.5rem/0.9 var(--font-display); font-variant-numeric: tabular-nums; text-align: center; } .ds-no--long { font-size: 1.5rem; } .ds-race { display: flex; flex-direction: column; min-width: 0; } .ds-race a { color: var(--ink); font-weight: 700; font-size: 0.9375rem; text-decoration: none; } .ds-race a::after { content: \"\"; position: absolute; inset: 0; } .ds-race a:focus-visible { outline: none; } .ds-race a:focus-visible::after { outline: 3px solid var(--ink); outline-offset: -3px; } .ds-race small, .ds-gap small { color: var(--ink-muted); font-size: 0.8125rem; font-weight: 400; } .ds-gap { display: flex; flex-direction: column; align-items: flex-end; font-weight: 700; font-size: 0.9375rem; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-tear { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-top: 2px dashed var(--ink); background: var(--cool-blue); color: var(--ink); padding: 0.55rem 0.75rem; font-weight: 700; font-size: 0.9375rem; text-decoration: none; } .ds-tear:hover { background: var(--cool-blue-deep); } .ds-tear:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; } .ds-tear svg { width: 1.1rem; height: 1.1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Unclaimed Auth Bib",
+      "kind": "custom",
+      "refersTo": "bib-front",
+      "description": "Login and auth-callback bib: flat, Cool Blue band so Tangerine never competes with the official Strava button, Bungee title, claim line, and a tear-off tab stating what Fitter reads. The Connect button is Strava's unmodified asset; the preview holds its place.",
+      "html": "<div class=\"ds-auth\"><span class=\"ds-band\"><span>No. —</span><span>Unclaimed</span></span><div class=\"ds-claim\"><h2>Get your bib</h2><p>Your Strava activities, your crew's challenges.</p><span class=\"ds-strava\">[Strava's official Connect button]</span></div><div class=\"ds-tab\">Your activities, private ones too, show in the feed of campaigns you join. Goals stay yours.</div></div>",
+      "css": ".ds-auth { display: flex; flex-direction: column; max-width: 400px; border: 2px solid var(--ink); border-radius: 10px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--font-body); } .ds-band { display: flex; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.75rem; background: var(--cool-blue); font: 400 0.75rem/1.3 var(--font-display); text-transform: uppercase; white-space: nowrap; } .ds-claim { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; padding: 1.1rem 0.9rem 0.95rem; } .ds-claim h2 { margin: 0; overflow-wrap: anywhere; font: 400 clamp(2rem, 10vw, 2.75rem)/1 var(--font-display); text-transform: uppercase; } .ds-claim p { margin: 0 0 0.6rem; max-width: 28ch; text-wrap: balance; } .ds-strava { display: inline-block; padding: 0.8rem 1rem; border: 2px dashed var(--ink); border-radius: 6px; font: 700 0.9375rem var(--font-body); } .ds-tab { border-top: 2px dashed var(--ink); background: var(--cool-blue); padding: 0.5rem 0.9rem; font: 700 0.9375rem var(--font-body); }"
     }
   ],
   "narrative": {
     "northStar": "The Race Bib",
-    "overview": "Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next (\"8.2 km to catch Sam\"). Standing reads in seconds, on a phone after a workout or on a desktop.\n\nEnergy comes from type scale, bold flat colour and 2px Black Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.\n\nThe Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, campaign create and join, and goals run on it; goals are flat bibs in a grid, and every goal form (join, \"Add a goal\", create's last step, the goals editor) is the same Goal Builder. The login page has not been migrated and still runs the legacy scaffold tokens and classes in `app/ui/src/style.css` (`--bg`, `--surface`, `--border`, `--text`, `--accent`, `.container`, `.card`, `.btn`, `.field`, `.muted`, `.progress-bar`); they are pending migration, not part of this system.",
+    "overview": "Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next (\"8.2 km to catch Sam\"). Standing reads in seconds, on a phone after a workout or on a desktop.\n\nEnergy comes from type scale, bold flat colour and 2px Black Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.\n\nThe Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, campaign create and join, goals, and login run on it; goals are flat bibs in a grid, and every goal form (join, \"Add a goal\", create's last step, the goals editor) is the same Goal Builder. Login and the auth callback share a bare shell (navbar-sized Bungee wordmark, one 400px column that centres vertically from 900px, \"Powered by Strava\") around a flat \"Unclaimed\" bib. Its band is Cool Blue here, so Tangerine never competes with the official Connect with Strava button in its body; the title is the page's largest type, and the tear-off tab states what Fitter reads and who sees it. Login errors are Cool Blue notices; callback errors sit in the bib. The legacy scaffold tokens and classes in `app/ui/src/style.css` (`--bg`, `--surface`, `--border`, `--text`, `--accent`, `.container`, `.card`, `.btn`, `.field`, `.muted`, `.progress-bar`) are no longer used by any view and are pending removal, not part of this system.",
     "keyCharacteristics": [
       "White ground, Black Cherry ink and outlines, Tangerine and Cool Blue as flat pops.",
       "Bib anatomy: band, monumental numeral, dashed tear-off tab; the start-list sheet reuses band and tear-off.",
@@ -355,23 +363,23 @@
       }
     ],
     "dos": [
-      "Do put the next gap on the bib's tear-off tab (\"8.2 km to catch Sam\").",
-      "Do set every number in tabular figures.",
-      "Do give every swipe interaction a visible button equivalent (\"Ahead\" / \"Behind\").",
-      "Do show \"Powered by Strava\" on every screen that displays Strava data.",
-      "Do mark \"you\" with Tangerine, consistently, on every surface: your band, your rank chip, your chart line.",
-      "Do outline bibs, sheets, chips, pills, inputs and notices in 2px Black Cherry, and focus with a 3px Black Cherry ring at 2px offset.",
-      "Do make a whole bib or start-list row clickable with a stretched link on its name, keeping nested controls above it.",
-      "Do word lower-is-better comparisons as \"or faster\" / \"or slower\", never \"at most\" a pace.",
-      "Do drop trailing zeros in values: \"536 km\" not \"536.0 km\", \"2h\" not \"2h 0m\"."
+      "**Do** put the next gap on the bib's tear-off tab (\"8.2 km to catch Sam\").",
+      "**Do** set every number in tabular figures.",
+      "**Do** give every swipe interaction a visible button equivalent (\"Ahead\" / \"Behind\").",
+      "**Do** show \"Powered by Strava\" on every screen that displays Strava data.",
+      "**Do** mark \"you\" with Tangerine, consistently, on every surface: your band, your rank chip, your chart line.",
+      "**Do** outline bibs, sheets, chips, pills, inputs and notices in 2px Black Cherry, and focus with a 3px Black Cherry ring at 2px offset.",
+      "**Do** make a whole bib or start-list row clickable with a stretched link on its name, keeping nested controls above it.",
+      "**Do** word lower-is-better comparisons as \"or faster\" / \"or slower\", never \"at most\" a pace.",
+      "**Do** drop trailing zeros in values: \"536 km\" not \"536.0 km\", \"2h\" not \"2h 0m\"."
     ],
     "donts": [
-      "Don't set text in Tangerine on white, or white text on Tangerine.",
-      "Don't set people's names, activity titles or other user-written reading text in Bungee.",
-      "Don't introduce green, or Strava orange `#fc4c02`, into Fitter's own UI.",
-      "Don't drift into a dark neon fitness-tracker look or a generic white-card dashboard.",
-      "Don't add texture, gradients or soft shadows. Depth is outline plus the single front-bib offset.",
-      "Don't build new surfaces on the legacy scaffold tokens (`--accent`, `--bg`, `.card`, `.btn`)."
+      "**Don't** set text in Tangerine on white, or white text on Tangerine.",
+      "**Don't** set people's names, activity titles or other user-written reading text in Bungee.",
+      "**Don't** introduce green, or Strava orange `#fc4c02`, into Fitter's own UI.",
+      "**Don't** drift into a dark neon fitness-tracker look or a generic white-card dashboard.",
+      "**Don't** add texture, gradients or soft shadows. Depth is outline plus the single front-bib offset.",
+      "**Don't** build new surfaces on the legacy scaffold tokens (`--accent`, `--bg`, `.card`, `.btn`)."
     ]
   }
 }

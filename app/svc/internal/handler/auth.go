@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/fitter/svc/internal/auth"
@@ -36,31 +37,32 @@ func (d *Deps) Login(w http.ResponseWriter, r *http.Request) {
 // user, kicks off an activity backfill, and hands the browser a JWT.
 func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	if errParam := r.URL.Query().Get("error"); errParam != "" {
-		http.Redirect(w, r, d.FrontendURL+"/login?error="+errParam, http.StatusFound)
+		d.loginError(w, r, errParam)
 		return
 	}
 
 	cookie, err := r.Cookie(oauthStateCookie)
 	if err != nil || cookie.Value == "" || cookie.Value != r.URL.Query().Get("state") {
-		http.Error(w, "invalid oauth state", http.StatusBadRequest)
+		slog.Warn("oauth state mismatch", "err", err)
+		d.loginError(w, r, "state")
 		return
 	}
 	http.SetCookie(w, &http.Cookie{Name: oauthStateCookie, Value: "", Path: "/auth/strava", MaxAge: -1})
 
 	code := r.URL.Query().Get("code")
 	if code == "" {
-		http.Error(w, "missing code", http.StatusBadRequest)
+		d.loginError(w, r, "exchange")
 		return
 	}
 
 	tok, err := d.Strava.ExchangeCode(r.Context(), code)
 	if err != nil {
 		slog.Error("strava code exchange failed", "err", err)
-		http.Error(w, "oauth exchange failed", http.StatusBadGateway)
+		d.loginError(w, r, "exchange")
 		return
 	}
 	if tok.Athlete == nil {
-		http.Error(w, "strava response missing athlete", http.StatusBadGateway)
+		d.loginError(w, r, "exchange")
 		return
 	}
 
@@ -96,7 +98,7 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		slog.Error("upsert user failed", "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		d.loginError(w, r, "server")
 		return
 	}
 
@@ -105,10 +107,16 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	jwtToken, err := auth.Issue(d.JWTSecret, u.ID, d.JWTTTL)
 	if err != nil {
 		slog.Error("issue jwt failed", "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		d.loginError(w, r, "server")
 		return
 	}
 	http.Redirect(w, r, d.FrontendURL+"/auth/callback#token="+jwtToken, http.StatusFound)
+}
+
+// loginError sends the browser back to the frontend login page with a short
+// code it maps to copy, instead of a plain-text API response nobody can act on.
+func (d *Deps) loginError(w http.ResponseWriter, r *http.Request, code string) {
+	http.Redirect(w, r, d.FrontendURL+"/login?error="+url.QueryEscape(code), http.StatusFound)
 }
 
 // backfillActivities pulls recent history for a newly (re-)authorized user

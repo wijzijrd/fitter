@@ -5,9 +5,9 @@ import { CampaignService } from "../gen/fitter/v1/campaign_pb";
 import { GoalService } from "../gen/fitter/v1/goal_pb";
 import { FeedService } from "../gen/fitter/v1/feed_pb";
 import { CatalogService } from "../gen/fitter/v1/catalog_pb";
+import { apiBaseUrl } from "./config";
+import { saveReturnTo } from "./returnTo";
 import { clearToken, getToken } from "./token";
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
 
 const authInterceptor: Interceptor = (next) => async (req) => {
   const token = getToken();
@@ -20,6 +20,7 @@ const authInterceptor: Interceptor = (next) => async (req) => {
     // An expired or revoked session can't recover in place; start a clean login.
     if (token && ConnectError.from(err).code === Code.Unauthenticated) {
       clearToken();
+      saveReturnTo(window.location.pathname + window.location.search);
       window.location.assign("/login");
     }
     throw err;
@@ -27,7 +28,7 @@ const authInterceptor: Interceptor = (next) => async (req) => {
 };
 
 const transport = createConnectTransport({
-  baseUrl,
+  baseUrl: apiBaseUrl,
   interceptors: [authInterceptor],
 });
 

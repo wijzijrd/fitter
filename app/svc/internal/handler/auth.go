@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/fitter/svc/internal/auth"
@@ -16,18 +18,18 @@ import (
 
 const oauthStateCookie = "fitter_oauth_state"
 
+// Codes Callback sends back to the frontend. LoginView.vue `messages` maps these.
+const (
+	errState    = "state"
+	errScope    = "scope"
+	errExchange = "exchange"
+	errServer   = "server"
+)
+
 // Login redirects the browser to Strava's OAuth consent screen.
 func (d *Deps) Login(w http.ResponseWriter, r *http.Request) {
 	state := randomState()
-	http.SetCookie(w, &http.Cookie{
-		Name:     oauthStateCookie,
-		Value:    state,
-		Path:     "/auth/strava",
-		MaxAge:   600,
-		HttpOnly: true,
-		Secure:   r.TLS != nil,
-		SameSite: http.SameSiteLaxMode,
-	})
+	http.SetCookie(w, d.stateCookie(state, 600))
 	callbackURL := d.PublicBaseURL + "/auth/strava/callback"
 	http.Redirect(w, r, d.Strava.AuthCodeURL(callbackURL, state), http.StatusFound)
 }
@@ -36,31 +38,39 @@ func (d *Deps) Login(w http.ResponseWriter, r *http.Request) {
 // user, kicks off an activity backfill, and hands the browser a JWT.
 func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	if errParam := r.URL.Query().Get("error"); errParam != "" {
-		http.Redirect(w, r, d.FrontendURL+"/login?error="+errParam, http.StatusFound)
+		d.loginError(w, r, errParam)
 		return
 	}
 
 	cookie, err := r.Cookie(oauthStateCookie)
 	if err != nil || cookie.Value == "" || cookie.Value != r.URL.Query().Get("state") {
-		http.Error(w, "invalid oauth state", http.StatusBadRequest)
+		slog.Warn("oauth state mismatch", "err", err, "cookie_present", err == nil)
+		d.loginError(w, r, errState)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{Name: oauthStateCookie, Value: "", Path: "/auth/strava", MaxAge: -1})
+	http.SetCookie(w, d.stateCookie("", -1))
 
 	code := r.URL.Query().Get("code")
 	if code == "" {
-		http.Error(w, "missing code", http.StatusBadRequest)
+		d.loginError(w, r, errExchange)
+		return
+	}
+
+	// Strava echoes the scopes the user kept ticked. Without activity access the feed stays empty.
+	if s := r.URL.Query().Get("scope"); s != "" && !strings.Contains(s, "activity:read") {
+		d.loginError(w, r, errScope)
 		return
 	}
 
 	tok, err := d.Strava.ExchangeCode(r.Context(), code)
 	if err != nil {
 		slog.Error("strava code exchange failed", "err", err)
-		http.Error(w, "oauth exchange failed", http.StatusBadGateway)
+		d.loginError(w, r, errExchange)
 		return
 	}
 	if tok.Athlete == nil {
-		http.Error(w, "strava response missing athlete", http.StatusBadGateway)
+		slog.Error("strava token response has no athlete")
+		d.loginError(w, r, errExchange)
 		return
 	}
 
@@ -96,7 +106,7 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		slog.Error("upsert user failed", "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		d.loginError(w, r, errServer)
 		return
 	}
 
@@ -105,10 +115,35 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	jwtToken, err := auth.Issue(d.JWTSecret, u.ID, d.JWTTTL)
 	if err != nil {
 		slog.Error("issue jwt failed", "err", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		d.loginError(w, r, errServer)
 		return
 	}
 	http.Redirect(w, r, d.FrontendURL+"/auth/callback#token="+jwtToken, http.StatusFound)
+}
+
+// loginError sends the browser back to the frontend login page with a short
+// code it maps to copy, instead of a plain-text API response nobody can act on.
+func (d *Deps) loginError(w http.ResponseWriter, r *http.Request, code string) {
+	http.Redirect(w, r, d.FrontendURL+"/login?error="+url.QueryEscape(code), http.StatusFound)
+}
+
+// stateCookie builds the OAuth state cookie for the callback path under PublicBaseURL.
+// Behind the CDN the API lives under /api, so the browser only sends the cookie to
+// /api/auth/strava/... when the path follows the public base.
+func (d *Deps) stateCookie(value string, maxAge int) *http.Cookie {
+	base, err := url.Parse(d.PublicBaseURL)
+	if err != nil {
+		base = &url.URL{}
+	}
+	return &http.Cookie{
+		Name:     oauthStateCookie,
+		Value:    value,
+		Path:     strings.TrimSuffix(base.Path, "/") + "/auth/strava",
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   base.Scheme == "https",
+		SameSite: http.SameSiteLaxMode,
+	}
 }
 
 // backfillActivities pulls recent history for a newly (re-)authorized user

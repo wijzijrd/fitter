@@ -1,4 +1,4 @@
-.PHONY: up down logs ps setup help buf-generate sqlc-generate test-db
+.PHONY: up down logs ps setup help buf-generate sqlc-generate test-db mock
 
 COMPOSE ?= docker compose -f infra/docker-compose.yml --project-directory .
 
@@ -30,6 +30,9 @@ sqlc-generate:  ## Regenerate app/svc/internal/db from db/queries + db/migration
 
 test-db:        ## Run svc Go tests against a throwaway Postgres (set DOCKER_CONTEXT=quillit to run it remotely)
 	scripts/test-db.sh
+
+mock:           ## Run a fresh seeded instance (UI http://localhost:5173, no Strava; needs brew postgresql@18)
+	scripts/mock.sh
 
 help:           ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'

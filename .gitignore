@@ -9,3 +9,6 @@ app/ui/vite.config.js
 app/ui/vite.config.d.ts
 
 *.db
+
+# Local mock instance (scripts/mock.sh)
+.mock/

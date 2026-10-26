@@ -34,7 +34,7 @@ done
 docker network create "$net" >/dev/null
 docker run -d --name "$net-pg" --network "$net" \
   -e POSTGRES_USER=fitter -e POSTGRES_PASSWORD=fitter -e POSTGRES_DB=fitter \
-  postgres:17-alpine >/dev/null
+  postgres:18-alpine >/dev/null
 until docker exec "$net-pg" pg_isready -U fitter -q 2>/dev/null; do sleep 1; done
 
 docker create --name "$net-run" --network "$net" \

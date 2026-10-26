@@ -4,7 +4,7 @@
 #
 #   make mock
 #
-# Postgres comes from Homebrew (postgresql@17) on MOCK_PG_PORT, because Docker
+# Postgres comes from Homebrew (postgresql@18) on MOCK_PG_PORT, because Docker
 # published ports are not reachable from the host under Rancher Desktop. svc and
 # the UI run from source. The database is recreated on every run, so the seed
 # never duplicates the sample campaign. Ctrl-C stops everything.
@@ -13,12 +13,12 @@ set -euo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)
 mock="$root/.mock"
 pg_port=${MOCK_PG_PORT:-5433}
-pg_bin=${PG_BIN:-$(brew --prefix postgresql@17 2>/dev/null || true)/bin}
+pg_bin=${PG_BIN:-$(brew --prefix postgresql@18 2>/dev/null || true)/bin}
 ui_port=5173
 svc_port=8081
 
 if [ ! -x "$pg_bin/initdb" ]; then
-  echo "mock needs Postgres 17: brew install postgresql@17 (or set PG_BIN to its bin dir)" >&2
+  echo "mock needs Postgres 18: brew install postgresql@18 (or set PG_BIN to its bin dir)" >&2
   exit 1
 fi
 

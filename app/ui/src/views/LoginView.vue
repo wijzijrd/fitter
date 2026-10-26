@@ -63,13 +63,16 @@ const error = computed(() => {
 h2 {
   margin: 0;
   overflow-wrap: anywhere;
-  font: 400 clamp(2rem, 10vw, 2.75rem) / 1 var(--font-display);
+  font: 400 clamp(2rem, 10vw, 3.25rem) / 1 var(--font-display);
   text-transform: uppercase;
+  text-wrap: balance;
 }
 .claim p {
   margin: 0 0 0.6rem;
   max-width: 28ch;
   overflow-wrap: anywhere;
+  font-size: 1.0625rem;
+  line-height: 1.45;
   text-wrap: balance;
 }
 .strava-connect {

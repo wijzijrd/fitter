@@ -9,10 +9,12 @@ import connectWithStrava from "../assets/strava/btn_strava_connect_with_orange.s
 const loginUrl = `${apiBaseUrl}/auth/strava/login`;
 
 // The backend redirects here with ?error=<code>: access_denied when the
-// visitor cancels on Strava, or one of its own codes. The raw value is never rendered.
+// visitor cancels on Strava, or one of the codes named in handler/auth.go
+// (errState, errScope, errExchange, errServer). The raw value is never rendered.
 const messages: Record<string, string> = {
   access_denied: "You cancelled on Strava, so nothing was connected. Try again when you're ready.",
-  state: "That sign-in link expired. Try connecting again.",
+  state: "Sign-in timed out or your browser blocked a cookie. Try connecting again.",
+  scope: "Fitter needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
 };
 const route = useRoute();
 const error = computed(() => {

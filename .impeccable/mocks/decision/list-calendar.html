@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#351e28;--muted:#5a4a52;--t:#ff5c34;--b:#d7efff;--h:#e9e2e6}
+*{box-sizing:border-box}html,body{margin:0;width:390px;height:844px;overflow:hidden;background:#fff;color:var(--ink);font-family:"Hanken Grotesk",sans-serif}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:2px solid var(--ink)}
+.wm{font-family:Bungee;font-size:20px}.nav span{font-weight:600;color:var(--muted);margin-left:14px}.nav .on{color:var(--ink);text-decoration:underline 3px var(--t);text-underline-offset:6px}
+.pill{border:2px solid var(--ink);border-radius:999px;padding:6px 14px;font-weight:700;font-size:15px;background:#fff}.pri{background:var(--t)}
+.head{display:flex;justify-content:space-between;align-items:center;padding:20px 16px 8px}
+h1{margin:0;font:400 26px Bungee}
+.scale{position:relative;margin:8px 16px 0;height:22px;border-bottom:2px solid var(--ink);font:400 11px Bungee;color:var(--muted)}
+.scale span{position:absolute;bottom:4px}
+.track{position:relative;margin:0 16px;height:640px}
+.today{position:absolute;top:-24px;bottom:0;left:138px;width:3px;background:var(--t)}
+.today i{position:absolute;top:0;left:6px;font:400 11px Bungee;font-style:normal;color:var(--ink);background:#fff;padding:0 2px}
+.grid{position:absolute;top:0;bottom:0;width:1px;background:var(--h)}
+.bar{position:absolute;border:2px solid var(--ink);border-radius:10px;overflow:hidden;background:#fff}
+.bar .band{display:flex;justify-content:space-between;gap:8px;background:var(--t);padding:3px 8px;font:400 11px Bungee;white-space:nowrap}
+.bar .row{display:flex;align-items:center;gap:8px;padding:6px 8px}
+.chip{display:grid;place-items:center;min-width:30px;height:28px;border:2px solid var(--ink);border-radius:6px;background:var(--t);font:400 15px Bungee}
+.bar b{font-size:14px}.bar small{display:block;color:var(--muted);font-size:12px}
+.bar.soon{border-style:solid;border-color:var(--ink)}.bar.soon .band{background:var(--b)}
+.bar.open .band{background:#fff;border-bottom:2px dashed var(--ink)}
+.bar.done .band{background:var(--b)}
+</style></head><body>
+<div class="nav"><span class="wm" style="margin:0;color:var(--ink)">FITTER</span><div><span class="on">Campaigns</span><span>Goals</span></div></div>
+<div class="head"><h1>CAMPAIGNS</h1><span class="pill pri">New campaign</span></div>
+<div class="scale"><span style="left:0">SEP</span><span style="left:96px">OCT</span><span style="left:196px">NOV</span><span style="left:300px">DEC</span></div>
+<div class="track">
+<div class="grid" style="left:96px"></div><div class="grid" style="left:196px"></div><div class="grid" style="left:300px"></div>
+<div class="today"><i>TODAY 18 OCT</i></div>
+<div class="bar" style="top:26px;left:96px;width:104px"><div class="band"><span>OCT CLIMB</span></div><div class="row"><span class="chip">3</span><span><b>3rd</b><small>470 m to Sam</small></span></div></div>
+<div class="bar" style="top:26px;left:212px;width:146px;" ><div class="band"><span>LUNCH RUN CLUB</span><span>18D</span></div><div class="row"><span class="chip">1</span><span><b>1st of 4</b><small>8.2 km clear</small></span></div></div>
+<div class="bar" style="top:118px;left:62px;width:296px"><div class="band"><span>CREW TO CAPE POINT</span><span>44 DAYS LEFT</span></div><div class="row"><span class="chip">64%</span><span><b>964.0 km of 1,500.0 km</b><small>You: 212.0 km · 22% of the total</small></span></div></div>
+<div class="bar soon" style="top:210px;left:196px;width:162px"><div class="band"><span>WINTER BASE MILES</span></div><div class="row"><span><b>Starts in 14 days</b><small>40h each</small></span></div></div>
+<div class="bar open" style="top:290px;left:118px;width:110px"><div class="band"><span>WEEKEND RIDES</span></div><div class="row"><span class="pill" style="padding:2px 10px;font-size:13px">Join</span></div></div>
+<div class="bar open" style="top:290px;left:238px;width:120px"><div class="band"><span>HILL REPEATS</span></div><div class="row"><span class="pill" style="padding:2px 10px;font-size:13px">Join</span></div></div>
+<div class="bar done" style="top:370px;left:0;width:96px"><div class="band"><span>FINISHER</span></div><div class="row"><span><b>2nd of 5</b><small>Sept Streak</small></span></div></div>
+</div>
+</body></html>

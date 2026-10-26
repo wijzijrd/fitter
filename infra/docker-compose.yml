@@ -32,6 +32,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
       CORS_ORIGIN: ${FRONTEND_URL}
+      ADMIN_STRAVA_ATHLETE_IDS: ${ADMIN_STRAVA_ATHLETE_IDS:-}
     depends_on:
       postgres:
         condition: service_healthy

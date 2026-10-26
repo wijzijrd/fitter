@@ -1,0 +1,278 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-18T18:00:49.342Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/model-pick.html"
+        ],
+        "createdAt": "2026-10-18T18:00:49.363Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-gate.html"
+        ],
+        "createdAt": "2026-10-18T18:00:49.388Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-wayfinding.html"
+        ],
+        "createdAt": "2026-10-18T18:00:49.413Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-metro.html"
+        ],
+        "createdAt": "2026-10-18T18:06:02.477Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-goods.html"
+        ],
+        "createdAt": "2026-10-18T18:06:02.502Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-zoo.html"
+        ],
+        "createdAt": "2026-10-18T18:06:02.526Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/roster.html"
+        ],
+        "createdAt": "2026-10-18T18:12:56.123Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/tiles.html"
+        ],
+        "createdAt": "2026-10-18T18:12:56.153Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/nextgap.html"
+        ],
+        "createdAt": "2026-10-18T18:12:56.198Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/bib.html"
+        ],
+        "createdAt": "2026-10-18T18:17:11.332Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/results.html"
+        ],
+        "createdAt": "2026-10-18T18:17:11.365Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/course.html"
+        ],
+        "createdAt": "2026-10-18T18:17:11.398Z",
+        "reason": "agent: redesign decision sketch exploring candidate type; DESIGN.md is the provisional incumbent and user asked for new fun fonts"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/tearoff.html"
+        ],
+        "createdAt": "2026-10-18T18:20:27.782Z",
+        "reason": "agent: redesign decision sketch in the user-chosen Race Bib world; DESIGN.md is the provisional incumbent"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/wall.html"
+        ],
+        "createdAt": "2026-10-18T18:20:27.813Z",
+        "reason": "agent: redesign decision sketch in the user-chosen Race Bib world; DESIGN.md is the provisional incumbent"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/stack.html"
+        ],
+        "createdAt": "2026-10-18T18:20:27.841Z",
+        "reason": "agent: redesign decision sketch in the user-chosen Race Bib world; DESIGN.md is the provisional incumbent"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/type-stencil.html"
+        ],
+        "createdAt": "2026-10-18T18:22:07.349Z",
+        "reason": "agent: type-pairing decision sketch requested by user for chosen Bib Stack"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/type-bagel.html"
+        ],
+        "createdAt": "2026-10-18T18:22:07.372Z",
+        "reason": "agent: type-pairing decision sketch requested by user for chosen Bib Stack"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/type-bungee.html"
+        ],
+        "createdAt": "2026-10-18T18:22:07.394Z",
+        "reason": "agent: type-pairing decision sketch requested by user for chosen Bib Stack"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-rack.html"
+        ],
+        "createdAt": "2026-10-18T20:17:23.338Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-calendar.html"
+        ],
+        "createdAt": "2026-10-18T20:17:23.361Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-carousel.html"
+        ],
+        "createdAt": "2026-10-18T20:17:23.384Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-calendar-rows.html"
+        ],
+        "createdAt": "2026-10-18T20:20:21.200Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-startlist.html"
+        ],
+        "createdAt": "2026-10-18T20:20:21.222Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-wall.html"
+        ],
+        "createdAt": "2026-10-18T20:20:21.245Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-moveup.html"
+        ],
+        "createdAt": "2026-10-18T20:20:21.268Z",
+        "reason": "agent: decision sketch loads DESIGN.md's Hanken Grotesk from Google Fonts under its non-variable family name"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-calendar-rows.html"
+        ],
+        "createdAt": "2026-10-18T20:33:38.708Z",
+        "reason": "agent: non-shipping 390px decision sketch; shipped CampaignsView uses DESIGN label size and padding"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-calendar-rows.html"
+        ],
+        "createdAt": "2026-10-18T20:33:38.732Z",
+        "reason": "agent: non-shipping 390px decision sketch; shipped CampaignsView uses DESIGN label size and padding"
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-startlist.html"
+        ],
+        "createdAt": "2026-10-18T20:33:38.754Z",
+        "reason": "agent: non-shipping 390px decision sketch; shipped CampaignsView uses DESIGN label size and padding"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/list-startlist.html"
+        ],
+        "createdAt": "2026-10-18T20:33:38.778Z",
+        "reason": "agent: non-shipping 390px decision sketch; shipped CampaignsView uses DESIGN label size and padding"
+      }
+    ]
+  }
+}

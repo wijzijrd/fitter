@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--cb:#D7EFFF;--ch:#351E28;--tg:#FF5C34;--muted:#5A4A52}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:var(--cb);color:var(--ch);font:400 15px/1.35 "Atkinson Hyperlegible",sans-serif;position:relative}
+.num{font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.mark{font:900 26px "Big Shoulders Display";text-transform:uppercase;letter-spacing:.02em}
+nav{display:flex;gap:16px;font-size:14px}nav a{color:var(--muted)}nav a.on{color:var(--ch);font-weight:700}
+.band{background:var(--ch);color:var(--cb);padding:16px;display:flex;align-items:center;gap:14px}
+.band .rank{font:900 104px/0.8 "Big Shoulders Display";letter-spacing:-.01em}
+.band .rank sup{font-size:34px}
+.band .msg{font-size:15px;color:#fff}
+.band .msg b{display:block;font:900 40px/0.95 "Big Shoulders Display";color:var(--cb)}
+.band .go{margin-left:auto;width:48px;height:48px;background:var(--tg);color:var(--ch);display:grid;place-items:center;font:900 28px "Big Shoulders Display";border-radius:8px}
+.title{padding:16px 16px 0}
+h1{font:900 34px/1 "Big Shoulders Display";text-transform:uppercase;letter-spacing:.01em}
+.meta{font-size:13px;color:var(--muted);margin-top:4px}
+.tabs{display:flex;gap:22px;padding:12px 16px 0;border-bottom:2px solid #B9DDF5}
+.tabs span{padding-bottom:8px;font-weight:700;color:var(--muted)}.tabs .on{color:var(--ch);border-bottom:4px solid var(--ch);margin-bottom:-2px}
+ol{list-style:none;margin:8px 16px}
+li{display:grid;grid-template-columns:40px 1fr auto;align-items:center;padding:10px 0;border-bottom:1px solid #B9DDF5}
+li .r{font:900 30px "Big Shoulders Display"}
+li .n{font-weight:700}
+li .s{font-size:13px;color:var(--muted)}
+li .v{font:900 24px "Big Shoulders Display";text-align:right}
+li.me{background:#fff;margin:0 -16px;padding:10px 16px;border-left:6px solid var(--tg)}
+footer{position:absolute;bottom:14px;left:16px;font-size:11px;color:var(--muted)}
+</style></head><body>
+<header><span class="mark">Fitter</span><nav><a class="on">Campaigns</a><a>Goals</a></nav></header>
+<div class="band num"><div class="rank">3<sup>RD</sup></div><div class="msg"><b>8.2 KM</b>to catch Sam</div><div class="go">→</div></div>
+<div class="title"><h1>October 200 km</h1><div class="meta num">Per member · Distance · Day 18 of 31</div></div>
+<div class="tabs"><span class="on">Standings</span><span>Feed</span><span>Timeline</span></div>
+<ol class="num">
+<li><span class="r">1</span><span><span class="n">Priya</span><br><span class="s">Finished on day 17</span></span><span class="v">204.1</span></li>
+<li><span class="r">2</span><span><span class="n">Sam</span><br><span class="s">58.0 km to the finish</span></span><span class="v">142.0</span></li>
+<li class="me"><span class="r">3</span><span><span class="n">You</span><br><span class="s">8.2 km to Sam</span></span><span class="v">133.8</span></li>
+<li><span class="r">4</span><span><span class="n">Jonno</span><br><span class="s">36.3 km to you</span></span><span class="v">97.5</span></li>
+<li><span class="r">5</span><span><span class="n">Lerato</span><br><span class="s">36.3 km to Jonno</span></span><span class="v">61.2</span></li>
+<li><span class="r">6</span><span><span class="n">Mika</span><br><span class="s">39.2 km to Lerato</span></span><span class="v">22.0</span></li>
+</ol>
+<footer>Powered by Strava</footer>
+</body></html>

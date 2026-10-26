@@ -1,4 +1,4 @@
-.PHONY: up down logs ps setup help buf-generate sqlc-generate
+.PHONY: up down logs ps setup help buf-generate sqlc-generate test-db
 
 COMPOSE ?= docker compose -f infra/docker-compose.yml --project-directory .
 
@@ -27,6 +27,9 @@ buf-generate:   ## Regenerate Go + TS code from proto/ (needs buf + plugins on P
 
 sqlc-generate:  ## Regenerate app/svc/internal/db from db/queries + db/migrations
 	cd app/svc && sqlc generate
+
+test-db:        ## Run svc Go tests against a throwaway Postgres (set DOCKER_CONTEXT=quillit to run it remotely)
+	scripts/test-db.sh
 
 help:           ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fitter/svc/internal/db"
+	"github.com/fitter/svc/internal/ingest"
 )
 
 // Webhook handles both Strava's one-time subscription validation (GET) and
@@ -75,7 +75,7 @@ func (d *Deps) processActivityEvent(ownerID, activityID int64, aspectType string
 		return
 	}
 
-	accessToken, err := d.ensureFreshAccessToken(ctx, u)
+	accessToken, err := ingest.EnsureFreshAccessToken(ctx, d.Queries, d.Strava, u)
 	if err != nil {
 		slog.Error("webhook refresh token failed", "user_id", u.ID, "err", err)
 		return
@@ -85,29 +85,7 @@ func (d *Deps) processActivityEvent(ownerID, activityID int64, aspectType string
 		slog.Error("webhook fetch activity failed", "activity_id", activityID, "err", err)
 		return
 	}
-	if err := upsertStravaActivity(ctx, d.Queries, u.ID, *a); err != nil {
+	if err := ingest.UpsertActivity(ctx, d.Queries, u.ID, *a); err != nil {
 		slog.Error("webhook upsert activity failed", "activity_id", activityID, "err", err)
 	}
-}
-
-// ensureFreshAccessToken mirrors service.Deps.ensureFreshAccessToken — kept
-// local since the handler package doesn't depend on the service package.
-func (d *Deps) ensureFreshAccessToken(ctx context.Context, u db.User) (string, error) {
-	const refreshBuffer = 5 * time.Minute
-	if time.Now().Add(refreshBuffer).Before(time.Unix(u.TokenExpiresAt, 0)) {
-		return u.AccessToken, nil
-	}
-	tok, err := d.Strava.RefreshAccessToken(ctx, u.RefreshToken)
-	if err != nil {
-		return "", err
-	}
-	if err := d.Queries.UpdateUserTokens(ctx, db.UpdateUserTokensParams{
-		AccessToken:    tok.AccessToken,
-		RefreshToken:   tok.RefreshToken,
-		TokenExpiresAt: tok.ExpiresAt,
-		ID:             u.ID,
-	}); err != nil {
-		return "", err
-	}
-	return tok.AccessToken, nil
 }

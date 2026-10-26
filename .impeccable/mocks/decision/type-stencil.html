@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@800;900&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>body{font-synthesis:none}
+:root{--ch:#351E28;--tg:#FF5C34;--cb:#D7EFFF;--muted:#5A4A52;--line:#ECE7EA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:#fff;color:var(--ch);font:400 15px/1.35 "Atkinson Hyperlegible",sans-serif;position:relative}
+.num{font-variant-numeric:tabular-nums}
+.x{font-family:'Big Shoulders Stencil Display';font-stretch:125%;font-weight:900}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.mark{font-size:21px;letter-spacing:-.02em}
+nav{display:flex;gap:16px;font-size:14px}nav a{color:var(--muted)}nav a.on{color:var(--ch);font-weight:700}
+.title{padding:14px 16px 0}
+h1{font:800 26px/1.05 Archivo;font-stretch:110%}
+.meta{font-size:13px;color:var(--muted);margin-top:4px}
+.tabs{display:flex;gap:22px;padding:12px 16px 0;border-bottom:1px solid var(--line)}
+.tabs span{padding-bottom:8px;font-weight:700;color:var(--muted)}.tabs .on{color:var(--ch);border-bottom:3px solid var(--tg)}
+.stage{position:relative;height:300px;margin:12px 16px 0}
+.b{position:absolute;border:2px solid var(--ch);border-radius:10px;overflow:hidden;background:#fff}
+.b .band{background:var(--tg);padding:5px 12px;font:800 11px 'Big Shoulders Stencil Display';font-stretch:115%;letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between}
+.peek{width:220px;height:110px}
+.peek .band{background:var(--cb)}
+.peek .row{display:flex;align-items:center;gap:10px;padding:6px 12px}
+.peek .rank{font-size:44px;line-height:1}
+.peek b{display:block}
+.peek small{color:var(--muted);font-size:13px}
+.ahead{top:0;left:0}
+.behind{bottom:0;right:0}
+.you{top:62px;left:34px;right:22px;height:176px;box-shadow:0 6px 0 var(--ch)}
+.you .main{display:flex;align-items:flex-end;justify-content:space-between;padding:6px 14px 4px}
+.you .rank{font-size:104px;line-height:.85;letter-spacing:-.04em}
+.you .r{text-align:right;font-weight:700}
+.you .r b{display:block;font:800 26px 'Big Shoulders Stencil Display'}
+.you .tab{border-top:2px dashed var(--ch);background:var(--cb);padding:7px 14px;font-weight:700;display:flex;justify-content:space-between}
+.ctrl{display:flex;justify-content:center;gap:12px;padding:14px 0 4px}
+.ctrl span{border:2px solid var(--ch);border-radius:999px;padding:5px 14px;font-weight:700;font-size:14px}
+ol{list-style:none;margin:6px 16px}
+li{display:grid;grid-template-columns:30px 1fr auto;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+li .rk{font-weight:900;font-family:'Big Shoulders Stencil Display'}
+li.me{font-weight:700;box-shadow:inset 4px 0 0 var(--tg);padding-left:8px}
+footer{position:absolute;bottom:14px;left:16px;font-size:11px;color:var(--muted)}
+</style></head><body>
+<header><span class="mark x">Fitter</span><nav><a class="on">Campaigns</a><a>Goals</a></nav></header>
+<div class="title"><h1>October 200 km</h1><div class="meta num">Per member · Distance · Day 18 of 31 · 6 friends</div></div>
+<div class="tabs"><span class="on">Standings</span><span>Feed</span><span>Timeline</span></div>
+<div class="stage num">
+  <div class="b peek ahead"><div class="band"><span>Ahead</span><span>+8.2 km</span></div><div class="row"><span class="rank x">2</span><span><b>Sam</b><small>142.0 km · ran 2 h ago</small></span></div></div>
+  <div class="b peek behind"><div class="band"><span>Behind</span><span>−36.3 km</span></div><div class="row"><span class="rank x">4</span><span><b>Jonno</b><small>97.5 km · ▲2 today</small></span></div></div>
+  <div class="b you"><div class="band"><span>October 200 km</span><span>You</span></div><div class="main"><span class="rank x">3</span><span class="r"><b>133.8 km</b>66.2 to go · 13 days</span></div><div class="tab"><span>8.2 km to catch Sam</span><span>→</span></div></div>
+</div>
+<div class="ctrl"><span>← Ahead</span><span>Behind →</span></div>
+<ol class="num">
+  <li><span class="rk">1</span><span>Priya · finished</span><span>204.1</span></li>
+  <li><span class="rk">2</span><span>Sam</span><span>142.0</span></li>
+  <li class="me"><span class="rk">3</span><span>You</span><span>133.8</span></li>
+  <li><span class="rk">4</span><span>Jonno</span><span>97.5</span></li>
+</ol>
+<footer>Powered by Strava</footer>
+</body></html>

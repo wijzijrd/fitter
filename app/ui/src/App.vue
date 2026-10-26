@@ -13,12 +13,12 @@ function handleLogout(): void {
 
 <template>
   <div class="navbar" v-if="auth.isAuthenticated">
-    <strong>Fitter</strong>
+    <router-link to="/" class="wordmark">Fitter</router-link>
     <nav>
-      <router-link to="/">Campaigns</router-link>
+      <router-link to="/" :class="{ 'router-link-active': String($route.name).startsWith('campaign') }">Campaigns</router-link>
       <router-link to="/goals">Goals</router-link>
-      <span class="muted" v-if="auth.user">{{ auth.user.name }}</span>
-      <button class="btn secondary" @click="handleLogout">Log out</button>
+      <span class="who" v-if="auth.user">{{ auth.user.name }}</span>
+      <button class="logout" @click="handleLogout">Log out</button>
     </nav>
   </div>
   <router-view />

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ch:#351E28;--tg:#FF5C34;--cb:#D7EFFF;--muted:#5A4A52;--line:#ECE7EA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:#fff;color:var(--ch);font:400 15px/1.35 "Atkinson Hyperlegible",sans-serif;position:relative}
+.num{font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.mark{font:800 22px "Bricolage Grotesque";letter-spacing:-.03em}
+nav{display:flex;gap:16px;font-size:14px}nav a{color:var(--muted)}nav a.on{color:var(--ch);font-weight:700}
+.block{background:var(--cb);margin:0 16px;border-radius:16px;padding:16px}
+h1{font:800 30px/1 "Bricolage Grotesque";letter-spacing:-.03em}
+.meta{font-size:13px;color:var(--muted);margin-top:4px}
+.you{margin-top:14px;display:flex;align-items:baseline;gap:10px}
+.you b{font:800 48px/0.9 "Bricolage Grotesque";letter-spacing:-.04em}
+.you span{font-weight:700}
+.course{position:relative;margin:26px 16px 0;height:92px}
+.course .ln{position:absolute;left:0;right:22px;top:46px;height:6px;border-radius:3px;background:var(--ch)}
+.course .km{position:absolute;top:60px;font-size:12px;color:var(--muted)}
+.flag{position:absolute;right:14px;top:30px;width:3px;height:34px;background:var(--ch)}
+.flag::after{content:"";position:absolute;left:3px;top:0;width:16px;height:11px;background:repeating-conic-gradient(var(--ch) 0 25%,#fff 0 50%) 0 0/8px 6px}
+.mk{position:absolute;top:30px;width:34px;height:34px;margin-left:-17px;border-radius:50%;background:#fff;border:3px solid var(--ch);display:grid;place-items:center;font-weight:700;font-size:13px}
+.mk.me{border-color:var(--tg);background:var(--tg);top:4px}
+.mk.lo{top:56px}
+.tabs{display:flex;gap:22px;padding:6px 16px 0;border-bottom:1px solid var(--line)}
+.tabs span{padding-bottom:8px;font-weight:700;color:var(--muted)}.tabs .on{color:var(--ch);border-bottom:3px solid var(--ch)}
+ol{list-style:none;margin:4px 16px}
+li{display:grid;grid-template-columns:28px 1fr auto;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+li .r{font:800 18px "Bricolage Grotesque"}
+li .n{font-weight:700}li .s{font-size:13px;color:var(--muted);margin-left:6px;font-weight:400}
+li .v{font-weight:700}
+li.me .r{color:var(--ch);box-shadow:inset 0 -5px 0 var(--tg)}
+.cta{position:absolute;left:16px;right:16px;bottom:40px;background:var(--tg);color:var(--ch);border-radius:14px;padding:13px;text-align:center;font:800 17px "Bricolage Grotesque"}
+footer{position:absolute;bottom:14px;left:16px;font-size:11px;color:var(--muted)}
+</style></head><body>
+<header><span class="mark">fitter</span><nav><a class="on">Campaigns</a><a>Goals</a></nav></header>
+<div class="block num"><h1>October 200 km</h1><div class="meta">Per member · Distance · Day 18 of 31</div><div class="you"><b>133.8 km</b><span>3rd · 8.2 km behind Sam</span></div></div>
+<div class="course num">
+  <div class="ln"></div><div class="flag"></div>
+  <span class="km" style="left:0">0</span><span class="km" style="right:0">200 km</span>
+  <div class="mk lo" style="left:4%">M</div>
+  <div class="mk" style="left:28%">L</div>
+  <div class="mk lo" style="left:45%">J</div>
+  <div class="mk me" style="left:61%">You</div>
+  <div class="mk" style="left:66%">S</div>
+  <div class="mk lo" style="left:94%">P</div>
+</div>
+<div class="tabs"><span class="on">Standings</span><span>Feed</span><span>Timeline</span></div>
+<ol class="num">
+  <li><span class="r">1</span><span class="n">Priya<span class="s">finished</span></span><span class="v">204.1</span></li>
+  <li><span class="r">2</span><span class="n">Sam<span class="s">ran 10.4 km · 2 h</span></span><span class="v">142.0</span></li>
+  <li class="me"><span class="r">3</span><span class="n">You</span><span class="v">133.8</span></li>
+  <li><span class="r">4</span><span class="n">Jonno<span class="s">rode 31 km today</span></span><span class="v">97.5</span></li>
+</ol>
+<div class="cta">Invite a friend</div>
+<footer>Powered by Strava</footer>
+</body></html>

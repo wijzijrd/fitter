@@ -51,9 +51,16 @@ func Verify(secret []byte, tokenStr string) (string, error) {
 	return c.Subject, nil
 }
 
-type contextKey struct{}
+// userIDContextKey and roleContextKey are distinct empty-struct TYPES (not
+// just distinct values of one type): an interface comparison via
+// context.Value considers both dynamic type and value, and two values of
+// the same empty struct type are always equal to each other, so sharing one
+// type here would make WithRole silently collide with WithUserID.
+type userIDContextKey struct{}
+type roleContextKey struct{}
 
-var userIDKey = contextKey{}
+var userIDKey = userIDContextKey{}
+var roleKey = roleContextKey{}
 
 // WithUserID returns a new context carrying the authenticated user id.
 func WithUserID(ctx context.Context, userID string) context.Context {
@@ -63,5 +70,19 @@ func WithUserID(ctx context.Context, userID string) context.Context {
 // UserIDFromContext returns the authenticated user id set by the auth interceptor.
 func UserIDFromContext(ctx context.Context) (string, bool) {
 	v, ok := ctx.Value(userIDKey).(string)
+	return v, ok && v != ""
+}
+
+// WithRole returns a new context carrying the authenticated user's current role.
+func WithRole(ctx context.Context, role string) context.Context {
+	return context.WithValue(ctx, roleKey, role)
+}
+
+// RoleFromContext returns the role set by the auth interceptor. The role is
+// looked up fresh from the database on every request (not carried in the
+// JWT itself), so a role change takes effect immediately without needing
+// token reissuance.
+func RoleFromContext(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(roleKey).(string)
 	return v, ok && v != ""
 }

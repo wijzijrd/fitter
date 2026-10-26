@@ -4,8 +4,10 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { ActivityMetric, CampaignMode } from "./common_pb";
+import type { ActivityMetric } from "./common_pb";
 import { file_fitter_v1_common } from "./common_pb";
+import type { CreateGoalRequest, Goal } from "./goal_pb";
+import { file_fitter_v1_goal } from "./goal_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -14,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/campaign.proto.
  */
 export const file_fitter_v1_campaign: GenFile = /*@__PURE__*/
-  fileDesc("ChhmaXR0ZXIvdjEvY2FtcGFpZ24ucHJvdG8SCWZpdHRlci52MSLpAgoIQ2FtcGFpZ24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIlCgRtb2RlGAQgASgOMhcuZml0dGVyLnYxLkNhbXBhaWduTW9kZRIpCgZtZXRyaWMYBSABKA4yGS5maXR0ZXIudjEuQWN0aXZpdHlNZXRyaWMSFAoMdGFyZ2V0X3ZhbHVlGAYgASgBEi4KCnN0YXJ0X2RhdGUYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEiwKCGVuZF9kYXRlGAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBISCgpjcmVhdGVkX2J5GAkgASgJEi4KCmNyZWF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBmpvaW5lZBgLIAEoCBIUCgxtZW1iZXJfY291bnQYDCABKAUigAIKFUNyZWF0ZUNhbXBhaWduUmVxdWVzdBIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEiUKBG1vZGUYAyABKA4yFy5maXR0ZXIudjEuQ2FtcGFpZ25Nb2RlEikKBm1ldHJpYxgEIAEoDjIZLmZpdHRlci52MS5BY3Rpdml0eU1ldHJpYxIUCgx0YXJnZXRfdmFsdWUYBSABKAESLgoKc3RhcnRfZGF0ZRgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoIZW5kX2RhdGUYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIj8KFkNyZWF0ZUNhbXBhaWduUmVzcG9uc2USJQoIY2FtcGFpZ24YASABKAsyEy5maXR0ZXIudjEuQ2FtcGFpZ24iFgoUTGlzdENhbXBhaWduc1JlcXVlc3QiPwoVTGlzdENhbXBhaWduc1Jlc3BvbnNlEiYKCWNhbXBhaWducxgBIAMoCzITLmZpdHRlci52MS5DYW1wYWlnbiIpChJHZXRDYW1wYWlnblJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAkiPAoTR2V0Q2FtcGFpZ25SZXNwb25zZRIlCghjYW1wYWlnbhgBIAEoCzITLmZpdHRlci52MS5DYW1wYWlnbiJsChNKb2luQ2FtcGFpZ25SZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJEiQKF3Blcl9tZW1iZXJfdGFyZ2V0X3ZhbHVlGAIgASgBSACIAQFCGgoYX3Blcl9tZW1iZXJfdGFyZ2V0X3ZhbHVlIj0KFEpvaW5DYW1wYWlnblJlc3BvbnNlEiUKCGNhbXBhaWduGAEgASgLMhMuZml0dGVyLnYxLkNhbXBhaWduIisKFExlYXZlQ2FtcGFpZ25SZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJIhcKFUxlYXZlQ2FtcGFpZ25SZXNwb25zZTKvAwoPQ2FtcGFpZ25TZXJ2aWNlElUKDkNyZWF0ZUNhbXBhaWduEiAuZml0dGVyLnYxLkNyZWF0ZUNhbXBhaWduUmVxdWVzdBohLmZpdHRlci52MS5DcmVhdGVDYW1wYWlnblJlc3BvbnNlElIKDUxpc3RDYW1wYWlnbnMSHy5maXR0ZXIudjEuTGlzdENhbXBhaWduc1JlcXVlc3QaIC5maXR0ZXIudjEuTGlzdENhbXBhaWduc1Jlc3BvbnNlEkwKC0dldENhbXBhaWduEh0uZml0dGVyLnYxLkdldENhbXBhaWduUmVxdWVzdBoeLmZpdHRlci52MS5HZXRDYW1wYWlnblJlc3BvbnNlEk8KDEpvaW5DYW1wYWlnbhIeLmZpdHRlci52MS5Kb2luQ2FtcGFpZ25SZXF1ZXN0Gh8uZml0dGVyLnYxLkpvaW5DYW1wYWlnblJlc3BvbnNlElIKDUxlYXZlQ2FtcGFpZ24SHy5maXR0ZXIudjEuTGVhdmVDYW1wYWlnblJlcXVlc3QaIC5maXR0ZXIudjEuTGVhdmVDYW1wYWlnblJlc3BvbnNlQpEBCg1jb20uZml0dGVyLnYxQg1DYW1wYWlnblByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z", [file_fitter_v1_common, file_google_protobuf_timestamp]);
+  fileDesc("ChhmaXR0ZXIvdjEvY2FtcGFpZ24ucHJvdG8SCWZpdHRlci52MSKIAwoIQ2FtcGFpZ24SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIuCgZtZXRyaWMYBSABKA4yGS5maXR0ZXIudjEuQWN0aXZpdHlNZXRyaWNIAIgBARIZCgx0YXJnZXRfdmFsdWUYBiABKAFIAYgBARIuCgpzdGFydF9kYXRlGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfZGF0ZRgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEgoKY3JlYXRlZF9ieRgJIAEoCRIuCgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZqb2luZWQYCyABKAgSFAoMbWVtYmVyX2NvdW50GAwgASgFEhIKCmdvYWxfY291bnQYDSABKAVCCQoHX21ldHJpY0IPCg1fdGFyZ2V0X3ZhbHVlSgQIBBAFUgRtb2RlIosCChVDcmVhdGVDYW1wYWlnblJlcXVlc3QSDAoEbmFtZRgBIAEoCRITCgtkZXNjcmlwdGlvbhgCIAEoCRIuCgZtZXRyaWMYBCABKA4yGS5maXR0ZXIudjEuQWN0aXZpdHlNZXRyaWNIAIgBARIZCgx0YXJnZXRfdmFsdWUYBSABKAFIAYgBARIuCgpzdGFydF9kYXRlGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfZGF0ZRgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCCQoHX21ldHJpY0IPCg1fdGFyZ2V0X3ZhbHVlSgQIAxAEUgRtb2RlIj8KFkNyZWF0ZUNhbXBhaWduUmVzcG9uc2USJQoIY2FtcGFpZ24YASABKAsyEy5maXR0ZXIudjEuQ2FtcGFpZ24iFgoUTGlzdENhbXBhaWduc1JlcXVlc3QiPwoVTGlzdENhbXBhaWduc1Jlc3BvbnNlEiYKCWNhbXBhaWducxgBIAMoCzITLmZpdHRlci52MS5DYW1wYWlnbiIpChJHZXRDYW1wYWlnblJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAkiPAoTR2V0Q2FtcGFpZ25SZXNwb25zZRIlCghjYW1wYWlnbhgBIAEoCzITLmZpdHRlci52MS5DYW1wYWlnbiJ2ChNKb2luQ2FtcGFpZ25SZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJEisKBWdvYWxzGAMgAygLMhwuZml0dGVyLnYxLkNyZWF0ZUdvYWxSZXF1ZXN0SgQIAhADUhdwZXJfbWVtYmVyX3RhcmdldF92YWx1ZSJdChRKb2luQ2FtcGFpZ25SZXNwb25zZRIlCghjYW1wYWlnbhgBIAEoCzITLmZpdHRlci52MS5DYW1wYWlnbhIeCgVnb2FscxgCIAMoCzIPLmZpdHRlci52MS5Hb2FsIisKFExlYXZlQ2FtcGFpZ25SZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJIhcKFUxlYXZlQ2FtcGFpZ25SZXNwb25zZTKvAwoPQ2FtcGFpZ25TZXJ2aWNlElUKDkNyZWF0ZUNhbXBhaWduEiAuZml0dGVyLnYxLkNyZWF0ZUNhbXBhaWduUmVxdWVzdBohLmZpdHRlci52MS5DcmVhdGVDYW1wYWlnblJlc3BvbnNlElIKDUxpc3RDYW1wYWlnbnMSHy5maXR0ZXIudjEuTGlzdENhbXBhaWduc1JlcXVlc3QaIC5maXR0ZXIudjEuTGlzdENhbXBhaWduc1Jlc3BvbnNlEkwKC0dldENhbXBhaWduEh0uZml0dGVyLnYxLkdldENhbXBhaWduUmVxdWVzdBoeLmZpdHRlci52MS5HZXRDYW1wYWlnblJlc3BvbnNlEk8KDEpvaW5DYW1wYWlnbhIeLmZpdHRlci52MS5Kb2luQ2FtcGFpZ25SZXF1ZXN0Gh8uZml0dGVyLnYxLkpvaW5DYW1wYWlnblJlc3BvbnNlElIKDUxlYXZlQ2FtcGFpZ24SHy5maXR0ZXIudjEuTGVhdmVDYW1wYWlnblJlcXVlc3QaIC5maXR0ZXIudjEuTGVhdmVDYW1wYWlnblJlc3BvbnNlQpEBCg1jb20uZml0dGVyLnYxQg1DYW1wYWlnblByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z", [file_fitter_v1_common, file_fitter_v1_goal, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message fitter.v1.Campaign
@@ -36,19 +38,16 @@ export type Campaign = Message<"fitter.v1.Campaign"> & {
   description: string;
 
   /**
-   * @generated from field: fitter.v1.CampaignMode mode = 4;
+   * unset = no pooled target
+   *
+   * @generated from field: optional fitter.v1.ActivityMetric metric = 5;
    */
-  mode: CampaignMode;
+  metric?: ActivityMetric | undefined;
 
   /**
-   * @generated from field: fitter.v1.ActivityMetric metric = 5;
+   * @generated from field: optional double target_value = 6;
    */
-  metric: ActivityMetric;
-
-  /**
-   * @generated from field: double target_value = 6;
-   */
-  targetValue: number;
+  targetValue?: number | undefined;
 
   /**
    * @generated from field: google.protobuf.Timestamp start_date = 7;
@@ -81,6 +80,11 @@ export type Campaign = Message<"fitter.v1.Campaign"> & {
    * @generated from field: int32 member_count = 12;
    */
   memberCount: number;
+
+  /**
+   * @generated from field: int32 goal_count = 13;
+   */
+  goalCount: number;
 };
 
 /**
@@ -105,19 +109,16 @@ export type CreateCampaignRequest = Message<"fitter.v1.CreateCampaignRequest"> &
   description: string;
 
   /**
-   * @generated from field: fitter.v1.CampaignMode mode = 3;
+   * both set or both unset — enforced in Task 7
+   *
+   * @generated from field: optional fitter.v1.ActivityMetric metric = 4;
    */
-  mode: CampaignMode;
+  metric?: ActivityMetric | undefined;
 
   /**
-   * @generated from field: fitter.v1.ActivityMetric metric = 4;
+   * @generated from field: optional double target_value = 5;
    */
-  metric: ActivityMetric;
-
-  /**
-   * @generated from field: double target_value = 5;
-   */
-  targetValue: number;
+  targetValue?: number | undefined;
 
   /**
    * @generated from field: google.protobuf.Timestamp start_date = 6;
@@ -228,12 +229,11 @@ export type JoinCampaignRequest = Message<"fitter.v1.JoinCampaignRequest"> & {
   campaignId: string;
 
   /**
-   * per_member_target_value overrides the campaign default target for this member.
-   * Only meaningful in CAMPAIGN_MODE_PER_MEMBER; ignored otherwise.
+   * campaign_id on each is ignored, overwritten server-side
    *
-   * @generated from field: optional double per_member_target_value = 2;
+   * @generated from field: repeated fitter.v1.CreateGoalRequest goals = 3;
    */
-  perMemberTargetValue?: number | undefined;
+  goals: CreateGoalRequest[];
 };
 
 /**
@@ -251,6 +251,11 @@ export type JoinCampaignResponse = Message<"fitter.v1.JoinCampaignResponse"> & {
    * @generated from field: fitter.v1.Campaign campaign = 1;
    */
   campaign?: Campaign | undefined;
+
+  /**
+   * @generated from field: repeated fitter.v1.Goal goals = 2;
+   */
+  goals: Goal[];
 };
 
 /**

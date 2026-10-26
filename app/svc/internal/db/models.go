@@ -9,46 +9,97 @@ import (
 )
 
 type Activity struct {
-	ID               string  `json:"id"`
-	UserID           string  `json:"user_id"`
-	StravaActivityID int64   `json:"strava_activity_id"`
-	Type             string  `json:"type"`
-	DistanceM        float64 `json:"distance_m"`
-	ElevationM       float64 `json:"elevation_m"`
-	MovingTimeS      int64   `json:"moving_time_s"`
-	StartDate        int64   `json:"start_date"`
-	Name             string  `json:"name"`
-	CreatedAt        int64   `json:"created_at"`
+	StravaActivityID     int64           `json:"strava_activity_id"`
+	UserID               string          `json:"user_id"`
+	Type                 string          `json:"type"`
+	SportType            string          `json:"sport_type"`
+	Name                 string          `json:"name"`
+	StartDate            int64           `json:"start_date"`
+	DistanceM            float64         `json:"distance_m"`
+	ElevationM           float64         `json:"elevation_m"`
+	MovingTimeS          int64           `json:"moving_time_s"`
+	ElapsedTimeS         int64           `json:"elapsed_time_s"`
+	AverageSpeedMs       float64         `json:"average_speed_ms"`
+	MaxSpeedMs           float64         `json:"max_speed_ms"`
+	AverageHeartrate     sql.NullFloat64 `json:"average_heartrate"`
+	MaxHeartrate         sql.NullFloat64 `json:"max_heartrate"`
+	AverageWatts         sql.NullFloat64 `json:"average_watts"`
+	WeightedAverageWatts sql.NullFloat64 `json:"weighted_average_watts"`
+	MaxWatts             sql.NullFloat64 `json:"max_watts"`
+	DeviceWatts          bool            `json:"device_watts"`
+	Kilojoules           sql.NullFloat64 `json:"kilojoules"`
+	Calories             sql.NullFloat64 `json:"calories"`
+	AverageCadence       sql.NullFloat64 `json:"average_cadence"`
+	SufferScore          sql.NullFloat64 `json:"suffer_score"`
+	CreatedAt            int64           `json:"created_at"`
+	UpdatedAt            int64           `json:"updated_at"`
 }
 
 type Campaign struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Mode        string  `json:"mode"`
-	Metric      string  `json:"metric"`
-	TargetValue float64 `json:"target_value"`
-	StartDate   int64   `json:"start_date"`
-	EndDate     int64   `json:"end_date"`
-	CreatedBy   string  `json:"created_by"`
-	CreatedAt   int64   `json:"created_at"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Metric      sql.NullString  `json:"metric"`
+	TargetValue sql.NullFloat64 `json:"target_value"`
+	StartDate   int64           `json:"start_date"`
+	EndDate     int64           `json:"end_date"`
+	CreatedBy   string          `json:"created_by"`
+	CreatedAt   int64           `json:"created_at"`
 }
 
 type CampaignMember struct {
-	CampaignID           string          `json:"campaign_id"`
-	UserID               string          `json:"user_id"`
-	JoinedAt             int64           `json:"joined_at"`
-	PerMemberTargetValue sql.NullFloat64 `json:"per_member_target_value"`
+	CampaignID string `json:"campaign_id"`
+	UserID     string `json:"user_id"`
+	JoinedAt   int64  `json:"joined_at"`
+}
+
+type CustomMetric struct {
+	ID                     string `json:"id"`
+	Key                    string `json:"key"`
+	Label                  string `json:"label"`
+	Unit                   string `json:"unit"`
+	Aggregation            string `json:"aggregation"`
+	Nullable               bool   `json:"nullable"`
+	LowerIsBetter          bool   `json:"lower_is_better"`
+	SupportsSingleScope    bool   `json:"supports_single_scope"`
+	SupportsAggregateScope bool   `json:"supports_aggregate_scope"`
+	CreatedBy              string `json:"created_by"`
+	CreatedAt              int64  `json:"created_at"`
+}
+
+type CustomMetricSport struct {
+	MetricID string `json:"metric_id"`
+	SportRef string `json:"sport_ref"`
+}
+
+type CustomSport struct {
+	ID        string `json:"id"`
+	Key       string `json:"key"`
+	Label     string `json:"label"`
+	CreatedBy string `json:"created_by"`
+	CreatedAt int64  `json:"created_at"`
 }
 
 type Goal struct {
-	ID          string  `json:"id"`
-	UserID      string  `json:"user_id"`
-	Metric      string  `json:"metric"`
-	TargetValue float64 `json:"target_value"`
-	PeriodStart int64   `json:"period_start"`
-	PeriodEnd   int64   `json:"period_end"`
-	CreatedAt   int64   `json:"created_at"`
+	ID          string         `json:"id"`
+	UserID      string         `json:"user_id"`
+	CampaignID  sql.NullString `json:"campaign_id"`
+	Name        string         `json:"name"`
+	SportGroup  sql.NullString `json:"sport_group"`
+	SportType   sql.NullString `json:"sport_type"`
+	PeriodStart int64          `json:"period_start"`
+	PeriodEnd   int64          `json:"period_end"`
+	CreatedAt   int64          `json:"created_at"`
+}
+
+type GoalClause struct {
+	ID         string  `json:"id"`
+	GoalID     string  `json:"goal_id"`
+	Position   int64   `json:"position"`
+	Scope      string  `json:"scope"`
+	Metric     string  `json:"metric"`
+	Comparator string  `json:"comparator"`
+	Value      float64 `json:"value"`
 }
 
 type User struct {
@@ -60,4 +111,5 @@ type User struct {
 	RefreshToken    string `json:"refresh_token"`
 	TokenExpiresAt  int64  `json:"token_expires_at"`
 	CreatedAt       int64  `json:"created_at"`
+	Role            string `json:"role"`
 }

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;700;900&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--cb:#D7EFFF;--ch:#351E28;--tg:#FF5C34;--muted:#5A4A52}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:390px;height:844px;overflow:hidden;background:var(--cb);color:var(--ch);font:400 15px/1.35 "Atkinson Hyperlegible",sans-serif;position:relative}
+.num{font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px}
+.mark{font:900 19px Unbounded;letter-spacing:-.02em}
+nav{display:flex;gap:16px;font-size:14px}nav a{color:var(--muted)}nav a.on{color:var(--ch);font-weight:700}
+h1{font:300 64px/0.92 Unbounded;letter-spacing:-.05em;white-space:nowrap;padding:4px 0 0 12px;margin-right:-240px}
+.meta{padding:8px 16px 0;font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:22px;padding:14px 16px 0}
+.tabs span{font-size:15px;color:var(--muted);padding-bottom:6px}.tabs .on{color:var(--ch);font-weight:700;border-bottom:3px solid var(--ch)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px 16px}
+.t{height:112px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;background:#fff}
+.t small{font-size:13px;font-weight:700}
+.t b{font:900 48px/0.85 Unbounded;letter-spacing:-.05em}
+.t b span{font:700 18px Unbounded;letter-spacing:-.02em}
+.t.r{background:var(--ch);color:#fff}
+.t.live{background:#9FD0F2}
+.t.live b{font:700 21px/1.1 Unbounded;letter-spacing:-.03em}
+ol{list-style:none;padding:2px 16px}
+li{display:grid;grid-template-columns:44px 1fr auto;align-items:baseline;padding:5px 0}
+li .r{font-weight:900;font-family:Unbounded;letter-spacing:-.04em}
+li .n{font-size:16px}
+li .v{font-weight:700}
+li.me .n{font-weight:700}
+li.me .r{color:var(--ch);text-decoration:underline;text-decoration-color:var(--tg);text-decoration-thickness:4px;text-underline-offset:3px}
+.s1{font-size:30px}.s2{font-size:25px}.s3{font-size:22px}.s4,.s5{font-size:18px;color:var(--muted)}
+.stamp{font:700 10px Unbounded;border:2px solid var(--ch);padding:1px 5px;margin-left:8px;vertical-align:middle}
+.cta{position:absolute;left:16px;right:16px;bottom:40px;background:var(--tg);color:var(--ch);padding:14px;text-align:center;font:700 15px Unbounded}
+footer{position:absolute;bottom:14px;left:16px;font-size:11px;color:var(--muted)}
+</style></head><body>
+<header><span class="mark">fitter</span><nav><a class="on">Campaigns</a><a>Goals</a></nav></header>
+<h1>october 200 km</h1>
+<div class="meta num">Per member · Distance · 6 friends</div>
+<div class="tabs"><span class="on">Standings</span><span>Feed</span><span>Timeline</span></div>
+<div class="tiles num">
+  <div class="t r"><small>Your rank</small><b>3<span>rd</span></b></div>
+  <div class="t"><small>To catch Sam</small><b>8.2<span> km</span></b></div>
+  <div class="t"><small>Days left</small><b>13</b></div>
+  <div class="t live"><small>Sam · 2 h ago</small><b>ran 10.4 km</b></div>
+</div>
+<ol class="num">
+  <li><span class="r s1">1</span><span class="n">Priya<span class="stamp">FINISHED</span></span><span class="v">204.1</span></li>
+  <li><span class="r s2">2</span><span class="n">Sam</span><span class="v">142.0</span></li>
+  <li class="me"><span class="r s3">3</span><span class="n">You</span><span class="v">133.8</span></li>
+  <li><span class="r s4">4</span><span class="n">Jonno</span><span class="v">97.5</span></li>
+</ol>
+<div class="cta">invite a friend</div>
+<footer>Powered by Strava</footer>
+</body></html>

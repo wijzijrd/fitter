@@ -41,6 +41,17 @@ jobs:
       API_HEALTH_PATH: ${{ vars.API_HEALTH_PATH || '/healthz' }}
       SSM_PREFIX: /${{ vars.PROJECT_NAME }}/${{ vars.SSM_ENV }}
     steps:
+      # The prod OIDC role trusts the environment, not the branch: refuse a production deploy of
+      # anything but main.
+      - name: Guard dispatch target
+        env:
+          ENVIRONMENT: ${{ inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$ENVIRONMENT" = production ] && [ "$REF_NAME" != main ]; then
+            echo "::error::production deploys must be dispatched from main (got '$REF_NAME')."; exit 1
+          fi
+
       - uses: actions/checkout@v7
 
       - uses: aws-actions/configure-aws-credentials@v6
@@ -69,7 +80,14 @@ jobs:
       - name: Resolve image for rollback
         if: inputs.image_tag != ''
         id: rollback
-        run: echo "image=${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPO: ${{ vars.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          # Tags are always sha-<40 hex> (see "Build and push"); anything else is a mistake.
+          [[ "$IMAGE_TAG" =~ ^sha-[0-9a-f]{40}$ ]] || { echo "::error::image_tag must look like sha-<40 hex chars>"; exit 1; }
+          echo "image=$REGISTRY/$REPO:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Read configuration from SSM
         id: cfg

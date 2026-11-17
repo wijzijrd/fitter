@@ -45,6 +45,29 @@ jobs:
       run:
         working-directory: ${{ env.WEB_DIR }}
     steps:
+      # Production is only deployable from main, and a manual `ref` must already be merged into
+      # the target's branch(es): the prod OIDC role trusts the environment, not the branch, so
+      # without this any branch could dispatch a production deploy of arbitrary code.
+      - name: Guard dispatch target
+        working-directory: .
+        env:
+          ENVIRONMENT: ${{ inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_REF: ${{ inputs.ref }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$ENVIRONMENT" = production ] && [ "$REF_NAME" != main ]; then
+            echo "::error::production deploys must be dispatched from main (got '$REF_NAME')."; exit 1
+          fi
+          [ -n "$INPUT_REF" ] || exit 0
+          bases=staging; [ "$ENVIRONMENT" = production ] && bases=main || bases="staging main"
+          for base in $bases; do
+            st=$(gh api "repos/$REPO/compare/$base...$INPUT_REF" --jq .status 2>/dev/null || true)
+            case "$st" in behind|identical) exit 0 ;; esac
+          done
+          echo "::error::ref '$INPUT_REF' is not merged into: $bases"; exit 1
+
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}

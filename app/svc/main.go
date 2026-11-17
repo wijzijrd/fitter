@@ -207,13 +207,29 @@ func envOr(key, fallback string) string {
 	return fallback
 }
 
+// ssmPlaceholder is the value infrastructure-template writes into every
+// hand-issued SSM parameter until `make ssm-set` replaces it. Starting with it
+// would, for JWT_SECRET, sign sessions with a publicly known key.
+const ssmPlaceholder = "PLACEHOLDER_SET_BY_HAND"
+
 func mustEnv(key string) string {
 	v := os.Getenv(key)
-	if v == "" {
-		slog.Error("missing required env var", "key", key)
+	if err := checkEnvValue(key, v); err != nil {
+		slog.Error("invalid required env var", "key", key, "error", err)
 		os.Exit(1)
 	}
 	return v
+}
+
+// checkEnvValue rejects an unset value and the unreplaced SSM placeholder.
+func checkEnvValue(key, v string) error {
+	switch v {
+	case "":
+		return fmt.Errorf("%s is not set", key)
+	case ssmPlaceholder:
+		return fmt.Errorf("%s is still the SSM placeholder; run `make ssm-set` in the infra repo", key)
+	}
+	return nil
 }
 
 // parseInt64CSV parses a comma-separated list of int64s, e.g.

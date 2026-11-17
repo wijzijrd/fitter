@@ -1,0 +1,175 @@
+# Build the API container, push it to the environment's ECR repository, and roll it out on the
+# environment's Lightsail container service. Backend-agnostic: anything with a Dockerfile in app/svc/
+# that listens on API_PORT (8081 here) and answers GET API_HEALTH_PATH works.
+#
+# Runtime configuration comes from SSM: every parameter under /<project>/<env>/ becomes an
+# upper-cased environment variable in the container (database_url → DATABASE_URL), plus APP_ENV.
+# Adding a secret in the infrastructure repo needs no change here.
+name: Deploy api
+
+on:
+  push:
+    branches: [staging, main]
+    paths: ['app/svc/**', '.github/workflows/deploy-api.yml']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target
+        required: true
+        type: choice
+        options: [staging, production]
+      image_tag:
+        description: 'Existing tag to redeploy (rollback). Blank = build from this ref.'
+        required: false
+        default: ''
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-api-${{ github.ref_name }}
+  cancel-in-progress: false # never cancel a deployment mid-flight
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+    env:
+      SERVICE: ${{ vars.LIGHTSAIL_SERVICE }}
+      API_PORT: ${{ vars.API_PORT || '8081' }} # svc listens on 8081
+      API_HEALTH_PATH: ${{ vars.API_HEALTH_PATH || '/healthz' }}
+      SSM_PREFIX: /${{ vars.PROJECT_NAME }}/${{ vars.SSM_ENV }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_API_ROLE_ARN }}
+          aws-region: ${{ vars.API_REGION }} # ECR must be co-regional with Lightsail
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - uses: docker/setup-buildx-action@v4
+        if: inputs.image_tag == ''
+
+      # Tags are immutable: re-running a failed job on the SAME commit collides on the tag. To retry
+      # a downstream failure, dispatch this workflow with image_tag=sha-<commit> instead.
+      - name: Build and push
+        if: inputs.image_tag == ''
+        id: build
+        working-directory: app/svc
+        run: |
+          IMAGE="${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:sha-${GITHUB_SHA}"
+          docker buildx build --platform linux/amd64 -t "$IMAGE" --push . \
+            --cache-from type=gha,scope=api-deploy --cache-to type=gha,mode=max,scope=api-deploy
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve image for rollback
+        if: inputs.image_tag != ''
+        id: rollback
+        run: echo "image=${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+
+      - name: Read configuration from SSM
+        id: cfg
+        env:
+          # SSM lives in the primary region, not the API region — the job-level region must not leak
+          # into these calls.
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
+        run: |
+          aws ssm get-parameters-by-path --path "$SSM_PREFIX" --recursive --with-decryption \
+            --query 'Parameters[].{k:Name,v:Value}' --output json > params.json
+          jq -r '.[].v' params.json | while IFS= read -r v; do echo "::add-mask::$v"; done
+          # {"DATABASE_URL": "...", ...} — parameter basename upper-cased.
+          jq -c --arg env "${{ vars.SSM_ENV }}" \
+            '(map({key: (.k | split("/") | last | ascii_upcase), value: .v}) | from_entries) + {APP_ENV: $env}' \
+            params.json > env.json
+          rm params.json
+          {
+            echo "database_migration_url<<EOF"; jq -r '.DATABASE_MIGRATION_URL // ""' env.json; echo EOF
+            echo "database_url<<EOF";           jq -r '.DATABASE_URL // ""' env.json;           echo EOF
+            echo "app_db_password<<EOF";        jq -r '.APP_DB_PASSWORD // ""' env.json;        echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      # The restricted runtime role has no password of its own — Terraform generates one and stores
+      # it in SSM, but only this step applies it to the real Postgres role. On a first-ever
+      # deployment the role may not exist yet (the app's migrations create it once the container
+      # starts), so this is idempotent by design. Skipped when APP_DB_ROLE is blank.
+      #
+      # It does NOT run unconditionally: `ALTER ROLE … PASSWORD` regenerates the SCRAM verifier
+      # even when the password text is unchanged, and that write bypasses Supabase's pooler
+      # management API — leaving Supavisor's cached credential briefly stale. That produced a real,
+      # observed failure: "password authentication failed" on the first container start of roughly
+      # 1 in 3 deploys, self-healing on retry a minute later. So probe first with the DSN already
+      # destined for the container (it embeds the current SSM password) — if it connects, the
+      # password already matches and the ALTER is skipped entirely. Only an actual first-run or
+      # rotation falls through to create/ALTER.
+      - name: Sync runtime role password with SSM
+        if: vars.APP_DB_ROLE != '' && steps.cfg.outputs.app_db_password != ''
+        env:
+          ADMIN_DSN: ${{ steps.cfg.outputs.database_migration_url }}
+          APP_DSN: ${{ steps.cfg.outputs.database_url }}
+          APP_PASSWORD: ${{ steps.cfg.outputs.app_db_password }}
+          ROLE: ${{ vars.APP_DB_ROLE }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client >/dev/null
+          # The DSN carries a "?default_query_exec_mode=exec" query param for pgx; libpq doesn't
+          # understand it. :'var' substitution only happens when psql reads from stdin, not with -c.
+          if psql "${APP_DSN%%\?*}" -c 'select 1' >/dev/null 2>&1; then
+            echo "$ROLE password already matches SSM, skipping ALTER"
+            exit 0
+          fi
+
+          psql "${ADMIN_DSN%%\?*}" -v ON_ERROR_STOP=1 -v pw="$APP_PASSWORD" -v role="$ROLE" <<'SQL'
+          select format('create role %I login', :'role') where not exists (select 1 from pg_roles where rolname = :'role') \gexec
+          select format('alter role %I with password %L', :'role', :'pw') \gexec
+          SQL
+
+      - name: Render deployment spec
+        env:
+          IMAGE: ${{ steps.build.outputs.image || steps.rollback.outputs.image }}
+        run: |
+          jq -n --arg image "$IMAGE" --arg port "$API_PORT" --slurpfile env env.json \
+            '{ api: { image: $image, environment: $env[0], ports: { ($port): "HTTP" } } }' > containers.json
+          jq -n --arg port "$API_PORT" --arg path "$API_HEALTH_PATH" '{
+            containerName: "api", containerPort: ($port | tonumber),
+            healthCheck: { path: $path, successCodes: "200",
+                           intervalSeconds: 10, timeoutSeconds: 5,
+                           healthyThreshold: 2, unhealthyThreshold: 3 }
+          }' > public-endpoint.json
+          rm env.json
+          # containers.json holds plaintext secrets: never upload it as an artifact.
+
+      - name: Deploy
+        id: deploy
+        run: |
+          VERSION=$(aws lightsail create-container-service-deployment \
+            --service-name "$SERVICE" \
+            --containers file://containers.json \
+            --public-endpoint file://public-endpoint.json \
+            --query 'containerService.nextDeployment.version' --output text)
+          rm containers.json
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # Poll THIS deployment's per-version state. `currentDeployment.state` is the wrong thing:
+      # while a rollout is in flight it keeps reporting the OLD, still-serving deployment as ACTIVE,
+      # so it reports success the entire time a broken image is crash-looping.
+      - name: Wait for ACTIVE
+        env:
+          VERSION: ${{ steps.deploy.outputs.version }}
+        run: |
+          for i in $(seq 1 60); do
+            STATE=$(aws lightsail get-container-service-deployments --service-name "$SERVICE" \
+              --query "deployments[?version==\`$VERSION\`].state | [0]" --output text)
+            echo "deployment $VERSION state: $STATE"
+            case "$STATE" in
+              ACTIVE) echo "::notice::Deployment active."; exit 0 ;;
+              FAILED) echo "::error::Deployment failed; the previous deployment remains active."
+                      aws lightsail get-container-log --service-name "$SERVICE" --container-name api || true
+                      exit 1 ;;
+            esac
+            sleep 15
+          done
+          echo "::error::Timed out waiting for deployment."; exit 1

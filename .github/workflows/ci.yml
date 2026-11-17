@@ -1,0 +1,109 @@
+# Path-filtered JOBS, not path-filtered workflows: a required check that lives on a path-filtered
+# workflow never reports on PRs that don't touch those paths. One always-running workflow with a
+# terminal `ci-gate` job is the shape that works.
+#
+name: CI
+
+on:
+  pull_request:
+    branches: [staging, main]
+  push:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  promotion-guard:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      # head_ref is attacker-controlled on a public repo: pass it via env, never inline.
+      - env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$HEAD_REF" != "staging" ]; then
+            echo "::error::PRs into main must come from 'staging' (got '$HEAD_REF')."; exit 1; fi
+
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read # dorny/paths-filter's REST fallback on shallow checkouts
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          base: ${{ github.ref_name }}
+          filters: |
+            web: ['app/ui/**', '.github/workflows/ci.yml', '.github/workflows/deploy-web.yml']
+            api: ['app/svc/**', '.github/workflows/ci.yml', '.github/workflows/deploy-api.yml']
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/ui
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/ui/package-lock.json
+      - run: npm ci
+      # `npm run build` is `vue-tsc -b && vite build`, so this is the typecheck too.
+      - run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost
+      - run: npm test
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/svc
+    services:
+      # DB-backed tests skip unless TEST_DATABASE_URL is set (internal/dbtest).
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fitter
+          POSTGRES_PASSWORD: fitter
+          POSTGRES_DB: fitter
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U fitter" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://fitter:fitter@localhost:5432/fitter?sslmode=disable
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: app/svc/go.mod
+          cache-dependency-path: app/svc/go.sum
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  ci-gate:
+    # The one check to look at before merging (GitHub Free can't require it on private repos, so
+    # look). Green means every job that ran passed; skipped jobs are fine.
+    if: always()
+    needs: [promotion-guard, changes, web, api]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo '${{ toJSON(needs) }}' | jq -e 'all(.[]; .result == "success" or .result == "skipped")' > /dev/null \
+            || { echo "::error::One or more CI jobs failed."; exit 1; }

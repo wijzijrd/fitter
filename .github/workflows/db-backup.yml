@@ -1,0 +1,42 @@
+# Nightly database dump to the backups bucket. Free-tier Supabase has no PITR and no downloadable
+# backups; with migrations running automatically on startup, this is what makes a destructive
+# migration recoverable. NO `environment:` key: a scheduled job that waits on an environment gate is
+# not a backup, so the backup role is pinned to refs/heads/main instead (see the infra repo's iam/).
+name: Database backup
+
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  dump:
+    strategy:
+      fail-fast: false # a staging failure must never skip the production dump
+      matrix:
+        env: [staging, prod]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_BACKUP_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: supabase/setup-cli@v3
+        with:
+          version: latest
+      # Use the pooler DSN (database_session_url), never the direct database host: the direct host is
+      # IPv6-only without Supabase's paid IPv4 add-on, and GitHub-hosted runners are IPv4-only.
+      - name: Dump
+        run: |
+          DSN=$(aws ssm get-parameter --name "/${{ vars.PROJECT_NAME }}/${{ matrix.env }}/database_session_url" \
+                  --with-decryption --query Parameter.Value --output text)
+          echo "::add-mask::$DSN"
+          supabase db dump --db-url "$DSN" -f schema.sql
+          supabase db dump --db-url "$DSN" -f data.sql --data-only
+          tar czf "dump-$(date -u +%Y%m%dT%H%M%SZ).tar.gz" schema.sql data.sql
+      - name: Upload
+        run: aws s3 cp dump-*.tar.gz "s3://${{ vars.BACKUP_BUCKET }}/${{ matrix.env }}/"

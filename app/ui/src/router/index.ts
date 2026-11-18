@@ -27,6 +27,7 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Campaign" },
       props: true,
     },
+    { path: "/goals/new", name: "goal-new", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "New goal" } },
     { path: "/goals", name: "goals", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "Goals" } },
   ],
 });

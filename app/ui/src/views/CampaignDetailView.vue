@@ -256,7 +256,7 @@ onMounted(() => {
               :last-active="lastActive"
             />
             <!-- Without a goal and without a group target, the bib itself asks for one. -->
-            <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+            <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/goals/new?campaign=${campaign.id}`" class="pill add-goal">
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Set your goal
             </router-link>
             <p v-if="privateGoal && campaign.joined" class="private">
@@ -305,7 +305,7 @@ onMounted(() => {
                   </li>
                 </ol>
               </section>
-              <router-link v-if="mine.length && !schedule.ended" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+              <router-link v-if="mine.length && !schedule.ended" :to="`/goals/new?campaign=${campaign.id}`" class="pill add-goal">
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Add a goal
               </router-link>
             </template>

@@ -325,7 +325,7 @@ function tap(to: "ahead" | "behind"): void {
           <span v-else class="join-body">
             <b>Set your goal</b>
             <small>You're in. Pick what you're chasing to take a place in the standings.</small>
-            <router-link :to="`/campaigns/${campaignId}/join`" class="pill pill--primary">Set your goal</router-link>
+            <router-link :to="`/goals/new?campaign=${campaignId}`" class="pill pill--primary">Set your goal</router-link>
           </span>
         </div>
 

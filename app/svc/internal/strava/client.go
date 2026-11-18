@@ -7,6 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -19,6 +21,38 @@ type Config struct {
 	WebhookVerifyToken string
 	AuthBaseURL        string // defaults to https://www.strava.com/oauth if unset
 	APIBaseURL         string // defaults to https://www.strava.com/api/v3 if unset
+}
+
+// APIError is a non-2xx Strava response. Body holds Strava's explanation,
+// e.g. "limit of connected athletes exceeded" on a capacity 403.
+type APIError struct {
+	Op     string
+	Status int
+	Body   string
+}
+
+func (e *APIError) Error() string {
+	return fmt.Sprintf("strava %s failed: status %d: %s", e.Op, e.Status, e.Body)
+}
+
+func newAPIError(op string, resp *http.Response) *APIError {
+	b, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
+	return &APIError{Op: op, Status: resp.StatusCode, Body: string(b)}
+}
+
+// logRateUsage warns when the 15-minute usage passes 80% of the limit.
+// Header format: "<15min>,<daily>".
+func logRateUsage(resp *http.Response) {
+	var use, lim int
+	if _, err := fmt.Sscanf(resp.Header.Get("X-RateLimit-Usage"), "%d,", &use); err != nil {
+		return
+	}
+	if _, err := fmt.Sscanf(resp.Header.Get("X-RateLimit-Limit"), "%d,", &lim); err != nil || lim == 0 {
+		return
+	}
+	if use*100 > lim*80 {
+		slog.Warn("strava rate limit usage high", "usage", use, "limit", lim)
+	}
 }
 
 type Client struct {
@@ -108,8 +142,9 @@ func (c *Client) postToken(ctx context.Context, v url.Values) (*TokenResponse, e
 		return nil, err
 	}
 	defer resp.Body.Close()
+	logRateUsage(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("strava token request failed: status %d", resp.StatusCode)
+		return nil, newAPIError("token request", resp)
 	}
 	var tok TokenResponse
 	if err := json.NewDecoder(resp.Body).Decode(&tok); err != nil {
@@ -163,8 +198,9 @@ func (c *Client) GetActivity(ctx context.Context, accessToken string, activityID
 		return nil, err
 	}
 	defer resp.Body.Close()
+	logRateUsage(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("get activity %d failed: status %d", activityID, resp.StatusCode)
+		return nil, newAPIError(fmt.Sprintf("get activity %d", activityID), resp)
 	}
 	var a Activity
 	if err := json.NewDecoder(resp.Body).Decode(&a); err != nil {
@@ -196,8 +232,9 @@ func (c *Client) ListActivities(ctx context.Context, accessToken string, opts Li
 		return nil, err
 	}
 	defer resp.Body.Close()
+	logRateUsage(resp)
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("list activities failed: status %d", resp.StatusCode)
+		return nil, newAPIError("list activities", resp)
 	}
 	var activities []Activity
 	if err := json.NewDecoder(resp.Body).Decode(&activities); err != nil {

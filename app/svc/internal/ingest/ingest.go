@@ -133,6 +133,14 @@ func EnsureFreshAccessToken(ctx context.Context, q *db.Queries, c *strava.Client
 	if time.Now().Add(refreshBuffer).Before(time.Unix(u.TokenExpiresAt, 0)) {
 		return u.AccessToken, nil
 	}
+	// Re-read: a concurrent webhook/backfill may have rotated the refresh
+	// token since u was loaded, and Strava invalidates the old one.
+	if fresh, err := q.GetUserByID(ctx, u.ID); err == nil {
+		u = fresh
+		if time.Now().Add(refreshBuffer).Before(time.Unix(u.TokenExpiresAt, 0)) {
+			return u.AccessToken, nil
+		}
+	}
 	tok, err := c.RefreshAccessToken(ctx, u.RefreshToken)
 	if err != nil {
 		return "", fmt.Errorf("refresh strava token: %w", err)

@@ -7,6 +7,8 @@ import type { ClauseDraft, GoalDraft } from "../lib/goalInput";
 import { blankClause, draftErrors } from "../lib/goalInput";
 import { comparatorLabels, fasterLabels, scopeLabels } from "../lib/labels";
 import { editUnitHint, isDurationUnit } from "../lib/metricFormat";
+import { exercises } from "../lib/exercises";
+import { ActivityMetric as Metric } from "../gen/fitter/v1/common_pb";
 
 const draft = defineModel<GoalDraft>({ required: true });
 const props = defineProps<{
@@ -140,6 +142,19 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
             </button>
           </div>
 
+          <div v-if="c.metric === Metric.MAX_WEIGHT_KG" class="rb-field">
+            <label :for="id(`exercise-${c.key}`)">Exercise</label>
+            <input
+              :id="id(`exercise-${c.key}`)"
+              v-model="c.exercise"
+              class="input"
+              list="gb-exercises"
+              autocomplete="off"
+              placeholder="bench press"
+              :aria-invalid="showErrors && !c.exercise.trim()"
+            />
+          </div>
+
           <div class="clause-rules">
             <div v-if="scopesFor(c.metric).length > 1" class="seg" role="radiogroup" :aria-label="`Condition ${i + 1} scope`">
               <label v-for="s in scopesFor(c.metric)" :key="s" class="choice choice--pill">
@@ -179,6 +194,7 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
       </button>
       <small v-if="draft.clauses.length > 1">All conditions must be met.</small>
     </fieldset>
+  <datalist id="gb-exercises"><option v-for="e in exercises" :key="e" :value="e" /></datalist>
   </div>
 </template>
 

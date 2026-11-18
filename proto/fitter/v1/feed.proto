@@ -24,6 +24,7 @@ message FeedActivity {
   optional double average_heartrate = 14;
   optional double average_watts = 15;
   optional double suffer_score = 16;
+  string source = 17; // "strava" or "manual"
 }
 
 message GetCampaignFeedRequest {

@@ -83,6 +83,7 @@ func (s *FeedService) GetCampaignFeed(ctx context.Context, req *connect.Request[
 			AverageHeartrate: nullFloatPtr(r.AverageHeartrate),
 			AverageWatts:     nullFloatPtr(r.AverageWatts),
 			SufferScore:      nullFloatPtr(r.SufferScore),
+			Source:           r.Source,
 		})
 	}
 	return connect.NewResponse(&fitterv1.GetCampaignFeedResponse{Activities: out}), nil
@@ -112,6 +113,9 @@ func (s *FeedService) pooledActivities(ctx context.Context, c db.Campaign) ([]me
 	acts := make([]metrics.Activity, len(rows))
 	for i, r := range rows {
 		acts[i] = metrics.FromDB(r)
+	}
+	if err := attachLifts(ctx, s.Queries, acts); err != nil {
+		return nil, err
 	}
 	return acts, nil
 }
@@ -387,6 +391,7 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 				// validateClauses. Skip rather than panic on a data bug.
 				continue
 			}
+			def = clauseDef(def, cl)
 			// Label combines the user, goal name, and metric so that a user
 			// with two AGGREGATE clauses (even within the same sport group)
 			// never produces two series with an identical label in the

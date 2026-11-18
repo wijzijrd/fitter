@@ -5,6 +5,7 @@ import { baseValueToEditString, editStringToBaseValue } from "./metricFormat";
 import type { SportSelectorValue } from "./sportSelector";
 import { sportSelectorInit } from "./sportSelector";
 import { fromDate } from "./timestamp";
+import { normalizeExercise } from "./exercises";
 
 // GoalFormInput is the shared shape edited by the personal-goal create form
 // and the join-campaign flow's per-goal sub-form — both collect a name, a
@@ -41,6 +42,7 @@ export interface ClauseDraft {
   metric: ActivityMetric;
   comparator: Comparator;
   valueText: string;
+  exercise: string; // only used by MAX_WEIGHT_KG
 }
 
 export interface GoalDraft {
@@ -54,7 +56,7 @@ type UnitOf = (metric: ActivityMetric) => MetricUnit;
 let nextKey = 0;
 
 export function blankClause(metric = ActivityMetric.DISTANCE): ClauseDraft {
-  return { key: nextKey++, scope: ClauseScope.AGGREGATE, metric, comparator: Comparator.GTE, valueText: "" };
+  return { key: nextKey++, scope: ClauseScope.AGGREGATE, metric, comparator: Comparator.GTE, valueText: "", exercise: "" };
 }
 
 export function blankDraft(): GoalDraft {
@@ -69,6 +71,7 @@ export function clauseValue(c: ClauseDraft, unitOf: UnitOf): number | null {
 export function draftErrors(d: GoalDraft, unitOf: UnitOf): { name: string; clauses: string[]; any: boolean } {
   const name = d.name.trim() ? "" : "Name the goal.";
   const clauses = d.clauses.map((c) => {
+    if (c.metric === ActivityMetric.MAX_WEIGHT_KG && !normalizeExercise(c.exercise)) return "Pick an exercise.";
     if (!c.valueText.trim()) return "Enter a value.";
     const v = clauseValue(c, unitOf);
     return v === null || !(v > 0) ? "Enter a value above zero." : "";
@@ -85,6 +88,7 @@ export function draftToInput(d: GoalDraft, unitOf: UnitOf): GoalFormInput {
       metric: c.metric,
       comparator: c.comparator,
       value: clauseValue(c, unitOf) ?? 0,
+      exercise: c.metric === ActivityMetric.MAX_WEIGHT_KG ? normalizeExercise(c.exercise) : undefined,
     })),
   };
 }
@@ -104,6 +108,7 @@ export function inputToDraft(
       metric: c.metric,
       comparator: c.comparator,
       valueText: baseValueToEditString(unitOf(c.metric), c.value),
+      exercise: c.exercise ?? "",
     })),
   };
 }

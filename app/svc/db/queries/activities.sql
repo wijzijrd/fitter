@@ -39,7 +39,7 @@ ON CONFLICT (strava_activity_id) DO UPDATE SET
 RETURNING *;
 
 -- name: DeleteActivityByStravaID :exec
-DELETE FROM activities WHERE strava_activity_id = $1;
+DELETE FROM activities WHERE strava_activity_id = $1 AND source = 'strava';
 
 -- name: ListActivitiesForUserInRange :many
 SELECT * FROM activities
@@ -63,3 +63,24 @@ LIMIT 100;
 
 -- name: GetLatestActivityStartDateForUser :one
 SELECT COALESCE(MAX(start_date), 0)::bigint FROM activities WHERE user_id = $1;
+
+-- name: CreateManualActivity :one
+INSERT INTO activities (
+    strava_activity_id, user_id, type, sport_type, name, start_date,
+    distance_m, moving_time_s, elapsed_time_s, source, created_at, updated_at
+)
+VALUES (nextval('manual_activity_id'), $1, $2, $2, $3, $4, $5, $6, $6, 'manual', $7, $7)
+RETURNING *;
+
+-- name: UpdateManualActivity :one
+UPDATE activities
+SET type = $3, sport_type = $3, name = $4, start_date = $5, distance_m = $6,
+    moving_time_s = $7, elapsed_time_s = $7, updated_at = $8
+WHERE strava_activity_id = $1 AND user_id = $2 AND source = 'manual'
+RETURNING *;
+
+-- name: DeleteManualActivity :execrows
+DELETE FROM activities WHERE strava_activity_id = $1 AND user_id = $2 AND source = 'manual';
+
+-- name: ListManualActivitiesForUser :many
+SELECT * FROM activities WHERE user_id = $1 AND source = 'manual' ORDER BY start_date DESC LIMIT 200;

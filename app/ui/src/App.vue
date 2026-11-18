@@ -17,6 +17,7 @@ function handleLogout(): void {
     <nav>
       <router-link to="/" :class="{ 'router-link-active': String($route.name).startsWith('campaign') }">Campaigns</router-link>
       <router-link to="/goals">Goals</router-link>
+      <router-link to="/activities/new">Log activity</router-link>
       <span class="who" v-if="auth.user">{{ auth.user.name }}</span>
       <button class="logout" @click="handleLogout">Log out</button>
     </nav>

@@ -85,3 +85,16 @@ func (a *presenceCountAcc) Add(act Activity) {
 func (a *presenceCountAcc) Result() (float64, int, bool) {
 	return float64(a.counted), a.counted, true
 }
+
+// NewMaxWeightDef is the MaxWeightKg Def narrowed to one exercise (a
+// normalised, lower-case name): the heaviest weight lifted for it.
+func NewMaxWeightDef(exercise string) Def {
+	d, _ := Lookup(MaxWeightKg)
+	get := extractor(func(a Activity) (float64, bool) {
+		v, ok := a.Lifts[exercise]
+		return v, ok
+	})
+	d.Single = get
+	d.NewAcc = func() Accumulator { return &maxAcc{extract: get} }
+	return d
+}

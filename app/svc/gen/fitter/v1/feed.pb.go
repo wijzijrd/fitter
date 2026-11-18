@@ -39,6 +39,7 @@ type FeedActivity struct {
 	AverageHeartrate *float64               `protobuf:"fixed64,14,opt,name=average_heartrate,json=averageHeartrate,proto3,oneof" json:"average_heartrate,omitempty"`
 	AverageWatts     *float64               `protobuf:"fixed64,15,opt,name=average_watts,json=averageWatts,proto3,oneof" json:"average_watts,omitempty"`
 	SufferScore      *float64               `protobuf:"fixed64,16,opt,name=suffer_score,json=sufferScore,proto3,oneof" json:"suffer_score,omitempty"`
+	Source           string                 `protobuf:"bytes,17,opt,name=source,proto3" json:"source,omitempty"` // "strava" or "manual"
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -176,6 +177,13 @@ func (x *FeedActivity) GetSufferScore() float64 {
 		return *x.SufferScore
 	}
 	return 0
+}
+
+func (x *FeedActivity) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
 }
 
 type GetCampaignFeedRequest struct {
@@ -966,7 +974,7 @@ var File_fitter_v1_feed_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\n" +
-	"\x14fitter/v1/feed.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x14fitter/v1/goal.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x04\n" +
+	"\x14fitter/v1/feed.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x14fitter/v1/goal.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x80\x05\n" +
 	"\fFeedActivity\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tuser_name\x18\x03 \x01(\tR\buserName\x12&\n" +
@@ -988,7 +996,8 @@ const file_fitter_v1_feed_proto_rawDesc = "" +
 	"sportGroup\x120\n" +
 	"\x11average_heartrate\x18\x0e \x01(\x01H\x00R\x10averageHeartrate\x88\x01\x01\x12(\n" +
 	"\raverage_watts\x18\x0f \x01(\x01H\x01R\faverageWatts\x88\x01\x01\x12&\n" +
-	"\fsuffer_score\x18\x10 \x01(\x01H\x02R\vsufferScore\x88\x01\x01B\x14\n" +
+	"\fsuffer_score\x18\x10 \x01(\x01H\x02R\vsufferScore\x88\x01\x01\x12\x16\n" +
+	"\x06source\x18\x11 \x01(\tR\x06sourceB\x14\n" +
 	"\x12_average_heartrateB\x10\n" +
 	"\x0e_average_wattsB\x0f\n" +
 	"\r_suffer_scoreJ\x04\b\x01\x10\x02R\x02id\"9\n" +

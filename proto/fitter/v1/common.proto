@@ -23,6 +23,7 @@ enum ActivityMetric {
   ACTIVITY_METRIC_CALORIES = 15;
   ACTIVITY_METRIC_AVERAGE_CADENCE = 16;
   ACTIVITY_METRIC_SUFFER_SCORE = 17;
+  ACTIVITY_METRIC_MAX_WEIGHT_KG = 18;
 }
 
 // ClauseScope controls whether a goal clause is evaluated per-activity or
@@ -66,6 +67,7 @@ enum MetricUnit {
   METRIC_UNIT_RPM = 9;
   METRIC_UNIT_COUNT = 10;
   METRIC_UNIT_SCORE = 11;
+  METRIC_UNIT_KG = 12;
 }
 
 // SportSelector: an entirely unset message (neither oneof branch present)

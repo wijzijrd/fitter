@@ -12,6 +12,8 @@ message GoalClause {
   ActivityMetric metric = 4;
   Comparator comparator = 5;
   double value = 6;
+  // Required for max_weight_kg (normalised lower-case exercise name); ignored otherwise.
+  optional string exercise = 7;
 }
 
 message ClauseProgress {

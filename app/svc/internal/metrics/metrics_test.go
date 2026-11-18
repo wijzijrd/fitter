@@ -11,8 +11,8 @@ func ptr(f float64) *float64 { return &f }
 
 func TestAllDefsHaveSingleAndNewAcc(t *testing.T) {
 	all := metrics.All()
-	if len(all) != 17 {
-		t.Fatalf("All() returned %d defs, want 17", len(all))
+	if len(all) != 18 {
+		t.Fatalf("All() returned %d defs, want 18", len(all))
 	}
 	seen := make(map[metrics.Key]bool)
 	for _, d := range all {
@@ -131,6 +131,7 @@ func TestNonNullableDefsAreNotNullable(t *testing.T) {
 		metrics.Calories:             true,
 		metrics.AverageCadence:       true,
 		metrics.SufferScore:          true,
+		metrics.MaxWeightKg:          true,
 	}
 	for _, d := range metrics.All() {
 		want := nullableKeys[d.Key]

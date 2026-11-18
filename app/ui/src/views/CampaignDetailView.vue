@@ -13,7 +13,9 @@ import { plural } from "../lib/schedule";
 import TimelineChart from "../components/charts/TimelineChart.vue";
 import BibStack from "../components/BibStack.vue";
 import { ActivityMetric } from "../gen/fitter/v1/common_pb";
-import type { FeedActivity, LeaderboardEntry, TimelineSeries } from "../gen/fitter/v1/feed_pb";
+import { create } from "@bufbuild/protobuf";
+import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1/feed_pb";
+import type { FeedActivity, LeaderboardEntry, LeaderboardGroup, TimelineSeries } from "../gen/fitter/v1/feed_pb";
 import { errorMessage } from "../lib/errors";
 import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black.svg";
 
@@ -38,6 +40,25 @@ const leaving = ref(false);
 const confirmLeave = ref(false);
 const leaveError = ref("");
 const stack = ref<InstanceType<typeof BibStack> | null>(null);
+
+// The bib stack can show one bib per goal (by sport group) or one per person.
+const bibMode = ref<"goal" | "person">("goal");
+const bibGroups = computed<LeaderboardGroup[]>(() => {
+  if (bibMode.value === "goal" || !feed.value.people.length) return feed.value.leaderboardGroups;
+  const entries = feed.value.people.map((p) =>
+    create(LeaderboardEntrySchema, {
+      userId: p.userId,
+      userName: p.userName,
+      userAvatarUrl: p.userAvatarUrl,
+      goalId: `person:${p.userId}`,
+      goalName: `${p.goalsSatisfied} of ${p.goalCount} ${p.goalCount === 1 ? "goal" : "goals"}`,
+      progressRatio: p.averageRatio,
+      satisfied: p.goalCount > 0 && p.goalsSatisfied === p.goalCount,
+      rank: p.rank,
+    }),
+  );
+  return [create(LeaderboardGroupSchema, { sportGroup: "", sportGroupLabel: "Everyone", entries })];
+});
 const stackEl = ref<HTMLElement | null>(null);
 
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
@@ -244,10 +265,15 @@ onMounted(() => {
 
           <section ref="stackEl" class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Bib stack">
             <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
+            <template v-else>
+              <div v-if="feed.people.length > 1" class="bib-mode" role="group" aria-label="Bib stack view">
+                <button type="button" class="pill" :aria-pressed="bibMode === 'goal'" @click="bibMode = 'goal'">By goal</button>
+                <button type="button" class="pill" :aria-pressed="bibMode === 'person'" @click="bibMode = 'person'">By person</button>
+              </div>
             <BibStack
-              v-else
+              :key="bibMode"
               ref="stack"
-              :groups="feed.leaderboardGroups"
+              :groups="bibGroups"
               :pooled="pooled"
               :contributions="feed.pooledContributions"
               :campaign-id="campaign.id"
@@ -258,6 +284,7 @@ onMounted(() => {
               :ended="schedule.ended"
               :last-active="lastActive"
             />
+            </template>
             <!-- Without a goal and without a group target, the bib itself asks for one. -->
             <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Set your goal
@@ -558,6 +585,14 @@ button.row {
 .who small {
   color: var(--ink-muted);
   font-size: 0.8125rem;
+}
+.bib-mode {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.bib-mode .pill[aria-pressed="true"] {
+  background: var(--cool-blue);
 }
 .goal-rows {
   list-style: none;

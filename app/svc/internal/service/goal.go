@@ -23,6 +23,7 @@ type preparedClause struct {
 	scope, comparator string
 	metricKey         metrics.Key
 	value             float64
+	exercise          sql.NullString
 }
 
 // validateClauses validates a full clause list from a Create/UpdateGoal
@@ -61,7 +62,15 @@ func validateClauses(ctx context.Context, q *db.Queries, clauses []*fitterv1.Goa
 		if err != nil {
 			return nil, fmt.Errorf("clause %d: %w", i, err)
 		}
-		out[i] = preparedClause{scope: scope, comparator: comparator, metricKey: metricKey, value: c.GetValue()}
+		var exercise sql.NullString
+		if metricKey == metrics.MaxWeightKg {
+			ex := normalizeExercise(c.GetExercise())
+			if ex == "" {
+				return nil, fmt.Errorf("clause %d: an exercise is required for max weight", i)
+			}
+			exercise = sql.NullString{String: ex, Valid: true}
+		}
+		out[i] = preparedClause{scope: scope, comparator: comparator, metricKey: metricKey, value: c.GetValue(), exercise: exercise}
 	}
 	return out, nil
 }
@@ -107,7 +116,7 @@ func clauseToProgress(ctx context.Context, q *db.Queries, c db.GoalClause) (prog
 		Metric:     key,
 		Comparator: cmp,
 		Value:      c.Value,
-		Def:        def,
+		Def:        clauseDef(def, c),
 	}, nil
 }
 
@@ -189,8 +198,15 @@ func (d *Deps) batchActivitiesByUser(ctx context.Context, goals []db.Goal) (map[
 	}
 
 	actsByUser := make(map[string][]metrics.Activity, len(userSet))
+	acts := make([]metrics.Activity, 0, len(rows))
 	for _, r := range rows {
 		a := metrics.FromDB(r)
+		acts = append(acts, a)
+	}
+	if err := attachLifts(ctx, d.Queries, acts); err != nil {
+		return nil, err
+	}
+	for _, a := range acts {
 		actsByUser[a.UserID] = append(actsByUser[a.UserID], a)
 	}
 	return actsByUser, nil
@@ -241,6 +257,7 @@ func clauseDefsToProto(clauses []db.GoalClause) []*fitterv1.GoalClause {
 			Metric:     keyToMetric(metrics.Key(c.Metric)),
 			Comparator: comparatorFromDB(c.Comparator),
 			Value:      c.Value,
+			Exercise:   nullStringPtr(c.Exercise),
 		}
 	}
 	return out
@@ -402,6 +419,7 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 			Metric:     string(p.metricKey),
 			Comparator: p.comparator,
 			Value:      p.value,
+			Exercise:   p.exercise,
 		})
 		if err != nil {
 			return db.Goal{}, nil, connect.NewError(connect.CodeInternal, err)
@@ -580,6 +598,7 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 			Metric:     string(p.metricKey),
 			Comparator: p.comparator,
 			Value:      p.value,
+			Exercise:   p.exercise,
 		})
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)

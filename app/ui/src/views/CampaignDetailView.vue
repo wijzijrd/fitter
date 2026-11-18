@@ -319,7 +319,7 @@ onMounted(() => {
                   <span class="who">
                     <b>{{ a.userId === meId ? "You" : a.userName }}</b>
                     <span class="act-name">{{ a.name }}</span>
-                    <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}</small>
+                    <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}<template v-if="a.source === 'manual'"> · logged manually</template></small>
                   </span>
                   <span class="val">{{ activityValue(a) }}</span>
                 </li>

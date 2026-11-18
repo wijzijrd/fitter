@@ -74,6 +74,8 @@ export function unitSuffix(unit: MetricUnit): string {
       return "";
     case MetricUnit.SCORE:
       return "score";
+    case MetricUnit.KG:
+      return "kg";
     case MetricUnit.METERS_PER_SECOND:
       return "km/h";
     default:

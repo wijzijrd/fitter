@@ -1,6 +1,6 @@
 -- name: CreateGoalClause :one
-INSERT INTO goal_clauses (id, goal_id, position, scope, metric, comparator, value)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO goal_clauses (id, goal_id, position, scope, metric, comparator, value, exercise)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: ListGoalClausesForGoal :many

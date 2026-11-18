@@ -7,24 +7,26 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/lib/pq"
 )
 
 const createGoalClause = `-- name: CreateGoalClause :one
-INSERT INTO goal_clauses (id, goal_id, position, scope, metric, comparator, value)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, goal_id, position, scope, metric, comparator, value
+INSERT INTO goal_clauses (id, goal_id, position, scope, metric, comparator, value, exercise)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, goal_id, position, scope, metric, comparator, value, exercise
 `
 
 type CreateGoalClauseParams struct {
-	ID         string  `json:"id"`
-	GoalID     string  `json:"goal_id"`
-	Position   int64   `json:"position"`
-	Scope      string  `json:"scope"`
-	Metric     string  `json:"metric"`
-	Comparator string  `json:"comparator"`
-	Value      float64 `json:"value"`
+	ID         string         `json:"id"`
+	GoalID     string         `json:"goal_id"`
+	Position   int64          `json:"position"`
+	Scope      string         `json:"scope"`
+	Metric     string         `json:"metric"`
+	Comparator string         `json:"comparator"`
+	Value      float64        `json:"value"`
+	Exercise   sql.NullString `json:"exercise"`
 }
 
 func (q *Queries) CreateGoalClause(ctx context.Context, arg CreateGoalClauseParams) (GoalClause, error) {
@@ -36,6 +38,7 @@ func (q *Queries) CreateGoalClause(ctx context.Context, arg CreateGoalClausePara
 		arg.Metric,
 		arg.Comparator,
 		arg.Value,
+		arg.Exercise,
 	)
 	var i GoalClause
 	err := row.Scan(
@@ -46,6 +49,7 @@ func (q *Queries) CreateGoalClause(ctx context.Context, arg CreateGoalClausePara
 		&i.Metric,
 		&i.Comparator,
 		&i.Value,
+		&i.Exercise,
 	)
 	return i, err
 }
@@ -60,7 +64,7 @@ func (q *Queries) DeleteGoalClausesForGoal(ctx context.Context, goalID string) e
 }
 
 const listGoalClausesForGoal = `-- name: ListGoalClausesForGoal :many
-SELECT id, goal_id, position, scope, metric, comparator, value FROM goal_clauses WHERE goal_id = $1 ORDER BY position
+SELECT id, goal_id, position, scope, metric, comparator, value, exercise FROM goal_clauses WHERE goal_id = $1 ORDER BY position
 `
 
 func (q *Queries) ListGoalClausesForGoal(ctx context.Context, goalID string) ([]GoalClause, error) {
@@ -80,6 +84,7 @@ func (q *Queries) ListGoalClausesForGoal(ctx context.Context, goalID string) ([]
 			&i.Metric,
 			&i.Comparator,
 			&i.Value,
+			&i.Exercise,
 		); err != nil {
 			return nil, err
 		}
@@ -95,7 +100,7 @@ func (q *Queries) ListGoalClausesForGoal(ctx context.Context, goalID string) ([]
 }
 
 const listGoalClausesForGoals = `-- name: ListGoalClausesForGoals :many
-SELECT id, goal_id, position, scope, metric, comparator, value FROM goal_clauses WHERE goal_id = ANY($1::text[]) ORDER BY goal_id, position
+SELECT id, goal_id, position, scope, metric, comparator, value, exercise FROM goal_clauses WHERE goal_id = ANY($1::text[]) ORDER BY goal_id, position
 `
 
 func (q *Queries) ListGoalClausesForGoals(ctx context.Context, goalIds []string) ([]GoalClause, error) {
@@ -115,6 +120,7 @@ func (q *Queries) ListGoalClausesForGoals(ctx context.Context, goalIds []string)
 			&i.Metric,
 			&i.Comparator,
 			&i.Value,
+			&i.Exercise,
 		); err != nil {
 			return nil, err
 		}

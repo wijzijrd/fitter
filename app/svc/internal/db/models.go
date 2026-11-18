@@ -33,6 +33,15 @@ type Activity struct {
 	SufferScore          sql.NullFloat64 `json:"suffer_score"`
 	CreatedAt            int64           `json:"created_at"`
 	UpdatedAt            int64           `json:"updated_at"`
+	Source               string          `json:"source"`
+}
+
+type ActivityLift struct {
+	ID         int64   `json:"id"`
+	ActivityID int64   `json:"activity_id"`
+	Exercise   string  `json:"exercise"`
+	WeightKg   float64 `json:"weight_kg"`
+	Reps       int32   `json:"reps"`
 }
 
 type Campaign struct {
@@ -93,13 +102,14 @@ type Goal struct {
 }
 
 type GoalClause struct {
-	ID         string  `json:"id"`
-	GoalID     string  `json:"goal_id"`
-	Position   int64   `json:"position"`
-	Scope      string  `json:"scope"`
-	Metric     string  `json:"metric"`
-	Comparator string  `json:"comparator"`
-	Value      float64 `json:"value"`
+	ID         string         `json:"id"`
+	GoalID     string         `json:"goal_id"`
+	Position   int64          `json:"position"`
+	Scope      string         `json:"scope"`
+	Metric     string         `json:"metric"`
+	Comparator string         `json:"comparator"`
+	Value      float64        `json:"value"`
+	Exercise   sql.NullString `json:"exercise"`
 }
 
 type User struct {

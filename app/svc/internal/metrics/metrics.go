@@ -31,6 +31,7 @@ const (
 	Calories             Key = "calories"
 	AverageCadence       Key = "average_cadence"
 	SufferScore          Key = "suffer_score"
+	MaxWeightKg          Key = "max_weight_kg"
 )
 
 // Activity is the engine's own narrow view of an activity — deliberately
@@ -70,6 +71,9 @@ type Activity struct {
 	// logged manually and from manual_entries/synthetic activities for
 	// custom ones (Task 5).
 	Custom map[Key]float64
+	// Lifts is the heaviest logged weight in kg per normalised exercise name
+	// (manual strength entries only). Nil or absent key = not lifted.
+	Lifts map[string]float64
 }
 
 // Aggregation identifies how an Accumulator combines activities into one
@@ -100,6 +104,7 @@ const (
 	UnitRPM
 	UnitCount
 	UnitScore
+	UnitKilograms
 )
 
 // Accumulator folds activities into one aggregate value. Result() is
@@ -178,6 +183,17 @@ func buildDefs() []Def {
 	kilojoules := nullable(func(a Activity) *float64 { return a.Kilojoules })
 	calories := nullable(func(a Activity) *float64 { return a.Calories })
 	averageCadence := nullable(func(a Activity) *float64 { return a.AverageCadence })
+	// Without an exercise (the registry entry) the heaviest lift of any kind counts;
+	// a clause names its exercise via NewMaxWeightDef.
+	maxWeight := extractor(func(a Activity) (float64, bool) {
+		best, ok := 0.0, false
+		for _, w := range a.Lifts {
+			if !ok || w > best {
+				best, ok = w, true
+			}
+		}
+		return best, ok
+	})
 	sufferScore := nullable(func(a Activity) *float64 { return a.SufferScore })
 	pace := extractor(func(a Activity) (float64, bool) {
 		if a.DistanceM <= 0 {
@@ -277,6 +293,11 @@ func buildDefs() []Def {
 			Key: SufferScore, Label: "Relative effort", Unit: UnitScore, Aggregation: AggSum, Nullable: true,
 			SupportsSingle: true, SupportsAggregate: true,
 			Single: sufferScore, NewAcc: func() Accumulator { return &sumAcc{nullable: true, extract: sufferScore} },
+		},
+		{
+			Key: MaxWeightKg, Label: "Max weight", Unit: UnitKilograms, Aggregation: AggMax, Nullable: true,
+			SupportsSingle: true, SupportsAggregate: true,
+			Single: maxWeight, NewAcc: func() Accumulator { return &maxAcc{extract: maxWeight} },
 		},
 	}
 }

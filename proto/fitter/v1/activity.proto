@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// One set-summary for an exercise: the heaviest weight and its reps.
+message Lift {
+  string exercise = 1;
+  double weight_kg = 2;
+  int32 reps = 3;
+}
+
+message ManualActivity {
+  int64 id = 1; // negative, server-assigned
+  string sport_type = 2;
+  string name = 3;
+  google.protobuf.Timestamp start_date = 4;
+  int64 moving_time_s = 5;
+  optional double distance_m = 6;
+  repeated Lift lifts = 7; // strength sports only
+}
+
+message CreateManualActivityRequest {
+  ManualActivity activity = 1; // id ignored
+}
+message CreateManualActivityResponse {
+  ManualActivity activity = 1;
+}
+
+message UpdateManualActivityRequest {
+  ManualActivity activity = 1; // full replacement
+}
+message UpdateManualActivityResponse {
+  ManualActivity activity = 1;
+}
+
+message DeleteManualActivityRequest {
+  int64 id = 1;
+}
+message DeleteManualActivityResponse {}
+
+message ListManualActivitiesRequest {}
+message ListManualActivitiesResponse {
+  repeated ManualActivity activities = 1;
+}
+
+// ActivityService manages the caller's own manually-logged activities.
+service ActivityService {
+  rpc CreateManualActivity(CreateManualActivityRequest) returns (CreateManualActivityResponse);
+  rpc UpdateManualActivity(UpdateManualActivityRequest) returns (UpdateManualActivityResponse);
+  rpc DeleteManualActivity(DeleteManualActivityRequest) returns (DeleteManualActivityResponse);
+  rpc ListManualActivities(ListManualActivitiesRequest) returns (ListManualActivitiesResponse);
+}

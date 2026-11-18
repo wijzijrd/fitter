@@ -44,6 +44,7 @@ const (
 	ActivityMetric_ACTIVITY_METRIC_CALORIES               ActivityMetric = 15
 	ActivityMetric_ACTIVITY_METRIC_AVERAGE_CADENCE        ActivityMetric = 16
 	ActivityMetric_ACTIVITY_METRIC_SUFFER_SCORE           ActivityMetric = 17
+	ActivityMetric_ACTIVITY_METRIC_MAX_WEIGHT_KG          ActivityMetric = 18
 )
 
 // Enum value maps for ActivityMetric.
@@ -67,6 +68,7 @@ var (
 		15: "ACTIVITY_METRIC_CALORIES",
 		16: "ACTIVITY_METRIC_AVERAGE_CADENCE",
 		17: "ACTIVITY_METRIC_SUFFER_SCORE",
+		18: "ACTIVITY_METRIC_MAX_WEIGHT_KG",
 	}
 	ActivityMetric_value = map[string]int32{
 		"ACTIVITY_METRIC_UNSPECIFIED":            0,
@@ -87,6 +89,7 @@ var (
 		"ACTIVITY_METRIC_CALORIES":               15,
 		"ACTIVITY_METRIC_AVERAGE_CADENCE":        16,
 		"ACTIVITY_METRIC_SUFFER_SCORE":           17,
+		"ACTIVITY_METRIC_MAX_WEIGHT_KG":          18,
 	}
 )
 
@@ -295,6 +298,7 @@ const (
 	MetricUnit_METRIC_UNIT_RPM               MetricUnit = 9
 	MetricUnit_METRIC_UNIT_COUNT             MetricUnit = 10
 	MetricUnit_METRIC_UNIT_SCORE             MetricUnit = 11
+	MetricUnit_METRIC_UNIT_KG                MetricUnit = 12
 )
 
 // Enum value maps for MetricUnit.
@@ -312,6 +316,7 @@ var (
 		9:  "METRIC_UNIT_RPM",
 		10: "METRIC_UNIT_COUNT",
 		11: "METRIC_UNIT_SCORE",
+		12: "METRIC_UNIT_KG",
 	}
 	MetricUnit_value = map[string]int32{
 		"METRIC_UNIT_UNSPECIFIED":       0,
@@ -326,6 +331,7 @@ var (
 		"METRIC_UNIT_RPM":               9,
 		"METRIC_UNIT_COUNT":             10,
 		"METRIC_UNIT_SCORE":             11,
+		"METRIC_UNIT_KG":                12,
 	}
 )
 
@@ -450,7 +456,7 @@ const file_fitter_v1_common_proto_rawDesc = "" +
 	"\n" +
 	"sport_type\x18\x02 \x01(\tH\x00R\tsportTypeB\n" +
 	"\n" +
-	"\bselector*\xf3\x04\n" +
+	"\bselector*\x96\x05\n" +
 	"\x0eActivityMetric\x12\x1f\n" +
 	"\x1bACTIVITY_METRIC_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18ACTIVITY_METRIC_DISTANCE\x10\x01\x12\"\n" +
@@ -470,7 +476,8 @@ const file_fitter_v1_common_proto_rawDesc = "" +
 	"\x1aACTIVITY_METRIC_KILOJOULES\x10\x0e\x12\x1c\n" +
 	"\x18ACTIVITY_METRIC_CALORIES\x10\x0f\x12#\n" +
 	"\x1fACTIVITY_METRIC_AVERAGE_CADENCE\x10\x10\x12 \n" +
-	"\x1cACTIVITY_METRIC_SUFFER_SCORE\x10\x11*`\n" +
+	"\x1cACTIVITY_METRIC_SUFFER_SCORE\x10\x11\x12!\n" +
+	"\x1dACTIVITY_METRIC_MAX_WEIGHT_KG\x10\x12*`\n" +
 	"\vClauseScope\x12\x1c\n" +
 	"\x18CLAUSE_SCOPE_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16CLAUSE_SCOPE_AGGREGATE\x10\x01\x12\x17\n" +
@@ -486,7 +493,7 @@ const file_fitter_v1_common_proto_rawDesc = "" +
 	"\x1aMETRIC_AGGREGATION_AVERAGE\x10\x02\x12\x1a\n" +
 	"\x16METRIC_AGGREGATION_MAX\x10\x03\x12\x1c\n" +
 	"\x18METRIC_AGGREGATION_COUNT\x10\x04\x12\x1e\n" +
-	"\x1aMETRIC_AGGREGATION_DERIVED\x10\x05*\xc6\x02\n" +
+	"\x1aMETRIC_AGGREGATION_DERIVED\x10\x05*\xda\x02\n" +
 	"\n" +
 	"MetricUnit\x12\x1b\n" +
 	"\x17METRIC_UNIT_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -501,7 +508,8 @@ const file_fitter_v1_common_proto_rawDesc = "" +
 	"\x0fMETRIC_UNIT_RPM\x10\t\x12\x15\n" +
 	"\x11METRIC_UNIT_COUNT\x10\n" +
 	"\x12\x15\n" +
-	"\x11METRIC_UNIT_SCORE\x10\vB\x8f\x01\n" +
+	"\x11METRIC_UNIT_SCORE\x10\v\x12\x12\n" +
+	"\x0eMETRIC_UNIT_KG\x10\fB\x8f\x01\n" +
 	"\rcom.fitter.v1B\vCommonProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"math"
 	"time"
 
 	"connectrpc.com/connect"
@@ -12,6 +13,16 @@ import (
 	"github.com/fitter/svc/internal/db"
 	"github.com/fitter/svc/internal/sports"
 )
+
+const (
+	maxDistanceM   = 1_000_000.0
+	maxMovingTimeS = 7 * 24 * 3600
+	maxWeightKg    = 1000.0
+	maxReps        = 1000
+	maxLifts       = 50
+)
+
+var minStart = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
 
 func invalid(msg string) error {
 	return connect.NewError(connect.CodeInvalidArgument, errors.New(msg))
@@ -26,8 +37,19 @@ func validateManual(a *fitterv1.ManualActivity) ([]*fitterv1.Lift, error) {
 	if a.GetStartDate() == nil {
 		return nil, invalid("start_date is required")
 	}
-	if a.GetMovingTimeS() < 0 || a.GetDistanceM() < 0 {
-		return nil, invalid("time and distance can't be negative")
+	// Written as !(x >= 0 && x <= max) so NaN fails too.
+	if d := a.GetDistanceM(); !(d >= 0 && d <= maxDistanceM) {
+		return nil, invalid("distance must be between 0 and 1000 km")
+	}
+	if t := a.GetMovingTimeS(); t < 0 || t > maxMovingTimeS {
+		return nil, invalid("time must be between 0 and 7 days")
+	}
+	// A day of slack covers time zones ahead of the server.
+	if start := a.GetStartDate().AsTime(); start.After(time.Now().Add(24*time.Hour)) || start.Before(minStart) {
+		return nil, invalid("start_date must be in the past")
+	}
+	if len(a.GetLifts()) > maxLifts {
+		return nil, invalid("too many lifts")
 	}
 	if len(a.GetLifts()) > 0 && sports.GroupOf(a.GetSportType(), a.GetSportType()) != sports.GroupStrength {
 		return nil, invalid("lifts are only for strength activities")
@@ -35,8 +57,9 @@ func validateManual(a *fitterv1.ManualActivity) ([]*fitterv1.Lift, error) {
 	lifts := make([]*fitterv1.Lift, 0, len(a.GetLifts()))
 	for _, l := range a.GetLifts() {
 		ex := normalizeExercise(l.GetExercise())
-		if ex == "" || l.GetWeightKg() <= 0 || l.GetReps() <= 0 {
-			return nil, invalid("each lift needs an exercise, a weight above 0 and reps above 0")
+		w := l.GetWeightKg()
+		if ex == "" || len(ex) > 60 || math.IsNaN(w) || !(w > 0 && w <= maxWeightKg) || l.GetReps() <= 0 || l.GetReps() > maxReps {
+			return nil, invalid("each lift needs an exercise, a weight up to 1000 kg and 1 to 1000 reps")
 		}
 		lifts = append(lifts, &fitterv1.Lift{Exercise: ex, WeightKg: l.GetWeightKg(), Reps: l.GetReps()})
 	}

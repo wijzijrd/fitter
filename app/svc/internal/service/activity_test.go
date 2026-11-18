@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -76,5 +77,26 @@ func TestManualActivity_LiftsDriveMaxWeightGoal(t *testing.T) {
 	bad.SportType = "Run"
 	if _, err := acts.CreateManualActivity(ctx, connect.NewRequest(&fitterv1.CreateManualActivityRequest{Activity: bad})); connect.CodeOf(err) != connect.CodeInvalidArgument {
 		t.Fatalf("run with lifts: got %v, want InvalidArgument", err)
+	}
+}
+
+func TestManualActivity_RejectsBadNumbers(t *testing.T) {
+	deps := newDeps(t)
+	alice := seedUser(t, deps.Queries, "alice")
+	acts := service.NewActivityService(deps)
+	for name, mod := range map[string]func(*fitterv1.ManualActivity){
+		"nan distance":  func(a *fitterv1.ManualActivity) { d := math.NaN(); a.DistanceM = &d },
+		"huge distance": func(a *fitterv1.ManualActivity) { d := 1e9; a.DistanceM = &d },
+		"future start":  func(a *fitterv1.ManualActivity) { a.StartDate = ts(time.Now().Add(72 * time.Hour).Unix()) },
+		"nan weight":    func(a *fitterv1.ManualActivity) { a.Lifts[0].WeightKg = math.NaN() },
+		"huge weight":   func(a *fitterv1.ManualActivity) { a.Lifts[0].WeightKg = 1e6 },
+		"huge reps":     func(a *fitterv1.ManualActivity) { a.Lifts[0].Reps = 100000 },
+	} {
+		a := manual(&fitterv1.Lift{Exercise: "squat", WeightKg: 100, Reps: 5})
+		mod(a)
+		_, err := acts.CreateManualActivity(ctxAs(alice.ID), connect.NewRequest(&fitterv1.CreateManualActivityRequest{Activity: a}))
+		if connect.CodeOf(err) != connect.CodeInvalidArgument {
+			t.Errorf("%s: got %v, want InvalidArgument", name, err)
+		}
 	}
 }

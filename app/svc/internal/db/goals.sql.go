@@ -90,6 +90,44 @@ func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
 	return i, err
 }
 
+const listAllGoalsForUser = `-- name: ListAllGoalsForUser :many
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE user_id = $1 ORDER BY campaign_id NULLS FIRST, period_start DESC, created_at ASC
+`
+
+// Personal goals plus every campaign goal of the user, for the goal hub.
+func (q *Queries) ListAllGoalsForUser(ctx context.Context, userID string) ([]Goal, error) {
+	rows, err := q.db.QueryContext(ctx, listAllGoalsForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Goal
+	for rows.Next() {
+		var i Goal
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CampaignID,
+			&i.Name,
+			&i.SportGroup,
+			&i.SportType,
+			&i.PeriodStart,
+			&i.PeriodEnd,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listCampaignGoalsWithUsers = `-- name: ListCampaignGoalsWithUsers :many
 SELECT g.id, g.user_id, g.campaign_id, g.name, g.sport_group, g.sport_type, g.period_start, g.period_end, g.created_at, u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM goals g
@@ -228,7 +266,7 @@ func (q *Queries) ListPersonalGoalsForUser(ctx context.Context, userID string) (
 }
 
 const updateGoalMeta = `-- name: UpdateGoalMeta :one
-UPDATE goals SET name = $1, sport_group = $2, sport_type = $3, period_start = $4, period_end = $5
+UPDATE goals SET name = $1, sport_group = $2, sport_type = $3, period_start = $4, period_end = $5, campaign_id = $8
 WHERE id = $6 AND user_id = $7
 RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at
 `
@@ -241,6 +279,7 @@ type UpdateGoalMetaParams struct {
 	PeriodEnd   int64          `json:"period_end"`
 	ID          string         `json:"id"`
 	UserID      string         `json:"user_id"`
+	CampaignID  sql.NullString `json:"campaign_id"`
 }
 
 func (q *Queries) UpdateGoalMeta(ctx context.Context, arg UpdateGoalMetaParams) (Goal, error) {
@@ -252,6 +291,7 @@ func (q *Queries) UpdateGoalMeta(ctx context.Context, arg UpdateGoalMetaParams) 
 		arg.PeriodEnd,
 		arg.ID,
 		arg.UserID,
+		arg.CampaignID,
 	)
 	var i Goal
 	err := row.Scan(

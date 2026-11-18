@@ -654,3 +654,37 @@ func TestEmptyActivitySlice(t *testing.T) {
 		t.Fatalf("Result.Ratio = %v, want 0", res.Ratio)
 	}
 }
+
+func TestSatisfiedAt(t *testing.T) {
+	sum := progress.Goal{PeriodStart: 0, PeriodEnd: 10000, Clauses: []progress.Clause{
+		{ID: "c", Scope: progress.ScopeAggregate, Metric: metrics.Distance, Comparator: progress.GTE, Value: 25000},
+	}}
+	single := progress.Goal{PeriodStart: 0, PeriodEnd: 10000, Clauses: []progress.Clause{
+		{ID: "c", Scope: progress.ScopeSingle, Metric: metrics.Distance, Comparator: progress.GTE, Value: 10000},
+	}}
+	lte := progress.Goal{PeriodStart: 0, PeriodEnd: 10000, Clauses: []progress.Clause{
+		{ID: "c", Scope: progress.ScopeAggregate, Metric: metrics.Distance, Comparator: progress.LTE, Value: 50000},
+	}}
+	// Input deliberately out of order: replay must sort by StartDate.
+	acts := []metrics.Activity{
+		act(3, "Run", 3000, 8000, 100),
+		act(1, "Run", 1000, 8000, 100),
+		act(2, "Run", 2000, 12000, 100),
+	}
+	cases := []struct {
+		name string
+		g    progress.Goal
+		acts []metrics.Activity
+		want int64
+	}{
+		{"sum/GTE crosses on 3rd activity", sum, acts, 3000},
+		{"single met by 2nd activity", single, acts, 2000},
+		{"LTE already true with first activity", lte, acts, 1000},
+		{"unsatisfied", sum, acts[:1], 0},
+	}
+	for _, c := range cases {
+		if got := progress.Evaluate(c.g, c.acts).SatisfiedAt; got != c.want {
+			t.Errorf("%s: SatisfiedAt = %d, want %d", c.name, got, c.want)
+		}
+	}
+}

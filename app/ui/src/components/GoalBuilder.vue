@@ -6,7 +6,7 @@ import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import type { ClauseDraft, GoalDraft } from "../lib/goalInput";
 import { blankClause, draftErrors } from "../lib/goalInput";
 import { comparatorLabels, fasterLabels, scopeLabels } from "../lib/labels";
-import { editUnitHint, isDurationUnit } from "../lib/metricFormat";
+import { editUnitHint, isDurationUnit, maskDuration } from "../lib/metricFormat";
 import { exercises } from "../lib/exercises";
 import { recurrenceLabels } from "../lib/goalInput";
 import { ActivityMetric as Metric } from "../gen/fitter/v1/common_pb";
@@ -84,6 +84,10 @@ const isDuration = (c: ClauseDraft) => isDurationUnit(catalog.unitOf(c.metric));
 const isPace = (c: ClauseDraft) => catalog.unitOf(c.metric) === MetricUnit.SECONDS_PER_KM;
 // Durations are typed as clock times, so the format goes in the placeholder and the unit stays beside the field.
 const placeholder = (c: ClauseDraft) => (isPace(c) ? "m:ss" : isDuration(c) ? "h:mm:ss" : "");
+// Times are typed as digits only; the colons are added as you go ("4535" -> "45:35").
+function onValue(c: ClauseDraft, raw: string): void {
+  c.valueText = isDuration(c) ? maskDuration(raw, isPace(c) ? 4 : 6) : raw;
+}
 const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : editUnitHint(catalog.unitOf(c.metric)));
 </script>
 
@@ -186,10 +190,11 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
               <label :for="id(`value-${c.key}`)" class="visually-hidden">Condition {{ i + 1 }} value</label>
               <input
                 :id="id(`value-${c.key}`)"
-                v-model="c.valueText"
+                :value="c.valueText"
                 class="input input--value"
+                @input="onValue(c, ($event.target as HTMLInputElement).value)"
                 autocomplete="off"
-                :inputmode="isDuration(c) ? 'text' : 'decimal'"
+                :inputmode="isDuration(c) ? 'numeric' : 'decimal'"
                 :placeholder="placeholder(c)"
                 :aria-invalid="showErrors && !!errors.clauses[i]"
                 :aria-describedby="id(`value-${c.key}-error`)"
@@ -197,6 +202,7 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
               <span v-if="unitText(c)" class="unit" aria-hidden="true">{{ unitText(c) }}</span>
             </span>
           </div>
+          <small v-if="isDuration(c)" class="time-hint">Type digits only, the colons fill in: {{ isPace(c) ? "435 becomes 4:35" : "13000 becomes 1:30:00" }}.</small>
           <span :id="id(`value-${c.key}-error`)" class="field-error" role="alert">{{ showErrors ? errors.clauses[i] : "" }}</span>
         </li>
       </ol>
@@ -264,6 +270,12 @@ legend {
 .input--value {
   width: 7.5rem;
   font: 400 1.25rem/1.1 var(--font-display);
+}
+.time-hint {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
 }
 .unit {
   font-weight: 700;

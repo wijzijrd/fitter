@@ -4,7 +4,7 @@ import { activityClient } from "../lib/connect";
 import { useCatalogStore } from "../stores/catalog";
 import type { ManualActivity } from "../gen/fitter/v1/activity_pb";
 import { exercises, normalizeExercise } from "../lib/exercises";
-import { parseDuration } from "../lib/metricFormat";
+import { maskDuration, parseDuration } from "../lib/metricFormat";
 import { fromDate, toDate } from "../lib/timestamp";
 import { errorMessage } from "../lib/errors";
 
@@ -41,7 +41,7 @@ const durationS = computed(() => (form.duration.trim() ? parseDuration(form.dura
 const errors = computed(() => ({
   sport: form.sport ? "" : "Pick a sport.",
   when: form.when ? "" : "Pick when it happened.",
-  duration: durationS.value === null ? "Enter a time like 45:00 or 1:15:00." : "",
+  duration: durationS.value === null ? "Enter a time like 4500 (45:00) or 11500 (1:15:00)." : "",
   distance: form.distanceKm.trim() && !(Number(form.distanceKm) >= 0) ? "Enter a distance in km." : "",
   lifts: isStrength.value
     ? form.lifts.map((l) =>
@@ -147,7 +147,7 @@ const describe = (a: ManualActivity) => {
         <div class="row">
           <div class="rb-field">
             <label for="al-duration">Time <small>optional</small></label>
-            <input id="al-duration" v-model="form.duration" class="input" inputmode="text" placeholder="45:00" :aria-invalid="showErrors && !!errors.duration" />
+            <input id="al-duration" class="input" :value="form.duration" inputmode="numeric" placeholder="45:00" @input="form.duration = maskDuration(($event.target as HTMLInputElement).value)" :aria-invalid="showErrors && !!errors.duration" />
             <span class="field-error" role="alert">{{ showErrors ? errors.duration : "" }}</span>
           </div>
           <div v-if="!isStrength" class="rb-field">

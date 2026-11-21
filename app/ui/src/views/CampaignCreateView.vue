@@ -250,7 +250,7 @@ async function create(): Promise<void> {
 .cc {
   max-width: 1120px;
   margin: 0 auto;
-  padding: var(--space-5) var(--space-5) 0;
+  padding: var(--space-5) var(--gutter) 0;
   font-family: var(--font-body);
   color: var(--ink);
 }

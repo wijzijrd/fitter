@@ -450,7 +450,7 @@ onMounted(() => {
 .cd {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: var(--space-5) var(--gutter) var(--space-8);
   font-family: var(--font-body);
   color: var(--ink);
 }
@@ -458,7 +458,7 @@ onMounted(() => {
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   min-height: 2.5rem;
   color: var(--ink-muted);
   font-size: 0.875rem;
@@ -469,7 +469,7 @@ onMounted(() => {
 }
 
 .cd-head {
-  margin: 0.75rem 0 1rem;
+  margin: var(--space-4) 0 var(--space-5);
 }
 h1 {
   margin: 0;
@@ -479,13 +479,13 @@ h1 {
   overflow-wrap: anywhere;
 }
 .meta {
-  margin: 0.4rem 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
 }
 .desc {
-  margin: 0.5rem 0 0;
+  margin: var(--space-3) 0 0;
   max-width: 65ch;
 }
 
@@ -496,14 +496,14 @@ h1 {
 .cd-tabs {
   grid-area: tabs;
   display: flex;
-  gap: 1.5rem;
+  gap: var(--space-7);
   border-bottom: 2px solid var(--hairline);
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-5);
 }
 .cd-tabs button {
   border: 0;
   background: none;
-  padding: 0.6rem 0 0.7rem;
+  padding: var(--space-3) 0 var(--row);
   margin-bottom: -2px;
   border-bottom: 3px solid transparent;
   color: var(--ink-muted);
@@ -528,19 +528,19 @@ h1 {
     display: none;
   }
   .cd-stack {
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--space-6);
   }
 }
 
 @media (min-width: 900px) {
   .cd {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
   .cd-body {
     grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
     grid-template-areas: "stack tabs" "stack panel";
     grid-template-rows: auto 1fr;
-    column-gap: 3rem;
+    column-gap: var(--pane-gap);
     align-items: start;
   }
   .cd-stack {
@@ -561,14 +561,14 @@ h1 {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-4);
   /* The inline padding gives the selected fill room without moving the columns. */
   width: calc(100% + 1rem);
-  margin-inline: -0.5rem;
+  margin-inline: calc(var(--space-3) * -1);
   border: 0;
   border-radius: 6px;
   background: none;
-  padding: 0.7rem 0.5rem;
+  padding: var(--row) var(--space-3);
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -618,28 +618,28 @@ button.row {
 }
 .bib-mode {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 .bib-mode .pill[aria-pressed="true"] {
   background: var(--cool-blue);
 }
 .goal-rows {
   list-style: none;
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-3);
   padding: 0;
 }
 .goal-rows li {
   border-bottom: 0;
 }
 .goal-rows .row {
-  padding-block: 0.4rem;
+  padding-block: var(--space-2);
 }
 .who small.finisher {
   align-self: flex-start;
   margin-top: 0.15rem;
-  margin-right: 0.25rem;
-  padding: 0.05rem 0.4rem;
+  margin-right: var(--space-1);
+  padding: 0.05rem var(--space-2);
   border-radius: 4px;
   background: var(--cool-blue);
   color: var(--ink);
@@ -663,32 +663,32 @@ button.row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0;
+  gap: var(--space-4);
+  padding: var(--row) 0;
 }
 
 .add-goal {
-  margin-top: 1rem;
+  margin-top: var(--space-5);
 }
 .add-goal svg {
   width: 1rem;
   height: 1rem;
 }
 h2 {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
   font: 400 0.875rem/1.3 var(--font-display);
   text-transform: uppercase;
 }
 .standings-group + .standings-group,
 .chart + .chart {
-  margin-top: 1.75rem;
+  margin-top: var(--group-gap);
 }
 .private {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 1rem 0 0;
-  padding: 0.6rem 0.75rem;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: var(--space-3) var(--space-4);
   border: 2px dashed var(--ink);
   border-radius: 10px;
   font-size: 0.875rem;
@@ -702,16 +702,16 @@ h2 {
 
 .quiet {
   color: var(--ink-muted);
-  padding: 1rem 0;
+  padding: var(--space-5) 0;
 }
 .notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
   border-radius: 10px;
   background: var(--cool-blue);
@@ -720,7 +720,7 @@ h2 {
   margin: 0;
 }
 .notice-inline {
-  margin: 1rem 0 0;
+  margin: var(--space-5) 0 0;
   font-weight: 700;
 }
 .leave {
@@ -728,10 +728,10 @@ h2 {
 }
 .leave-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 .attribution {
-  margin-top: 2rem;
+  margin-top: var(--space-8);
 }
 .attribution img {
   display: block;

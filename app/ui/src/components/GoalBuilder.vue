@@ -216,26 +216,26 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
   padding: 0;
 }
 legend {
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 }
 .rows {
   list-style: none;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-4);
   padding: 0;
 }
 .clause {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.8rem 0;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
   border-bottom: 1px solid var(--hairline);
 }
 .clause:first-child {
-  padding-top: 0.4rem;
+  padding-top: var(--space-2);
 }
 .clause-head {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 .clause-head select {
   flex: 1;
@@ -245,11 +245,11 @@ legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
+  gap: var(--space-3) var(--space-4);
 }
 .seg {
   display: flex;
-  gap: 0.35rem;
+  gap: var(--space-2);
 }
 .fixed {
   font-weight: 700;
@@ -259,7 +259,7 @@ legend {
   flex-basis: 100%;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 .input--value {
   width: 7.5rem;
@@ -274,7 +274,7 @@ legend {
 }
 .quiet {
   color: var(--ink-muted);
-  margin: 0.25rem 0 0.75rem;
+  margin: var(--space-1) 0 var(--space-4);
 }
 svg {
   width: 1rem;

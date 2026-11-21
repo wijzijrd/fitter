@@ -411,8 +411,8 @@ button.peek:hover {
 .band {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.3rem 0.75rem;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-4);
   background: var(--tangerine);
   font: 400 0.75rem/1.3 var(--font-display);
   text-transform: uppercase;
@@ -433,8 +433,8 @@ button.peek:hover {
 .peek-row {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.75rem 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-3);
   min-width: 0;
 }
 .peek-who {
@@ -453,7 +453,7 @@ button.peek:hover {
   font-size: 0.8125rem;
 }
 .peek--lead .peek-row {
-  padding-block: 0.75rem;
+  padding-block: var(--space-4);
 }
 
 .numeral {
@@ -485,8 +485,8 @@ button.peek:hover {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.5rem 0.9rem 0.5rem;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--bib-inset) var(--space-3);
 }
 .bib-value {
   display: flex;
@@ -511,13 +511,13 @@ button.peek:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-3);
   width: 100%;
   border: 0;
   border-top: 2px dashed var(--ink);
   background: var(--cool-blue);
   color: var(--ink);
-  padding: 0.5rem 0.9rem;
+  padding: var(--space-3) var(--bib-inset);
   font: 700 0.9375rem var(--font-body);
   text-align: left;
 }
@@ -532,8 +532,8 @@ button.tab:hover {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.4rem;
-  padding: 0.75rem 0.9rem 0.9rem;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--bib-inset) var(--bib-inset);
 }
 .join-body b {
   font: 400 1.5rem/1.1 var(--font-display);
@@ -544,15 +544,15 @@ button.tab:hover {
 }
 
 .join-body .pill {
-  margin-top: 0.25rem;
+  margin-top: var(--space-1);
 }
 
 .group-line {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0 0 0.9rem;
+  gap: var(--space-4);
+  margin: 0 0 var(--bib-inset);
   font-variant-numeric: tabular-nums;
 }
 .group-line b {
@@ -567,16 +567,16 @@ button.tab:hover {
 .switch {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
 }
 
 .steps {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  padding: 1.25rem 0 0.25rem;
+  gap: var(--space-3);
+  padding: var(--space-6) 0 var(--space-1);
 }
 
 svg {

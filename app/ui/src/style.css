@@ -1,11 +1,4 @@
 :root {
-  --bg: #f6f7f5;
-  --surface: #ffffff;
-  --border: #dde1db;
-  --text: #1b2320;
-  --text-muted: #667066;
-  --accent: #fc4c02; /* Strava orange */
-  --accent-dark: #d84200;
   /* Race Bib world (DESIGN.md). Tangerine is a fill only: never text on white. */
   --paper: #ffffff;
   --ink: #351e28;
@@ -22,6 +15,29 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
+
+  /* Spacing (DESIGN.md `spacing`). Components use the scale; the named ones mark their documented roles. */
+  --space-1: 0.25rem;
+  --space-2: 0.4rem;
+  --space-3: 0.5rem;
+  --space-4: 0.75rem;
+  --space-5: 1rem;
+  --space-6: 1.25rem;
+  --space-7: 1.5rem;
+  --space-8: 2rem;
+  --space-9: 3rem;
+  --gutter: 1rem;
+  --bib-inset: 0.9rem;
+  --row: 0.7rem;
+  --stack-gap: 1.25rem;
+  --group-gap: 1.75rem;
+  --pane-gap: 3rem;
+}
+
+@media (min-width: 900px) {
+  :root {
+    --gutter: 1.5rem;
+  }
 }
 
 ::selection {
@@ -36,98 +52,26 @@
 body {
   margin: 0;
   background: var(--paper);
-  color: var(--text);
+  color: var(--ink);
 }
 
 a {
-  color: var(--accent-dark);
-  text-decoration: none;
-}
-
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.btn {
-  display: inline-block;
-  border: none;
-  border-radius: 8px;
-  padding: 0.55rem 1.1rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--accent);
-  color: white;
-}
-
-.btn:hover {
-  background: var(--accent-dark);
-}
-
-.btn.secondary {
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 0.9rem;
-}
-
-.field input,
-.field select,
-.field textarea {
-  padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 0.95rem;
-}
-
-.error {
-  margin: 0.75rem 0;
-  padding: 0.6rem 0.8rem;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  background: var(--cool-blue);
   color: var(--ink);
-  font-weight: 600;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: progress;
-}
-
-.page-title {
-  font-size: 1.5em;
-  margin: 0.83em 0;
+  text-decoration: none;
 }
 
 /* Race Bib pill: secondary actions and stepping controls. */
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-2);
   min-height: 2.5rem;
   border: 2px solid var(--ink);
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink);
   font: 700 0.875rem var(--font-body);
-  padding: 0.35rem 0.9rem;
+  padding: var(--space-2) var(--bib-inset);
   cursor: pointer;
 }
 .pill:hover:not(:disabled):not([aria-disabled="true"]) {
@@ -149,7 +93,7 @@ a {
 .pill--primary {
   background: var(--tangerine);
   font-size: 0.9375rem;
-  padding-inline: 1.1rem;
+  padding-inline: var(--space-5);
 }
 .pill--primary:hover:not(:disabled) {
   background: var(--tangerine-hover);
@@ -165,8 +109,8 @@ a {
 .rb-field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin: 0 0 1.25rem;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-6);
   font-family: var(--font-body);
   color: var(--ink);
 }
@@ -194,7 +138,7 @@ a {
   color: var(--ink);
   font: 400 1rem var(--font-body);
   font-variant-numeric: tabular-nums;
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-3) var(--space-4);
 }
 .input::placeholder {
   color: var(--ink-muted);
@@ -228,10 +172,10 @@ select.input {
 .choice {
   display: flex;
   align-items: flex-start;
-  gap: 0.65rem;
+  gap: var(--row);
   border: 2px solid var(--ink);
   border-radius: 10px;
-  padding: 0.7rem 0.9rem;
+  padding: var(--row) var(--bib-inset);
   color: var(--ink);
   cursor: pointer;
   transition: background-color 160ms var(--ease-out-expo);
@@ -269,7 +213,7 @@ select.input {
 .choice--pill {
   align-items: center;
   border-radius: 999px;
-  padding: 0.45rem 0.9rem 0.45rem 0.7rem;
+  padding: var(--space-2) var(--bib-inset) var(--space-2) var(--row);
   font-weight: 700;
   font-size: 0.9375rem;
   white-space: nowrap;
@@ -287,17 +231,12 @@ select.input {
   white-space: nowrap;
 }
 
-.muted {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
   background: var(--paper);
   border-bottom: 2px solid var(--ink);
   color: var(--ink);
@@ -312,7 +251,7 @@ select.input {
 
 .navbar nav {
   display: flex;
-  gap: 1rem;
+  gap: var(--space-5);
   align-items: center;
   min-width: 0;
 }
@@ -320,7 +259,7 @@ select.input {
 .navbar nav a {
   color: var(--ink-muted);
   font-weight: 600;
-  padding: 0.25rem 0;
+  padding: var(--space-1) 0;
   text-underline-offset: 6px;
 }
 
@@ -344,7 +283,7 @@ select.input {
   background: var(--paper);
   color: var(--ink);
   font: 600 0.875rem var(--font-body);
-  padding: 0.3rem 0.8rem;
+  padding: var(--space-1) var(--space-4);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -364,34 +303,22 @@ select.input {
     display: none;
   }
   .navbar nav {
-    gap: 0.75rem;
+    gap: var(--space-4);
   }
 }
 
 @media (max-width: 360px) {
   .navbar {
-    padding-inline: 0.75rem;
+    padding-inline: var(--space-4);
   }
   .navbar .wordmark {
     font-size: 1.05rem;
   }
   .navbar nav {
-    gap: 0.6rem;
+    gap: var(--space-3);
   }
   .navbar .logout {
-    padding-inline: 0.6rem;
+    padding-inline: var(--space-3);
   }
 }
 
-.progress-bar {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--border);
-  overflow: hidden;
-}
-
-.progress-bar > span {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-}

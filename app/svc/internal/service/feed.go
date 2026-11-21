@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"time"
 
 	"connectrpc.com/connect"
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -221,10 +222,23 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 		progressClauses[gid] = pc
 	}
 
-	results, err := s.evaluateGoals(ctx, goals, progressClauses)
+	anchor := time.Now()
+	if req.Msg.Anchor != nil {
+		anchor = req.Msg.GetAnchor().AsTime()
+	}
+	win := leaderboardWindow(req.Msg.GetWindow(), anchor)
+	results, used, err := s.evaluateGoalsIn(ctx, goals, progressClauses, win)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	// Goals the window drops (no overlap, or nothing to judge) leave the board.
+	kept := goals[:0:0]
+	for _, g := range goals {
+		if _, ok := results[g.ID]; ok {
+			kept = append(kept, g)
+		}
+	}
+	goals = kept
 
 	entriesByGroup := make(map[string][]*fitterv1.LeaderboardEntry)
 	for _, g := range goals {
@@ -239,7 +253,7 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			Satisfied:               res.Satisfied,
 			Clauses:                 clauseResultsToProto(res.Clauses),
 			ConsideredActivityCount: int32(res.ConsideredCount),
-			ClauseDefs:              clauseDefsToProto(clausesByGoal[g.ID]),
+			ClauseDefs:              windowedClauseDefs(clausesByGoal[g.ID], used[g.ID], win != nil),
 		})
 	}
 
@@ -279,7 +293,10 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 	}
 
 	resp := &fitterv1.GetCampaignLeaderboardResponse{Groups: groups, People: rankPeople(goals, results, userNameByGoal, avatarByGoal)}
-	if c.TargetValue.Valid {
+	if win != nil {
+		resp.WindowStart, resp.WindowEnd = unixToTimestamp(win.Start), unixToTimestamp(win.End)
+	}
+	if c.TargetValue.Valid && win == nil {
 		def, acts, err := s.pooledTotal(ctx, c)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)

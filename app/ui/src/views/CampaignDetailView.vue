@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
+import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
 import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { activityMetricValue } from "../lib/labels";
@@ -42,6 +43,21 @@ const leaveError = ref("");
 const stack = ref<InstanceType<typeof BibStack> | null>(null);
 
 // The bib stack can show one bib per goal (by sport group) or one per person.
+const windows = [
+  { id: LeaderboardWindow.WEEK, label: "This week" },
+  { id: LeaderboardWindow.MONTH, label: "This month" },
+  { id: LeaderboardWindow.CAMPAIGN, label: "Campaign" },
+];
+const windowError = ref("");
+async function pickWindow(w: LeaderboardWindow): Promise<void> {
+  windowError.value = "";
+  try {
+    await feedStore.setWindow(props.id, w);
+  } catch {
+    windowError.value = "That board didn't load. Try again.";
+  }
+}
+
 const bibMode = ref<"goal" | "person">("goal");
 const bibGroups = computed<LeaderboardGroup[]>(() => {
   if (bibMode.value === "goal" || !feed.value.people.length) return feed.value.leaderboardGroups;
@@ -264,6 +280,20 @@ onMounted(() => {
           </div>
 
           <section ref="stackEl" class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Bib stack">
+            <div v-if="campaign.joined && feed.loaded" class="bib-mode" role="group" aria-label="Standings period">
+              <button
+                v-for="w in windows"
+                :key="w.id"
+                type="button"
+                class="pill"
+                :aria-pressed="feed.window === w.id"
+                :disabled="feed.windowLoading"
+                @click="pickWindow(w.id)"
+              >
+                {{ w.label }}
+              </button>
+            </div>
+            <p v-if="windowError" class="field-error" role="alert">{{ windowError }}</p>
             <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
             <template v-else>
               <div v-if="feed.people.length > 1" class="bib-mode" role="group" aria-label="Bib stack view">
@@ -315,7 +345,7 @@ onMounted(() => {
                   </li>
                 </ol>
               </section>
-              <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">No goals set yet. Standings appear once members set theirs.</p>
+              <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">{{ feed.window === LeaderboardWindow.CAMPAIGN ? "No goals set yet. Standings appear once members set theirs." : "Nothing to score in this period yet." }}</p>
               <ol v-if="feed.people.length" class="rows standings-group">
                 <li v-for="p in feed.people" :key="p.userId" :class="{ me: p.userId === meId, podium: onPodium(p.rank, p.averageRatio) }">
                   <div class="row">

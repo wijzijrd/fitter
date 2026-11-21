@@ -10,6 +10,7 @@ import type {
   PersonStanding,
 } from "../gen/fitter/v1/feed_pb";
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
+import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
 
 interface CampaignFeedState {
   activities: FeedActivity[];
@@ -21,6 +22,8 @@ interface CampaignFeedState {
   pooledContributions: PooledContribution[];
   timelineGroups: TimelineGroup[];
   pooledTimeline?: TimelineSeries;
+  window: LeaderboardWindow;
+  windowLoading: boolean;
   loading: boolean;
   loaded: boolean;
   error: string | null;
@@ -33,6 +36,8 @@ function emptyState(): CampaignFeedState {
     people: [],
     pooledContributions: [],
     timelineGroups: [],
+    window: LeaderboardWindow.CAMPAIGN,
+    windowLoading: false,
     loading: false,
     loaded: false,
     error: null,
@@ -52,6 +57,7 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
     const s = stateFor(campaignId);
     s.loading = true;
     s.error = null;
+    s.window = LeaderboardWindow.CAMPAIGN;
     try {
       const [feed, leaderboard, timeline] = await Promise.all([
         feedClient.getCampaignFeed({ campaignId }),
@@ -78,9 +84,10 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
 
   // fetchLeaderboard is the light fetch the campaigns list uses for each bib;
   // it also warms the detail page's stack.
-  async function fetchLeaderboard(campaignId: string): Promise<void> {
+  async function fetchLeaderboard(campaignId: string, window = LeaderboardWindow.CAMPAIGN): Promise<void> {
     const s = stateFor(campaignId);
-    const resp = await feedClient.getCampaignLeaderboard({ campaignId });
+    const resp = await feedClient.getCampaignLeaderboard({ campaignId, window });
+    s.window = window;
     s.leaderboardGroups = resp.groups;
     s.people = resp.people;
     s.pooledProgressValue = resp.pooledProgressValue;
@@ -89,5 +96,16 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
     s.pooledContributions = resp.pooledContributions;
   }
 
-  return { byCampaign, stateFor, fetchAll, fetchLeaderboard };
+  // setWindow re-scores the standings for a week, month or the whole campaign.
+  async function setWindow(campaignId: string, window: LeaderboardWindow): Promise<void> {
+    const s = stateFor(campaignId);
+    s.windowLoading = true;
+    try {
+      await fetchLeaderboard(campaignId, window);
+    } finally {
+      s.windowLoading = false;
+    }
+  }
+
+  return { byCampaign, stateFor, fetchAll, fetchLeaderboard, setWindow };
 });

@@ -16,6 +16,10 @@ const messages: Record<string, string> = {
   state: "Sign-in timed out or your browser blocked a cookie. Try connecting again.",
   banned: "This account has been banned from Fitter.",
   scope: "Fitter needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
+  capacity: "Fitter is full right now. Ask the organiser to make room.",
+  rate_limited: "Strava is busy right now. Wait a few minutes and try again.",
+  exchange: "Strava didn't accept the sign-in. Try connecting again.",
+  server: "Something went wrong on our side. Try again in a moment.",
 };
 const route = useRoute();
 const error = computed(() => {

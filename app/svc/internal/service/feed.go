@@ -278,7 +278,7 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 		})
 	}
 
-	resp := &fitterv1.GetCampaignLeaderboardResponse{Groups: groups}
+	resp := &fitterv1.GetCampaignLeaderboardResponse{Groups: groups, People: rankPeople(goals, results, userNameByGoal, avatarByGoal)}
 	if c.TargetValue.Valid {
 		def, acts, err := s.pooledTotal(ctx, c)
 		if err != nil {

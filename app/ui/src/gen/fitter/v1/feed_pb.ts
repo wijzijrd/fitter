@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/feed.proto.
  */
 export const file_fitter_v1_feed: GenFile = /*@__PURE__*/
-  fileDesc("ChRmaXR0ZXIvdjEvZmVlZC5wcm90bxIJZml0dGVyLnYxIsYDCgxGZWVkQWN0aXZpdHkSDwoHdXNlcl9pZBgCIAEoCRIRCgl1c2VyX25hbWUYAyABKAkSFwoPdXNlcl9hdmF0YXJfdXJsGAQgASgJEgwKBHR5cGUYBSABKAkSEgoKZGlzdGFuY2VfbRgGIAEoARITCgtlbGV2YXRpb25fbRgHIAEoARIVCg1tb3ZpbmdfdGltZV9zGAggASgDEi4KCnN0YXJ0X2RhdGUYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEgwKBG5hbWUYCiABKAkSGgoSc3RyYXZhX2FjdGl2aXR5X2lkGAsgASgDEhIKCnNwb3J0X3R5cGUYDCABKAkSEwoLc3BvcnRfZ3JvdXAYDSABKAkSHgoRYXZlcmFnZV9oZWFydHJhdGUYDiABKAFIAIgBARIaCg1hdmVyYWdlX3dhdHRzGA8gASgBSAGIAQESGQoMc3VmZmVyX3Njb3JlGBAgASgBSAKIAQESDgoGc291cmNlGBEgASgJQhQKEl9hdmVyYWdlX2hlYXJ0cmF0ZUIQCg5fYXZlcmFnZV93YXR0c0IPCg1fc3VmZmVyX3Njb3JlSgQIARACUgJpZCItChZHZXRDYW1wYWlnbkZlZWRSZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJIkYKF0dldENhbXBhaWduRmVlZFJlc3BvbnNlEisKCmFjdGl2aXRpZXMYASADKAsyFy5maXR0ZXIudjEuRmVlZEFjdGl2aXR5IqcCChBMZWFkZXJib2FyZEVudHJ5Eg8KB3VzZXJfaWQYASABKAkSEQoJdXNlcl9uYW1lGAIgASgJEhcKD3VzZXJfYXZhdGFyX3VybBgDIAEoCRIPCgdnb2FsX2lkGAQgASgJEhEKCWdvYWxfbmFtZRgFIAEoCRIWCg5wcm9ncmVzc19yYXRpbxgGIAEoARIRCglzYXRpc2ZpZWQYByABKAgSDAoEcmFuaxgIIAEoBRIqCgdjbGF1c2VzGAkgAygLMhkuZml0dGVyLnYxLkNsYXVzZVByb2dyZXNzEiEKGWNvbnNpZGVyZWRfYWN0aXZpdHlfY291bnQYCiABKAUSKgoLY2xhdXNlX2RlZnMYCyADKAsyFS5maXR0ZXIudjEuR29hbENsYXVzZSJwChBMZWFkZXJib2FyZEdyb3VwEhMKC3Nwb3J0X2dyb3VwGAEgASgJEhkKEXNwb3J0X2dyb3VwX2xhYmVsGAIgASgJEiwKB2VudHJpZXMYAyADKAsyGy5maXR0ZXIudjEuTGVhZGVyYm9hcmRFbnRyeSI0Ch1HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVxdWVzdBITCgtjYW1wYWlnbl9pZBgBIAEoCSJHChJQb29sZWRDb250cmlidXRpb24SDwoHdXNlcl9pZBgBIAEoCRIRCgl1c2VyX25hbWUYAiABKAkSDQoFdmFsdWUYAyABKAEiywIKHkdldENhbXBhaWduTGVhZGVyYm9hcmRSZXNwb25zZRIrCgZncm91cHMYASADKAsyGy5maXR0ZXIudjEuTGVhZGVyYm9hcmRHcm91cBIiChVwb29sZWRfcHJvZ3Jlc3NfdmFsdWUYAiABKAFIAIgBARIgChNwb29sZWRfdGFyZ2V0X3ZhbHVlGAMgASgBSAGIAQESNQoNcG9vbGVkX21ldHJpYxgEIAEoDjIZLmZpdHRlci52MS5BY3Rpdml0eU1ldHJpY0gCiAEBEjsKFHBvb2xlZF9jb250cmlidXRpb25zGAUgAygLMh0uZml0dGVyLnYxLlBvb2xlZENvbnRyaWJ1dGlvbkIYChZfcG9vbGVkX3Byb2dyZXNzX3ZhbHVlQhYKFF9wb29sZWRfdGFyZ2V0X3ZhbHVlQhAKDl9wb29sZWRfbWV0cmljIkgKDVRpbWVsaW5lUG9pbnQSKAoEZGF0ZRgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFdmFsdWUYAiABKAEi6gEKDlRpbWVsaW5lU2VyaWVzEg8KB3VzZXJfaWQYASABKAkSDQoFbGFiZWwYAiABKAkSDwoHZ29hbF9pZBgDIAEoCRIRCgljbGF1c2VfaWQYBCABKAkSKQoGbWV0cmljGAUgASgOMhkuZml0dGVyLnYxLkFjdGl2aXR5TWV0cmljEikKCmNvbXBhcmF0b3IYBiABKA4yFS5maXR0ZXIudjEuQ29tcGFyYXRvchIUCgx0YXJnZXRfdmFsdWUYByABKAESKAoGcG9pbnRzGAggAygLMhguZml0dGVyLnYxLlRpbWVsaW5lUG9pbnQiagoNVGltZWxpbmVHcm91cBITCgtzcG9ydF9ncm91cBgBIAEoCRIZChFzcG9ydF9ncm91cF9sYWJlbBgCIAEoCRIpCgZzZXJpZXMYAyADKAsyGS5maXR0ZXIudjEuVGltZWxpbmVTZXJpZXMiMQoaR2V0Q2FtcGFpZ25UaW1lbGluZVJlcXVlc3QSEwoLY2FtcGFpZ25faWQYASABKAki9AEKG0dldENhbXBhaWduVGltZWxpbmVSZXNwb25zZRIoCgZncm91cHMYASADKAsyGC5maXR0ZXIudjEuVGltZWxpbmVHcm91cBIuCgZwb29sZWQYAiABKAsyGS5maXR0ZXIudjEuVGltZWxpbmVTZXJpZXNIAIgBARIuCgpzdGFydF9kYXRlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghlbmRfZGF0ZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBCCQoHX3Bvb2xlZEoECAUQBlIMdGFyZ2V0X3ZhbHVlMrwCCgtGZWVkU2VydmljZRJYCg9HZXRDYW1wYWlnbkZlZWQSIS5maXR0ZXIudjEuR2V0Q2FtcGFpZ25GZWVkUmVxdWVzdBoiLmZpdHRlci52MS5HZXRDYW1wYWlnbkZlZWRSZXNwb25zZRJtChZHZXRDYW1wYWlnbkxlYWRlcmJvYXJkEiguZml0dGVyLnYxLkdldENhbXBhaWduTGVhZGVyYm9hcmRSZXF1ZXN0GikuZml0dGVyLnYxLkdldENhbXBhaWduTGVhZGVyYm9hcmRSZXNwb25zZRJkChNHZXRDYW1wYWlnblRpbWVsaW5lEiUuZml0dGVyLnYxLkdldENhbXBhaWduVGltZWxpbmVSZXF1ZXN0GiYuZml0dGVyLnYxLkdldENhbXBhaWduVGltZWxpbmVSZXNwb25zZUKNAQoNY29tLmZpdHRlci52MUIJRmVlZFByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z", [file_fitter_v1_common, file_fitter_v1_goal, file_google_protobuf_timestamp]);
+  fileDesc("ChRmaXR0ZXIvdjEvZmVlZC5wcm90bxIJZml0dGVyLnYxIsYDCgxGZWVkQWN0aXZpdHkSDwoHdXNlcl9pZBgCIAEoCRIRCgl1c2VyX25hbWUYAyABKAkSFwoPdXNlcl9hdmF0YXJfdXJsGAQgASgJEgwKBHR5cGUYBSABKAkSEgoKZGlzdGFuY2VfbRgGIAEoARITCgtlbGV2YXRpb25fbRgHIAEoARIVCg1tb3ZpbmdfdGltZV9zGAggASgDEi4KCnN0YXJ0X2RhdGUYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEgwKBG5hbWUYCiABKAkSGgoSc3RyYXZhX2FjdGl2aXR5X2lkGAsgASgDEhIKCnNwb3J0X3R5cGUYDCABKAkSEwoLc3BvcnRfZ3JvdXAYDSABKAkSHgoRYXZlcmFnZV9oZWFydHJhdGUYDiABKAFIAIgBARIaCg1hdmVyYWdlX3dhdHRzGA8gASgBSAGIAQESGQoMc3VmZmVyX3Njb3JlGBAgASgBSAKIAQESDgoGc291cmNlGBEgASgJQhQKEl9hdmVyYWdlX2hlYXJ0cmF0ZUIQCg5fYXZlcmFnZV93YXR0c0IPCg1fc3VmZmVyX3Njb3JlSgQIARACUgJpZCItChZHZXRDYW1wYWlnbkZlZWRSZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJIkYKF0dldENhbXBhaWduRmVlZFJlc3BvbnNlEisKCmFjdGl2aXRpZXMYASADKAsyFy5maXR0ZXIudjEuRmVlZEFjdGl2aXR5IqcCChBMZWFkZXJib2FyZEVudHJ5Eg8KB3VzZXJfaWQYASABKAkSEQoJdXNlcl9uYW1lGAIgASgJEhcKD3VzZXJfYXZhdGFyX3VybBgDIAEoCRIPCgdnb2FsX2lkGAQgASgJEhEKCWdvYWxfbmFtZRgFIAEoCRIWCg5wcm9ncmVzc19yYXRpbxgGIAEoARIRCglzYXRpc2ZpZWQYByABKAgSDAoEcmFuaxgIIAEoBRIqCgdjbGF1c2VzGAkgAygLMhkuZml0dGVyLnYxLkNsYXVzZVByb2dyZXNzEiEKGWNvbnNpZGVyZWRfYWN0aXZpdHlfY291bnQYCiABKAUSKgoLY2xhdXNlX2RlZnMYCyADKAsyFS5maXR0ZXIudjEuR29hbENsYXVzZSJwChBMZWFkZXJib2FyZEdyb3VwEhMKC3Nwb3J0X2dyb3VwGAEgASgJEhkKEXNwb3J0X2dyb3VwX2xhYmVsGAIgASgJEiwKB2VudHJpZXMYAyADKAsyGy5maXR0ZXIudjEuTGVhZGVyYm9hcmRFbnRyeSK3AQoOUGVyc29uU3RhbmRpbmcSDwoHdXNlcl9pZBgBIAEoCRIRCgl1c2VyX25hbWUYAiABKAkSFwoPdXNlcl9hdmF0YXJfdXJsGAMgASgJEhUKDWF2ZXJhZ2VfcmF0aW8YBCABKAESEgoKZ29hbF9jb3VudBgFIAEoBRIXCg9nb2Fsc19zYXRpc2ZpZWQYBiABKAUSFgoOZWFybHlfZmluaXNoZXMYByABKAUSDAoEcmFuaxgIIAEoBSI0Ch1HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVxdWVzdBITCgtjYW1wYWlnbl9pZBgBIAEoCSJHChJQb29sZWRDb250cmlidXRpb24SDwoHdXNlcl9pZBgBIAEoCRIRCgl1c2VyX25hbWUYAiABKAkSDQoFdmFsdWUYAyABKAEi9gIKHkdldENhbXBhaWduTGVhZGVyYm9hcmRSZXNwb25zZRIrCgZncm91cHMYASADKAsyGy5maXR0ZXIudjEuTGVhZGVyYm9hcmRHcm91cBIpCgZwZW9wbGUYBiADKAsyGS5maXR0ZXIudjEuUGVyc29uU3RhbmRpbmcSIgoVcG9vbGVkX3Byb2dyZXNzX3ZhbHVlGAIgASgBSACIAQESIAoTcG9vbGVkX3RhcmdldF92YWx1ZRgDIAEoAUgBiAEBEjUKDXBvb2xlZF9tZXRyaWMYBCABKA4yGS5maXR0ZXIudjEuQWN0aXZpdHlNZXRyaWNIAogBARI7ChRwb29sZWRfY29udHJpYnV0aW9ucxgFIAMoCzIdLmZpdHRlci52MS5Qb29sZWRDb250cmlidXRpb25CGAoWX3Bvb2xlZF9wcm9ncmVzc192YWx1ZUIWChRfcG9vbGVkX3RhcmdldF92YWx1ZUIQCg5fcG9vbGVkX21ldHJpYyJICg1UaW1lbGluZVBvaW50EigKBGRhdGUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBXZhbHVlGAIgASgBIuoBCg5UaW1lbGluZVNlcmllcxIPCgd1c2VyX2lkGAEgASgJEg0KBWxhYmVsGAIgASgJEg8KB2dvYWxfaWQYAyABKAkSEQoJY2xhdXNlX2lkGAQgASgJEikKBm1ldHJpYxgFIAEoDjIZLmZpdHRlci52MS5BY3Rpdml0eU1ldHJpYxIpCgpjb21wYXJhdG9yGAYgASgOMhUuZml0dGVyLnYxLkNvbXBhcmF0b3ISFAoMdGFyZ2V0X3ZhbHVlGAcgASgBEigKBnBvaW50cxgIIAMoCzIYLmZpdHRlci52MS5UaW1lbGluZVBvaW50ImoKDVRpbWVsaW5lR3JvdXASEwoLc3BvcnRfZ3JvdXAYASABKAkSGQoRc3BvcnRfZ3JvdXBfbGFiZWwYAiABKAkSKQoGc2VyaWVzGAMgAygLMhkuZml0dGVyLnYxLlRpbWVsaW5lU2VyaWVzIjEKGkdldENhbXBhaWduVGltZWxpbmVSZXF1ZXN0EhMKC2NhbXBhaWduX2lkGAEgASgJIvQBChtHZXRDYW1wYWlnblRpbWVsaW5lUmVzcG9uc2USKAoGZ3JvdXBzGAEgAygLMhguZml0dGVyLnYxLlRpbWVsaW5lR3JvdXASLgoGcG9vbGVkGAIgASgLMhkuZml0dGVyLnYxLlRpbWVsaW5lU2VyaWVzSACIAQESLgoKc3RhcnRfZGF0ZRgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLAoIZW5kX2RhdGUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wQgkKB19wb29sZWRKBAgFEAZSDHRhcmdldF92YWx1ZTK8AgoLRmVlZFNlcnZpY2USWAoPR2V0Q2FtcGFpZ25GZWVkEiEuZml0dGVyLnYxLkdldENhbXBhaWduRmVlZFJlcXVlc3QaIi5maXR0ZXIudjEuR2V0Q2FtcGFpZ25GZWVkUmVzcG9uc2USbQoWR2V0Q2FtcGFpZ25MZWFkZXJib2FyZBIoLmZpdHRlci52MS5HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVxdWVzdBopLmZpdHRlci52MS5HZXRDYW1wYWlnbkxlYWRlcmJvYXJkUmVzcG9uc2USZAoTR2V0Q2FtcGFpZ25UaW1lbGluZRIlLmZpdHRlci52MS5HZXRDYW1wYWlnblRpbWVsaW5lUmVxdWVzdBomLmZpdHRlci52MS5HZXRDYW1wYWlnblRpbWVsaW5lUmVzcG9uc2VCjQEKDWNvbS5maXR0ZXIudjFCCUZlZWRQcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_fitter_v1_common, file_fitter_v1_goal, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message fitter.v1.FeedActivity
@@ -257,6 +257,64 @@ export const LeaderboardGroupSchema: GenMessage<LeaderboardGroup> = /*@__PURE__*
   messageDesc(file_fitter_v1_feed, 4);
 
 /**
+ * One person's standing across all their goals in the campaign.
+ *
+ * @generated from message fitter.v1.PersonStanding
+ */
+export type PersonStanding = Message<"fitter.v1.PersonStanding"> & {
+  /**
+   * @generated from field: string user_id = 1;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string user_name = 2;
+   */
+  userName: string;
+
+  /**
+   * @generated from field: string user_avatar_url = 3;
+   */
+  userAvatarUrl: string;
+
+  /**
+   * mean of the person's goal ratios, 0..1
+   *
+   * @generated from field: double average_ratio = 4;
+   */
+  averageRatio: number;
+
+  /**
+   * @generated from field: int32 goal_count = 5;
+   */
+  goalCount: number;
+
+  /**
+   * @generated from field: int32 goals_satisfied = 6;
+   */
+  goalsSatisfied: number;
+
+  /**
+   * goals satisfied before the final day of their period
+   *
+   * @generated from field: int32 early_finishes = 7;
+   */
+  earlyFinishes: number;
+
+  /**
+   * @generated from field: int32 rank = 8;
+   */
+  rank: number;
+};
+
+/**
+ * Describes the message fitter.v1.PersonStanding.
+ * Use `create(PersonStandingSchema)` to create a new message.
+ */
+export const PersonStandingSchema: GenMessage<PersonStanding> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_feed, 5);
+
+/**
  * @generated from message fitter.v1.GetCampaignLeaderboardRequest
  */
 export type GetCampaignLeaderboardRequest = Message<"fitter.v1.GetCampaignLeaderboardRequest"> & {
@@ -271,7 +329,7 @@ export type GetCampaignLeaderboardRequest = Message<"fitter.v1.GetCampaignLeader
  * Use `create(GetCampaignLeaderboardRequestSchema)` to create a new message.
  */
 export const GetCampaignLeaderboardRequestSchema: GenMessage<GetCampaignLeaderboardRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 5);
+  messageDesc(file_fitter_v1_feed, 6);
 
 /**
  * One member's share of pooled_progress_value, in the campaign metric's units.
@@ -300,7 +358,7 @@ export type PooledContribution = Message<"fitter.v1.PooledContribution"> & {
  * Use `create(PooledContributionSchema)` to create a new message.
  */
 export const PooledContributionSchema: GenMessage<PooledContribution> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 6);
+  messageDesc(file_fitter_v1_feed, 7);
 
 /**
  * @generated from message fitter.v1.GetCampaignLeaderboardResponse
@@ -310,6 +368,13 @@ export type GetCampaignLeaderboardResponse = Message<"fitter.v1.GetCampaignLeade
    * @generated from field: repeated fitter.v1.LeaderboardGroup groups = 1;
    */
   groups: LeaderboardGroup[];
+
+  /**
+   * ranked; groups hold the per-goal detail
+   *
+   * @generated from field: repeated fitter.v1.PersonStanding people = 6;
+   */
+  people: PersonStanding[];
 
   /**
    * only when the campaign has a target
@@ -342,7 +407,7 @@ export type GetCampaignLeaderboardResponse = Message<"fitter.v1.GetCampaignLeade
  * Use `create(GetCampaignLeaderboardResponseSchema)` to create a new message.
  */
 export const GetCampaignLeaderboardResponseSchema: GenMessage<GetCampaignLeaderboardResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 7);
+  messageDesc(file_fitter_v1_feed, 8);
 
 /**
  * @generated from message fitter.v1.TimelinePoint
@@ -366,7 +431,7 @@ export type TimelinePoint = Message<"fitter.v1.TimelinePoint"> & {
  * Use `create(TimelinePointSchema)` to create a new message.
  */
 export const TimelinePointSchema: GenMessage<TimelinePoint> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 8);
+  messageDesc(file_fitter_v1_feed, 9);
 
 /**
  * @generated from message fitter.v1.TimelineSeries
@@ -420,7 +485,7 @@ export type TimelineSeries = Message<"fitter.v1.TimelineSeries"> & {
  * Use `create(TimelineSeriesSchema)` to create a new message.
  */
 export const TimelineSeriesSchema: GenMessage<TimelineSeries> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 9);
+  messageDesc(file_fitter_v1_feed, 10);
 
 /**
  * @generated from message fitter.v1.TimelineGroup
@@ -447,7 +512,7 @@ export type TimelineGroup = Message<"fitter.v1.TimelineGroup"> & {
  * Use `create(TimelineGroupSchema)` to create a new message.
  */
 export const TimelineGroupSchema: GenMessage<TimelineGroup> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 10);
+  messageDesc(file_fitter_v1_feed, 11);
 
 /**
  * @generated from message fitter.v1.GetCampaignTimelineRequest
@@ -464,7 +529,7 @@ export type GetCampaignTimelineRequest = Message<"fitter.v1.GetCampaignTimelineR
  * Use `create(GetCampaignTimelineRequestSchema)` to create a new message.
  */
 export const GetCampaignTimelineRequestSchema: GenMessage<GetCampaignTimelineRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 11);
+  messageDesc(file_fitter_v1_feed, 12);
 
 /**
  * @generated from message fitter.v1.GetCampaignTimelineResponse
@@ -496,7 +561,7 @@ export type GetCampaignTimelineResponse = Message<"fitter.v1.GetCampaignTimeline
  * Use `create(GetCampaignTimelineResponseSchema)` to create a new message.
  */
 export const GetCampaignTimelineResponseSchema: GenMessage<GetCampaignTimelineResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_feed, 12);
+  messageDesc(file_fitter_v1_feed, 13);
 
 /**
  * @generated from service fitter.v1.FeedService

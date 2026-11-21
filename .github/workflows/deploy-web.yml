@@ -1,0 +1,126 @@
+# Build the SPA and publish it to the environment's S3 bucket behind CloudFront.
+# Frontend-agnostic: anything that produces a static directory works. Set the five values under
+# `env` for your framework. PUBLIC_* values are baked in at build time, so each environment gets
+# its own build — a web artifact cannot be promoted between environments without rebuilding.
+name: Deploy web
+
+on:
+  push:
+    branches: [staging, main]
+    paths: ['app/ui/**', '.github/workflows/deploy-web.yml']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target
+        required: true
+        type: choice
+        options: [staging, production]
+      ref:
+        description: Git ref to deploy (blank = this commit). Deploying an older ref is the rollback.
+        required: false
+        default: ''
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-web-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  # EDIT ME for your framework -------------------------------------------------------------
+  WEB_DIR: app/ui                    # where the frontend lives
+  BUILD_DIR: dist                    # Vite output, relative to WEB_DIR
+  IMMUTABLE_GLOB: 'assets/*'           # Vite content-hashed assets
+  SPA_FALLBACK: /index.html            # matches spa_fallback_path in the infra repo
+  SW_FILE: ''                          # no service worker
+  # -------------------------------------------------------------------------------------------
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+    defaults:
+      run:
+        working-directory: ${{ env.WEB_DIR }}
+    steps:
+      # Production is only deployable from main, and a manual `ref` must already be merged into
+      # the target's branch(es): the prod OIDC role trusts the environment, not the branch, so
+      # without this any branch could dispatch a production deploy of arbitrary code.
+      - name: Guard dispatch target
+        working-directory: .
+        env:
+          ENVIRONMENT: ${{ inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_REF: ${{ inputs.ref }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$ENVIRONMENT" = production ] && [ "$REF_NAME" != main ]; then
+            echo "::error::production deploys must be dispatched from main (got '$REF_NAME')."; exit 1
+          fi
+          [ -n "$INPUT_REF" ] || exit 0
+          bases=staging; [ "$ENVIRONMENT" = production ] && bases=main || bases="staging main"
+          for base in $bases; do
+            st=$(gh api "repos/$REPO/compare/$base...$INPUT_REF" --jq .status 2>/dev/null || true)
+            case "$st" in behind|identical) exit 0 ;; esac
+          done
+          echo "::error::ref '$INPUT_REF' is not merged into: $bases"; exit 1
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      # EDIT ME: your build. The example is a Node project.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ env.WEB_DIR }}/package-lock.json
+      - run: npm ci
+      - name: Build
+        env:
+          # app/ui reads VITE_API_BASE_URL; the infra repo publishes it as PUBLIC_API_BASE_URL.
+          VITE_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
+        run: npm run build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: web-${{ github.sha }}
+          path: ${{ env.WEB_DIR }}/${{ env.BUILD_DIR }}
+          retention-days: 90
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_WEB_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Upload order is the point: hashed assets land before the HTML that references them, so
+      # live HTML never points at a chunk that hasn't uploaded. --delete runs only on the second
+      # pass, so old chunks survive until the new HTML is in place.
+      - name: Upload immutable assets first
+        run: |
+          aws s3 sync "$BUILD_DIR/" "s3://${{ vars.WEB_BUCKET }}/" \
+            --exclude '*' --include "$IMMUTABLE_GLOB" \
+            --cache-control 'public,max-age=31536000,immutable'
+
+      - name: Upload everything else, then prune
+        run: |
+          aws s3 sync "$BUILD_DIR/" "s3://${{ vars.WEB_BUCKET }}/" \
+            --exclude "$IMMUTABLE_GLOB" --delete \
+            --cache-control 'public,max-age=0,must-revalidate'
+          if [ -n "$SW_FILE" ] && [ -f "$BUILD_DIR/$SW_FILE" ]; then
+            aws s3 cp "$BUILD_DIR/$SW_FILE" "s3://${{ vars.WEB_BUCKET }}/$SW_FILE" \
+              --cache-control 'no-cache,no-store,must-revalidate' --content-type application/javascript
+          fi
+
+      # Targeted, not /*: hashed assets never need invalidating and CloudFront gives 1,000 free
+      # invalidation paths a month.
+      - name: Invalidate CloudFront
+        run: |
+          paths=('/' '/index.html' "$SPA_FALLBACK" '/manifest.webmanifest')
+          [ -n "$SW_FILE" ] && paths+=("/$SW_FILE")
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CF_DISTRIBUTION_ID }}" \
+            --paths "${paths[@]}"

@@ -220,7 +220,7 @@ function finalResult(c: Campaign): { num: string; numLabel?: string; value: stri
                   <small>Didn't load</small>
                 </span>
                 <span v-else-if="row.setGoal" class="gap">
-                  <router-link :to="`/campaigns/${c.id}/join`" class="pill">Set goal<span class="visually-hidden"> in {{ c.name }}</span></router-link>
+                  <router-link :to="`/goals/new?campaign=${c.id}`" class="pill">Set goal<span class="visually-hidden"> in {{ c.name }}</span></router-link>
                 </span>
                 <span v-else class="gap">{{ row.gap }}<small>{{ row.gapSub }}</small></span>
               </li>

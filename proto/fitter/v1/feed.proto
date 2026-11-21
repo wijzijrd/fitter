@@ -60,6 +60,18 @@ message LeaderboardGroup {
   repeated LeaderboardEntry entries = 3;
 }
 
+// One person's standing across all their goals in the campaign.
+message PersonStanding {
+  string user_id = 1;
+  string user_name = 2;
+  string user_avatar_url = 3;
+  double average_ratio = 4; // mean of the person's goal ratios, 0..1
+  int32 goal_count = 5;
+  int32 goals_satisfied = 6;
+  int32 early_finishes = 7; // goals satisfied before the final day of their period
+  int32 rank = 8;
+}
+
 message GetCampaignLeaderboardRequest {
   string campaign_id = 1;
 }
@@ -73,6 +85,7 @@ message PooledContribution {
 
 message GetCampaignLeaderboardResponse {
   repeated LeaderboardGroup groups = 1;
+  repeated PersonStanding people = 6; // ranked; groups hold the per-goal detail
   optional double pooled_progress_value = 2; // only when the campaign has a target
   optional double pooled_target_value = 3;
   optional ActivityMetric pooled_metric = 4;

@@ -467,7 +467,13 @@ func (s *GoalService) ListGoals(ctx context.Context, req *connect.Request[fitter
 	}
 
 	var goals []db.Goal
-	if cid := req.Msg.GetCampaignId(); cid != "" {
+	if req.Msg.GetAll() {
+		var err error
+		goals, err = s.Queries.ListAllGoalsForUser(ctx, userID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	} else if cid := req.Msg.GetCampaignId(); cid != "" {
 		isMember, err := s.Queries.IsCampaignMember(ctx, db.IsCampaignMemberParams{CampaignID: cid, UserID: userID})
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -554,11 +560,28 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 
 	// Global Constraints: a campaign goal's period always matches its
 	// campaign's window, so an update can't drift it away — the request's
-	// period is honored only for a personal (non-campaign) goal.
+	// period is honored only for a personal (non-campaign) goal. campaign_id
+	// can move the goal between personal and a joined campaign.
 	periodStart := timestampToUnix(msg.GetPeriodStart())
 	periodEnd := timestampToUnix(msg.GetPeriodEnd())
-	if existing.CampaignID.Valid {
-		c, err := qtx.GetCampaign(ctx, existing.CampaignID.String)
+	campaignID := existing.CampaignID
+	if msg.CampaignId != nil {
+		campaignID = sql.NullString{String: msg.GetCampaignId(), Valid: msg.GetCampaignId() != ""}
+		if campaignID.Valid && campaignID.String != existing.CampaignID.String {
+			isMember, err := qtx.IsCampaignMember(ctx, db.IsCampaignMemberParams{CampaignID: campaignID.String, UserID: userID})
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			if !isMember {
+				return nil, connect.NewError(connect.CodePermissionDenied, errors.New("must join campaign to add a goal to it"))
+			}
+		}
+	}
+	if campaignID.Valid {
+		c, err := qtx.GetCampaign(ctx, campaignID.String)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("campaign not found"))
+		}
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
@@ -577,6 +600,7 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 		PeriodEnd:   periodEnd,
 		ID:          msg.GetGoalId(),
 		UserID:      userID,
+		CampaignID:  campaignID,
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("goal not found"))

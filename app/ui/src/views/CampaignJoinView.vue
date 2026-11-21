@@ -65,7 +65,8 @@ async function load(): Promise<void> {
   try {
     if (!auth.user) await auth.fetchCurrentUser();
     const [c] = await Promise.all([store.getCampaign(props.id), catalog.ensureLoaded()]);
-    if (c.joined) await feedStore.fetchLeaderboard(c.id);
+    // Already in: goals are made in the goal hub.
+    if (c.joined) return void router.replace(`/goals/new?campaign=${c.id}`);
   } catch (err) {
     loadError.value = errorMessage(err, "We couldn't load this campaign. Try again.");
   }

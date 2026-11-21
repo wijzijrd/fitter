@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -13,6 +14,7 @@ import (
 	"github.com/fitter/svc/internal/auth"
 	"github.com/fitter/svc/internal/db"
 	"github.com/fitter/svc/internal/ingest"
+	"github.com/fitter/svc/internal/strava"
 	"github.com/google/uuid"
 )
 
@@ -20,10 +22,12 @@ const oauthStateCookie = "fitter_oauth_state"
 
 // Codes Callback sends back to the frontend. LoginView.vue `messages` maps these.
 const (
-	errState    = "state"
-	errScope    = "scope"
-	errExchange = "exchange"
-	errServer   = "server"
+	errState     = "state"
+	errScope     = "scope"
+	errExchange  = "exchange"
+	errServer    = "server"
+	errCapacity  = "capacity"
+	errRateLimit = "rate_limited"
 )
 
 // Login redirects the browser to Strava's OAuth consent screen.
@@ -65,7 +69,15 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	tok, err := d.Strava.ExchangeCode(r.Context(), code)
 	if err != nil {
 		slog.Error("strava code exchange failed", "err", err)
-		d.loginError(w, r, errExchange)
+		var apiErr *strava.APIError
+		switch {
+		case errors.As(err, &apiErr) && apiErr.Status == http.StatusForbidden:
+			d.loginError(w, r, errCapacity)
+		case errors.As(err, &apiErr) && apiErr.Status == http.StatusTooManyRequests:
+			d.loginError(w, r, errRateLimit)
+		default:
+			d.loginError(w, r, errExchange)
+		}
 		return
 	}
 	if tok.Athlete == nil {

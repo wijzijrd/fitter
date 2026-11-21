@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log/slog"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -26,7 +27,7 @@ var exemptProcedures = map[string]bool{
 // "Authorization: Bearer <jwt>" header on every unary and streaming call
 // (except exemptProcedures), and injects the authenticated user id and
 // current role into the request context.
-func NewInterceptor(secret []byte, queries *db.Queries) connect.Interceptor {
+func NewInterceptor(secret []byte, queries userGetter) connect.Interceptor {
 	return &interceptor{secret: secret, queries: queries}
 }
 
@@ -34,9 +35,14 @@ func NewInterceptor(secret []byte, queries *db.Queries) connect.Interceptor {
 // so the UI can learn their status and show the waiting screen.
 const pendingAllowedProcedure = "/fitter.v1.UserService/GetCurrentUser"
 
+// userGetter is the one query the interceptor needs; *db.Queries satisfies it.
+type userGetter interface {
+	GetUserByID(ctx context.Context, id string) (db.User, error)
+}
+
 type interceptor struct {
 	secret  []byte
-	queries *db.Queries
+	queries userGetter
 }
 
 func (i *interceptor) authenticate(ctx context.Context, procedure string, header interface{ Get(string) string }) (context.Context, error) {
@@ -58,8 +64,10 @@ func (i *interceptor) authenticate(ctx context.Context, procedure string, header
 		return nil, connect.NewError(connect.CodeUnauthenticated, ErrInvalidToken)
 	}
 	if err != nil {
-		// A DB hiccup must not log the user out.
-		return nil, connect.NewError(connect.CodeInternal, errors.New("user lookup failed"))
+		// A transient DB failure must not read as "logged out": the UI wipes
+		// its JWT on Unauthenticated.
+		slog.Error("auth user lookup failed", "user_id", userID, "err", err)
+		return nil, connect.NewError(connect.CodeUnavailable, errors.New("user lookup unavailable"))
 	}
 	switch u.Status {
 	case "banned":

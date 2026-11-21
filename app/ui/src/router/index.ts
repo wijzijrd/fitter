@@ -30,6 +30,7 @@ const router = createRouter({
     { path: "/activities/new", name: "activity-new", component: () => import("../views/ActivityLogView.vue"), meta: { requiresAuth: true, title: "Log activity" } },
     { path: "/pending", name: "pending", component: () => import("../views/PendingView.vue"), meta: { requiresAuth: true, title: "Waiting for approval" } },
     { path: "/admin", name: "admin", component: () => import("../views/AdminView.vue"), meta: { requiresAuth: true, requiresAdmin: true, title: "Admin" } },
+    { path: "/goals/new", name: "goal-new", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "New goal" } },
     { path: "/goals", name: "goals", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "Goals" } },
   ],
 });

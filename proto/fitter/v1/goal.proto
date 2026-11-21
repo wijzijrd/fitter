@@ -66,6 +66,7 @@ message CreateGoalResponse {
 
 message ListGoalsRequest {
   optional string campaign_id = 1; // unset = personal goals only
+  bool all = 2; // personal goals plus every campaign goal of the caller; campaign_id is ignored
 }
 
 message ListGoalsResponse {
@@ -79,6 +80,8 @@ message UpdateGoalRequest {
   google.protobuf.Timestamp period_start = 4;
   google.protobuf.Timestamp period_end = 5;
   repeated GoalClause clauses = 6; // full replacement, not a patch
+  // unset = keep; "" = make personal; an id = move to that campaign (caller must be a member; period is forced to its window)
+  optional string campaign_id = 7;
 }
 
 message UpdateGoalResponse {

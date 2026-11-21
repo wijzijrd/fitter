@@ -89,12 +89,12 @@ func TestInterceptorUnknownUserUnauthenticated(t *testing.T) {
 	}
 }
 
-func TestInterceptorDBErrorIsInternal(t *testing.T) {
+func TestInterceptorDBErrorIsUnavailable(t *testing.T) {
 	users, _, q, tok, closeDB := setup(t)
 	seed(t, q, "u", 1)
 	closeDB()
 	_, err := users.GetCurrentUser(context.Background(), withTok(&fitterv1.GetCurrentUserRequest{}, tok("u")))
-	if connect.CodeOf(err) != connect.CodeInternal {
-		t.Fatalf("db error = %v, want Internal", err)
+	if connect.CodeOf(err) != connect.CodeUnavailable {
+		t.Fatalf("db error = %v, want Unavailable", err)
 	}
 }

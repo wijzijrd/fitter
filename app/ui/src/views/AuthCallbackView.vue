@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Code, ConnectError } from "@connectrpc/connect";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
@@ -23,9 +24,9 @@ onMounted(async () => {
   try {
     await auth.fetchCurrentUser();
     router.replace(takeReturnTo() ?? { name: "campaigns" });
-  } catch {
-    // The token is already stored; drop it so /login isn't bounced back to the app.
-    auth.logout();
+  } catch (err) {
+    // Drop the token only when the server rejected it; a transient failure keeps the session.
+    if (ConnectError.from(err).code === Code.Unauthenticated) auth.logout();
     error.value = "Strava connected, but we couldn't load your profile. Try connecting again.";
   }
 });

@@ -60,6 +60,17 @@ a {
   text-decoration: none;
 }
 
+/* Fallback ring for anything without its own (DESIGN.md: 3px Black Cherry at 2px offset). */
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+/* Headings take focus only programmatically (step changes, after a delete); no ring. */
+h1[tabindex="-1"]:focus,
+h2[tabindex="-1"]:focus {
+  outline: none;
+}
+
 /* Race Bib pill: secondary actions and stepping controls. */
 .pill {
   display: inline-flex;

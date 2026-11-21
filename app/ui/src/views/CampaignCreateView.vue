@@ -289,9 +289,6 @@ h2 {
   font: 400 1.5rem/1.1 var(--font-display);
   text-transform: uppercase;
 }
-h2:focus {
-  outline: none;
-}
 
 fieldset.rb-field {
   border: 0;

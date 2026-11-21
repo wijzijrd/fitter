@@ -13,6 +13,7 @@ import { toDate } from "../lib/timestamp";
 import { errorMessage } from "../lib/errors";
 import CampaignBib from "../components/CampaignBib.vue";
 import GoalBuilder from "../components/GoalBuilder.vue";
+import { focusNthOr } from "../lib/focus";
 
 const store = useGoalsStore();
 const campaigns = useCampaignsStore();
@@ -112,12 +113,13 @@ async function save(): Promise<void> {
   }
 }
 
-async function remove(id: string): Promise<void> {
+async function remove(id: string, i: number): Promise<void> {
   deleting.value = true;
   deleteError.value = "";
   try {
     await store.deleteGoal(id);
     confirmDelete.value = "";
+    focusNthOr("[data-delete]", i, "#gl-title");
   } catch (err) {
     deleteError.value = errorMessage(err, "The goal wasn't deleted. Try again.");
   } finally {
@@ -175,7 +177,7 @@ const sorted = computed(() =>
     <div class="gl">
       <header class="gl-head">
         <div>
-          <h1>Goals</h1>
+          <h1 id="gl-title" tabindex="-1">Goals</h1>
           <p class="meta">Personal goals are private. Campaign goals show in that campaign's standings.</p>
         </div>
         <button v-if="!editing && store.allGoals.length" type="button" class="pill pill--primary" @click="open()">New goal</button>
@@ -254,7 +256,7 @@ const sorted = computed(() =>
                 <span>Delete this goal?</span>
                 <span class="tab-actions">
                   <button v-focus="true" type="button" class="pill" @click="kept = g.id; confirmDelete = ''">Keep</button>
-                  <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(g.id)">
+                  <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(g.id, i)">
                     {{ deleting ? "Deleting…" : "Delete" }}
                   </button>
                 </span>
@@ -263,7 +265,7 @@ const sorted = computed(() =>
                 <span>{{ dateRange(toDate(g.periodStart), toDate(g.periodEnd)) }}</span>
                 <span class="tab-actions">
                   <button type="button" class="pill" @click="open(g)">Edit<span class="visually-hidden"> {{ g.name }}</span></button>
-                  <button v-focus="kept === g.id" type="button" class="pill pill--quiet" @click="confirmDelete = g.id">
+                  <button v-focus="kept === g.id" type="button" class="pill pill--quiet" data-delete @click="confirmDelete = g.id">
                     Delete<span class="visually-hidden"> {{ g.name }}</span>
                   </button>
                 </span>
@@ -311,9 +313,6 @@ h2 {
 .group-head {
   margin: var(--space-5) 0 var(--space-4);
   font-size: 1.125rem;
-}
-h2:focus {
-  outline: none;
 }
 
 .is-editing {

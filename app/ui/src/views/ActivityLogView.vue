@@ -4,6 +4,7 @@ import { activityClient } from "../lib/connect";
 import { useCatalogStore } from "../stores/catalog";
 import type { ManualActivity } from "../gen/fitter/v1/activity_pb";
 import { exercises, normalizeExercise } from "../lib/exercises";
+import { focusNthOr } from "../lib/focus";
 import { maskDuration, parseDuration } from "../lib/metricFormat";
 import { fromDate, toDate } from "../lib/timestamp";
 import { errorMessage } from "../lib/errors";
@@ -102,13 +103,14 @@ async function save(): Promise<void> {
   }
 }
 
-async function remove(id: bigint): Promise<void> {
+async function remove(id: bigint, i: number): Promise<void> {
   deleting.value = true;
   listError.value = "";
   try {
     await activityClient.deleteManualActivity({ id });
     list.value = list.value.filter((a) => a.id !== id);
     confirmDelete.value = null;
+    focusNthOr("[data-delete]", i, list.value.length ? "#al-history" : "#al-title");
   } catch (err) {
     listError.value = errorMessage(err, "The activity wasn't deleted. Try again.");
   } finally {
@@ -126,7 +128,7 @@ const describe = (a: ManualActivity) => {
 <template>
   <main class="al-page">
     <div class="al">
-      <h1>Log activity</h1>
+      <h1 id="al-title" tabindex="-1">Log activity</h1>
       <p class="meta">For things Strava doesn't see, like a gym session. Counts toward your goals and campaigns.</p>
 
       <form class="form" novalidate @submit.prevent="save">
@@ -189,10 +191,10 @@ const describe = (a: ManualActivity) => {
       </form>
 
       <section v-if="list.length || listError" class="history">
-        <h2>Logged by you</h2>
+        <h2 id="al-history" tabindex="-1">Logged by you</h2>
         <p v-if="listError" class="field-error" role="alert">{{ listError }}</p>
         <ol>
-          <li v-for="a in list" :key="String(a.id)">
+          <li v-for="(a, i) in list" :key="String(a.id)">
             <span>
               <b>{{ a.name }}</b>
               <small>{{ describe(a) }}</small>
@@ -200,11 +202,11 @@ const describe = (a: ManualActivity) => {
             <span v-if="confirmDelete === a.id" class="confirm">
               <span>Delete this activity?</span>
               <button v-focus="true" type="button" class="pill" @click="kept = a.id; confirmDelete = null">Keep</button>
-              <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(a.id)">
+              <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(a.id, i)">
                 {{ deleting ? "Deleting…" : "Delete" }}<span class="visually-hidden"> {{ a.name }}</span>
               </button>
             </span>
-            <button v-else v-focus="kept === a.id" type="button" class="pill pill--quiet" @click="confirmDelete = a.id">Delete<span class="visually-hidden"> {{ a.name }}</span></button>
+            <button v-else v-focus="kept === a.id" type="button" class="pill pill--quiet" data-delete @click="confirmDelete = a.id">Delete<span class="visually-hidden"> {{ a.name }}</span></button>
           </li>
         </ol>
       </section>

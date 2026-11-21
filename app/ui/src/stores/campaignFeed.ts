@@ -7,12 +7,14 @@ import type {
   PooledContribution,
   TimelineGroup,
   TimelineSeries,
+  PersonStanding,
 } from "../gen/fitter/v1/feed_pb";
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 
 interface CampaignFeedState {
   activities: FeedActivity[];
   leaderboardGroups: LeaderboardGroup[];
+  people: PersonStanding[];
   pooledProgressValue?: number;
   pooledTargetValue?: number;
   pooledMetric?: ActivityMetric;
@@ -28,6 +30,7 @@ function emptyState(): CampaignFeedState {
   return {
     activities: [],
     leaderboardGroups: [],
+    people: [],
     pooledContributions: [],
     timelineGroups: [],
     loading: false,
@@ -57,6 +60,7 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
       ]);
       s.activities = feed.activities;
       s.leaderboardGroups = leaderboard.groups;
+      s.people = leaderboard.people;
       s.pooledProgressValue = leaderboard.pooledProgressValue;
       s.pooledTargetValue = leaderboard.pooledTargetValue;
       s.pooledMetric = leaderboard.pooledMetric;
@@ -78,6 +82,7 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
     const s = stateFor(campaignId);
     const resp = await feedClient.getCampaignLeaderboard({ campaignId });
     s.leaderboardGroups = resp.groups;
+    s.people = resp.people;
     s.pooledProgressValue = resp.pooledProgressValue;
     s.pooledTargetValue = resp.pooledTargetValue;
     s.pooledMetric = resp.pooledMetric;

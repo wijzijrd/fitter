@@ -1,0 +1,58 @@
+# Proves every deploy role is assumable from the exact job shape that will use it. The infrastructure
+# repo's `make verify-roles` dispatches this. A failure is almost always a sub-claim mismatch.
+name: Role check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  web-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_WEB_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: aws sts get-caller-identity
+  web-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_WEB_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: aws sts get-caller-identity
+  api-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_API_ROLE_ARN }}
+          aws-region: ${{ vars.API_REGION }}
+      - run: aws sts get-caller-identity
+  api-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_API_ROLE_ARN }}
+          aws-region: ${{ vars.API_REGION }}
+      - run: aws sts get-caller-identity
+  db-backup:
+    # No environment: the backup role trusts refs/heads/main, so this only passes when dispatched
+    # from main.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_BACKUP_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: aws sts get-caller-identity

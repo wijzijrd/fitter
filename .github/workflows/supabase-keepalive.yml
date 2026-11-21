@@ -1,0 +1,27 @@
+# Free Supabase projects pause after 7 days without API requests. This is a mitigation, not a fix —
+# the fix is Pro on production, before it holds a record anyone would miss. No `environment:` key
+# (scheduled), so it reads repository-level SUPABASE_URL_* variables set by `make github-app-vars`.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '0 6 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: staging
+            url_var: SUPABASE_URL_STAGING
+          - name: prod
+            url_var: SUPABASE_URL_PROD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping ${{ matrix.name }}
+        run: curl -sfS "${{ vars[matrix.url_var] }}/auth/v1/health" | tee /dev/stderr

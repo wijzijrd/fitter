@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"connectrpc.com/connect"
 
@@ -57,7 +58,12 @@ func checkBuckets(r fitterv1.Recurrence, start, end int64) error {
 	if pr == progress.RecurNone {
 		return nil
 	}
-	if n := progress.CountBuckets(pr, start, end); n > progress.MaxBuckets {
+	// Years outside this range are nonsense for a fitness goal and would only
+	// feed absurd values to the bucket maths.
+	if lo, hi := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix(), time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC).Unix(); start < lo || end > hi || end < start {
+		return connect.NewError(connect.CodeInvalidArgument, errors.New("a repeating goal's period must fall between 2000 and 2100"))
+	}
+	if n := progress.CountBuckets(pr, start, end); n == 0 || n > progress.MaxBuckets {
 		return connect.NewError(connect.CodeInvalidArgument,
 			errors.New(fmt.Sprintf("a repeating goal can span at most %d periods; shorten the period or repeat less often", progress.MaxBuckets)))
 	}

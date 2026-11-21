@@ -50,9 +50,11 @@ func bucketEnd(r Recurrence, start int64) int64 {
 }
 
 // CountBuckets is how many buckets a period [start, end] spans.
+// It stops counting past MaxBuckets+1, so absurd client-supplied periods
+// can't make it loop for long.
 func CountBuckets(r Recurrence, start, end int64) int {
 	n := 0
-	for b := bucketStart(r, start); b <= end; b = bucketEnd(r, b) {
+	for b := bucketStart(r, start); b <= end && n <= MaxBuckets; b = bucketEnd(r, b) {
 		n++
 	}
 	return n
@@ -86,8 +88,11 @@ func evaluateRecurring(g Goal, acts []metrics.Activity) Result {
 	}
 
 	var starts []int64
-	for b := bucketStart(g.Recurrence, g.PeriodStart); b <= g.PeriodEnd; b = bucketEnd(g.Recurrence, b) {
+	for b := bucketStart(g.Recurrence, g.PeriodStart); b <= g.PeriodEnd && len(starts) <= MaxBuckets; b = bucketEnd(g.Recurrence, b) {
 		starts = append(starts, b)
+	}
+	if len(starts) == 0 { // inverted period; the service rejects these, so this only guards against a panic
+		return Result{GoalID: g.ID}
 	}
 	cur := 0 // index of the running bucket: the last one that has started
 	for i, b := range starts {

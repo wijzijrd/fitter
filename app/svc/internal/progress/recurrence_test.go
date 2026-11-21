@@ -103,3 +103,11 @@ func TestFreshGoalHasZeroRatio(t *testing.T) {
 		t.Fatalf("%+v", r)
 	}
 }
+
+func TestAbsurdPeriodsAreBounded(t *testing.T) {
+	if n := progress.CountBuckets(progress.RecurDaily, 0, 1<<60); n != progress.MaxBuckets+1 {
+		t.Fatalf("CountBuckets not capped: %d", n)
+	}
+	g := activeDaysGoal(progress.RecurDaily, 1<<40, 5, 0, 1) // inverted: must not panic
+	_ = progress.Evaluate(g, nil)
+}

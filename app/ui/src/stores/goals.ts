@@ -58,6 +58,7 @@ export const useGoalsStore = defineStore("goals", () => {
       periodStart: input.periodStart ? fromDate(input.periodStart) : undefined,
       periodEnd: input.periodEnd ? fromDate(input.periodEnd) : undefined,
       clauses: input.clauses,
+      recurrence: input.recurrence,
       campaignId,
     });
     const idx = goals.value.findIndex((g) => g.id === goalId);

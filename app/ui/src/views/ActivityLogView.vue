@@ -78,6 +78,7 @@ async function save(): Promise<void> {
         sportType: form.sport,
         name: form.name.trim() || form.sport,
         startDate: fromDate(new Date(form.when)),
+        utcOffsetMinutes: -new Date(form.when).getTimezoneOffset(),
         movingTimeS: BigInt(durationS.value ?? 0),
         distanceM: form.distanceKm.trim() ? Number(form.distanceKm) * 1000 : undefined,
         lifts: isStrength.value

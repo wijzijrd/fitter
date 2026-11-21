@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useCatalogStore } from "../stores/catalog";
-import { ClauseScope, Comparator, MetricUnit } from "../gen/fitter/v1/common_pb";
+import { ClauseScope, Comparator, MetricUnit, Recurrence } from "../gen/fitter/v1/common_pb";
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import type { ClauseDraft, GoalDraft } from "../lib/goalInput";
 import { blankClause, draftErrors } from "../lib/goalInput";
 import { comparatorLabels, fasterLabels, scopeLabels } from "../lib/labels";
 import { editUnitHint, isDurationUnit } from "../lib/metricFormat";
 import { exercises } from "../lib/exercises";
+import { recurrenceLabels } from "../lib/goalInput";
 import { ActivityMetric as Metric } from "../gen/fitter/v1/common_pb";
 
 const draft = defineModel<GoalDraft>({ required: true });
@@ -101,6 +102,16 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
         :aria-describedby="id('name-error')"
       />
       <span :id="id('name-error')" class="field-error" role="alert">{{ showErrors ? errors.name : "" }}</span>
+    </div>
+
+    <div class="rb-field">
+      <label :for="id('repeats')">Repeats</label>
+      <select :id="id('repeats')" v-model="draft.recurrence" class="input">
+        <option v-for="r in [Recurrence.NONE, Recurrence.DAILY, Recurrence.WEEKLY, Recurrence.MONTHLY]" :key="r" :value="r">
+          {{ recurrenceLabels[r] }}
+        </option>
+      </select>
+      <small v-if="draft.recurrence !== Recurrence.NONE">The conditions must hold in each period. Your score is the share of periods hit.</small>
     </div>
 
     <div class="rb-field">

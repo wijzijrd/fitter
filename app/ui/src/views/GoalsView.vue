@@ -4,9 +4,9 @@ import { useRoute, useRouter } from "vue-router";
 import { useGoalsStore } from "../stores/goals";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCatalogStore } from "../stores/catalog";
-import { ClauseScope, Comparator } from "../gen/fitter/v1/common_pb";
+import { ClauseScope, Comparator, Recurrence } from "../gen/fitter/v1/common_pb";
 import type { Goal } from "../gen/fitter/v1/goal_pb";
-import { blankDraft, draftErrors, draftToInput, inputToDraft } from "../lib/goalInput";
+import { blankDraft, draftErrors, draftToInput, habitPreset, inputToDraft, recurrenceUnit, stretchPreset } from "../lib/goalInput";
 import { clauseText, sportSelectorLabel } from "../lib/labels";
 import { DAY, dateRange, isoDay, localDay } from "../lib/schedule";
 import { toDate } from "../lib/timestamp";
@@ -58,7 +58,7 @@ async function open(g?: Goal, campaignId = ""): Promise<void> {
   editing.value = g?.id ?? "new";
   assignTo.value = g ? (g.campaignId ?? "") : joinedCampaigns.value.some((c) => c.id === campaignId) ? campaignId : "";
   draft.value = g
-    ? inputToDraft({ name: g.name, sport: g.sport?.selector ?? { case: undefined }, clauses: g.clauses }, catalog.unitOf)
+    ? inputToDraft({ name: g.name, sport: g.sport?.selector ?? { case: undefined }, clauses: g.clauses, recurrence: g.recurrence }, catalog.unitOf)
     : blankDraft();
   const start = (g && toDate(g.periodStart)) || new Date();
   const end = (g && toDate(g.periodEnd)) || new Date(Date.now() + 30 * DAY);
@@ -126,8 +126,17 @@ async function remove(id: string): Promise<void> {
 
 const pct = (g: Goal) => Math.floor((g.progress?.progressRatio ?? 0) * 100 + 1e-9);
 
+function applyPreset(p: { draft: typeof draft.value; days: number }): void {
+  draft.value = p.draft;
+  if (assigned.value) return; // a campaign goal keeps the campaign's dates
+  dates.start = isoDay(new Date());
+  dates.end = isoDay(new Date(Date.now() + p.days * DAY));
+}
+
 // A single "total at least" goal reads in units; anything else reads as the share done.
 function headline(g: Goal): string {
+  const p0 = g.progress;
+  if (g.recurrence > Recurrence.NONE && p0) return `${p0.periodsHit} of ${p0.periodsElapsed} ${recurrenceUnit[g.recurrence]}`;
   const [only, ...rest] = g.clauses;
   const p = g.progress?.clauses[0];
   return only && p && !rest.length && only.scope === ClauseScope.AGGREGATE && only.comparator === Comparator.GTE
@@ -190,6 +199,10 @@ const sorted = computed(() =>
           <h2 v-if="heading(g, i)" class="group-head">{{ heading(g, i) }}</h2>
           <form v-if="editing === g.id" class="editor" novalidate @submit.prevent="save">
             <h2 id="gl-heading" tabindex="-1">{{ editing === "new" ? "New goal" : "Edit goal" }}</h2>
+            <div v-if="editing === 'new'" class="presets" role="group" aria-label="Start from a preset">
+              <button type="button" class="pill" @click="applyPreset(habitPreset())">Habit: 3 days a week</button>
+              <button type="button" class="pill" @click="applyPreset(stretchPreset())">Stretch: run a 5K</button>
+            </div>
             <GoalBuilder v-model="draft" id-prefix="gl-goal" :show-errors="showErrors" />
             <div class="rb-field">
               <label for="gl-assign">Assign to</label>
@@ -313,6 +326,11 @@ h2:focus {
   max-width: 560px;
   padding-bottom: 1.5rem;
   border-bottom: 2px solid var(--ink);
+}
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 .dates {
   display: grid;

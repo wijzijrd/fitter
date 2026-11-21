@@ -13,7 +13,9 @@ import { plural } from "../lib/schedule";
 import TimelineChart from "../components/charts/TimelineChart.vue";
 import BibStack from "../components/BibStack.vue";
 import { ActivityMetric } from "../gen/fitter/v1/common_pb";
-import type { FeedActivity, LeaderboardEntry, TimelineSeries } from "../gen/fitter/v1/feed_pb";
+import { create } from "@bufbuild/protobuf";
+import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1/feed_pb";
+import type { FeedActivity, LeaderboardEntry, LeaderboardGroup, TimelineSeries } from "../gen/fitter/v1/feed_pb";
 import { errorMessage } from "../lib/errors";
 import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black.svg";
 
@@ -38,6 +40,25 @@ const leaving = ref(false);
 const confirmLeave = ref(false);
 const leaveError = ref("");
 const stack = ref<InstanceType<typeof BibStack> | null>(null);
+
+// The bib stack can show one bib per goal (by sport group) or one per person.
+const bibMode = ref<"goal" | "person">("goal");
+const bibGroups = computed<LeaderboardGroup[]>(() => {
+  if (bibMode.value === "goal" || !feed.value.people.length) return feed.value.leaderboardGroups;
+  const entries = feed.value.people.map((p) =>
+    create(LeaderboardEntrySchema, {
+      userId: p.userId,
+      userName: p.userName,
+      userAvatarUrl: p.userAvatarUrl,
+      goalId: `person:${p.userId}`,
+      goalName: `${p.goalsSatisfied} of ${p.goalCount} ${p.goalCount === 1 ? "goal" : "goals"}`,
+      progressRatio: p.averageRatio,
+      satisfied: p.goalCount > 0 && p.goalsSatisfied === p.goalCount,
+      rank: p.rank,
+    }),
+  );
+  return [create(LeaderboardGroupSchema, { sportGroup: "", sportGroupLabel: "Everyone", entries })];
+});
 const stackEl = ref<HTMLElement | null>(null);
 
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
@@ -168,11 +189,14 @@ function showBib(ev: MouseEvent, goalId: string): void {
   el.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
 }
 
+const goalsOf = (userId: string) =>
+  feed.value.leaderboardGroups.flatMap((g) => g.entries).filter((e) => e.userId === userId);
+
 function rowNote(e: LeaderboardEntry): string {
   const last = lastActive.value.get(e.userId);
   // The feed only carries recent activities, so progress without one in it is just older.
-  if (last) return `${e.goalName} · active ${formatRelative(last)}`;
-  return e.progressRatio > 0 ? e.goalName : `${e.goalName} · no activity yet`;
+  if (last) return `active ${formatRelative(last)}`;
+  return e.progressRatio > 0 ? "" : "no activity yet";
 }
 
 // Once the campaign is over, the top three ranks that actually scored get a Cool Blue chip.
@@ -241,10 +265,15 @@ onMounted(() => {
 
           <section ref="stackEl" class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Bib stack">
             <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
+            <template v-else>
+              <div v-if="feed.people.length > 1" class="bib-mode" role="group" aria-label="Bib stack view">
+                <button type="button" class="pill" :aria-pressed="bibMode === 'goal'" @click="bibMode = 'goal'">By goal</button>
+                <button type="button" class="pill" :aria-pressed="bibMode === 'person'" @click="bibMode = 'person'">By person</button>
+              </div>
             <BibStack
-              v-else
+              :key="bibMode"
               ref="stack"
-              :groups="feed.leaderboardGroups"
+              :groups="bibGroups"
               :pooled="pooled"
               :contributions="feed.pooledContributions"
               :campaign-id="campaign.id"
@@ -255,6 +284,7 @@ onMounted(() => {
               :ended="schedule.ended"
               :last-active="lastActive"
             />
+            </template>
             <!-- Without a goal and without a group target, the bib itself asks for one. -->
             <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Set your goal
@@ -286,25 +316,35 @@ onMounted(() => {
                 </ol>
               </section>
               <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">No goals set yet. Standings appear once members set theirs.</p>
-              <section v-for="g in feed.leaderboardGroups" :key="g.sportGroup" class="standings-group">
-                <h2 v-if="feed.leaderboardGroups.length > 1 || pooled">{{ g.sportGroupLabel }}</h2>
-                <ol class="rows">
-                  <li v-for="e in g.entries" :key="e.goalId" :class="{ me: e.userId === meId, podium: onPodium(e.rank, e.progressRatio) }">
-                    <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
-                      <span class="chip">{{ e.rank }}</span>
-                      <span class="who">
-                        <b>{{ e.userId === meId ? "You" : e.userName }}</b>
-                        <small>{{ rowNote(e) }}</small>
-                        <small v-if="e.satisfied" class="finisher">Finisher</small>
-                      </span>
-                      <span class="val">
-                        {{ primary(e, catalog.format) }}
-                        <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
-                      </span>
-                    </button>
-                  </li>
-                </ol>
-              </section>
+              <ol v-if="feed.people.length" class="rows standings-group">
+                <li v-for="p in feed.people" :key="p.userId" :class="{ me: p.userId === meId, podium: onPodium(p.rank, p.averageRatio) }">
+                  <div class="row">
+                    <span class="chip">{{ p.rank }}</span>
+                    <span class="who">
+                      <b>{{ p.userId === meId ? "You" : p.userName }}</b>
+                      <small>{{ p.goalsSatisfied }} of {{ p.goalCount }} {{ p.goalCount === 1 ? "goal" : "goals" }} done</small>
+                      <small v-if="p.goalCount && p.goalsSatisfied === p.goalCount" class="finisher">Finisher</small>
+                      <small v-if="p.earlyFinishes" class="finisher">Early finish</small>
+                    </span>
+                    <span class="val">{{ Math.floor(p.averageRatio * 100 + 1e-9) }}%<small>average</small></span>
+                  </div>
+                  <ul class="goal-rows">
+                    <li v-for="e in goalsOf(p.userId)" :key="e.goalId">
+                      <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
+                        <span />
+                        <span class="who">
+                          <b>{{ e.goalName }}</b>
+                          <small>{{ rowNote(e) }}</small>
+                        </span>
+                        <span class="val">
+                          {{ primary(e, catalog.format) }}
+                          <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
+                        </span>
+                      </button>
+                    </li>
+                  </ul>
+                </li>
+              </ol>
               <router-link v-if="mine.length && !schedule.ended" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Add a goal
               </router-link>
@@ -546,9 +586,29 @@ button.row {
   color: var(--ink-muted);
   font-size: 0.8125rem;
 }
+.bib-mode {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.bib-mode .pill[aria-pressed="true"] {
+  background: var(--cool-blue);
+}
+.goal-rows {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+.goal-rows li {
+  border-bottom: 0;
+}
+.goal-rows .row {
+  padding-block: 0.4rem;
+}
 .who small.finisher {
   align-self: flex-start;
   margin-top: 0.15rem;
+  margin-right: 0.25rem;
   padding: 0.05rem 0.4rem;
   border-radius: 4px;
   background: var(--cool-blue);

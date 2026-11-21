@@ -32,6 +32,7 @@ var metricKeyByProto = map[fitterv1.ActivityMetric]metrics.Key{
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_CALORIES:               metrics.Calories,
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_AVERAGE_CADENCE:        metrics.AverageCadence,
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_SUFFER_SCORE:           metrics.SufferScore,
+	fitterv1.ActivityMetric_ACTIVITY_METRIC_MAX_WEIGHT_KG:          metrics.MaxWeightKg,
 }
 
 var protoByMetricKey = func() map[metrics.Key]fitterv1.ActivityMetric {
@@ -139,6 +140,8 @@ func unitToProto(u metrics.Unit) fitterv1.MetricUnit {
 		return fitterv1.MetricUnit_METRIC_UNIT_COUNT
 	case metrics.UnitScore:
 		return fitterv1.MetricUnit_METRIC_UNIT_SCORE
+	case metrics.UnitKilograms:
+		return fitterv1.MetricUnit_METRIC_UNIT_KG
 	default:
 		return fitterv1.MetricUnit_METRIC_UNIT_UNSPECIFIED
 	}

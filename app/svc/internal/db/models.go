@@ -33,6 +33,24 @@ type Activity struct {
 	SufferScore          sql.NullFloat64 `json:"suffer_score"`
 	CreatedAt            int64           `json:"created_at"`
 	UpdatedAt            int64           `json:"updated_at"`
+	Source               string          `json:"source"`
+}
+
+type ActivityLift struct {
+	ID         int64   `json:"id"`
+	ActivityID int64   `json:"activity_id"`
+	Exercise   string  `json:"exercise"`
+	WeightKg   float64 `json:"weight_kg"`
+	Reps       int32   `json:"reps"`
+}
+
+type AdminAction struct {
+	ID        string `json:"id"`
+	ActorID   string `json:"actor_id"`
+	Action    string `json:"action"`
+	TargetID  string `json:"target_id"`
+	Detail    string `json:"detail"`
+	CreatedAt int64  `json:"created_at"`
 }
 
 type Campaign struct {
@@ -93,23 +111,28 @@ type Goal struct {
 }
 
 type GoalClause struct {
-	ID         string  `json:"id"`
-	GoalID     string  `json:"goal_id"`
-	Position   int64   `json:"position"`
-	Scope      string  `json:"scope"`
-	Metric     string  `json:"metric"`
-	Comparator string  `json:"comparator"`
-	Value      float64 `json:"value"`
+	ID         string         `json:"id"`
+	GoalID     string         `json:"goal_id"`
+	Position   int64          `json:"position"`
+	Scope      string         `json:"scope"`
+	Metric     string         `json:"metric"`
+	Comparator string         `json:"comparator"`
+	Value      float64        `json:"value"`
+	Exercise   sql.NullString `json:"exercise"`
 }
 
 type User struct {
-	ID              string `json:"id"`
-	StravaAthleteID int64  `json:"strava_athlete_id"`
-	Name            string `json:"name"`
-	AvatarUrl       string `json:"avatar_url"`
-	AccessToken     string `json:"access_token"`
-	RefreshToken    string `json:"refresh_token"`
-	TokenExpiresAt  int64  `json:"token_expires_at"`
-	CreatedAt       int64  `json:"created_at"`
-	Role            string `json:"role"`
+	ID              string         `json:"id"`
+	StravaAthleteID int64          `json:"strava_athlete_id"`
+	Name            string         `json:"name"`
+	AvatarUrl       string         `json:"avatar_url"`
+	AccessToken     string         `json:"access_token"`
+	RefreshToken    string         `json:"refresh_token"`
+	TokenExpiresAt  int64          `json:"token_expires_at"`
+	CreatedAt       int64          `json:"created_at"`
+	Role            string         `json:"role"`
+	Status          string         `json:"status"`
+	BanReason       string         `json:"ban_reason"`
+	BannedBy        sql.NullString `json:"banned_by"`
+	BannedAt        sql.NullInt64  `json:"banned_at"`
 }

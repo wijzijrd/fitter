@@ -102,7 +102,13 @@ func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	row, err := s.Queries.CreateCustomSport(ctx, db.CreateCustomSportParams{
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback()
+	qtx := s.Queries.WithTx(tx)
+	row, err := qtx.CreateCustomSport(ctx, db.CreateCustomSportParams{
 		ID:        uuid.NewString(),
 		Key:       key,
 		Label:     label,
@@ -110,6 +116,12 @@ func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Reque
 		CreatedAt: time.Now().Unix(),
 	})
 	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := audit(ctx, qtx, userID, "create_sport", row.ID, key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.CreateCustomSportResponse{Sport: customSportToProto(row)}), nil
@@ -134,12 +146,26 @@ func (s *AdminService) DeleteCustomSport(ctx context.Context, req *connect.Reque
 	if err := requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	if _, err := s.Queries.GetCustomSportByID(ctx, req.Msg.GetId()); errors.Is(err, sql.ErrNoRows) {
+	actor, _ := auth.UserIDFromContext(ctx)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback()
+	qtx := s.Queries.WithTx(tx)
+	sp, err := qtx.GetCustomSportByID(ctx, req.Msg.GetId())
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("custom sport not found"))
 	} else if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.Queries.DeleteCustomSport(ctx, req.Msg.GetId()); err != nil {
+	if err := qtx.DeleteCustomSport(ctx, sp.ID); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := audit(ctx, qtx, actor, "delete_sport", sp.ID, sp.Key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.DeleteCustomSportResponse{}), nil
@@ -210,6 +236,9 @@ func (s *AdminService) CreateCustomMetric(ctx context.Context, req *connect.Requ
 		}
 	}
 
+	if err := audit(ctx, qtx, userID, "create_metric", row.ID, key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -264,14 +293,28 @@ func (s *AdminService) DeleteCustomMetric(ctx context.Context, req *connect.Requ
 	if err := requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	if _, err := s.Queries.GetCustomMetricByID(ctx, req.Msg.GetId()); errors.Is(err, sql.ErrNoRows) {
+	actor, _ := auth.UserIDFromContext(ctx)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback()
+	qtx := s.Queries.WithTx(tx)
+	m, err := qtx.GetCustomMetricByID(ctx, req.Msg.GetId())
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("custom metric not found"))
 	} else if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	// custom_metric_sports rows cascade-delete via their FK's ON DELETE
 	// CASCADE (foreign_keys pragma is on for both the real DB and dbtest).
-	if err := s.Queries.DeleteCustomMetric(ctx, req.Msg.GetId()); err != nil {
+	if err := qtx.DeleteCustomMetric(ctx, m.ID); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := audit(ctx, qtx, actor, "delete_metric", m.ID, m.Key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.DeleteCustomMetricResponse{}), nil

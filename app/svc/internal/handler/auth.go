@@ -122,6 +122,10 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if u.Status == "banned" {
+		d.loginError(w, r, "banned")
+		return
+	}
 	go d.backfillActivities(u)
 
 	jwtToken, err := auth.Issue(d.JWTSecret, u.ID, d.JWTTTL)

@@ -27,12 +27,15 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Campaign" },
       props: true,
     },
+    { path: "/activities/new", name: "activity-new", component: () => import("../views/ActivityLogView.vue"), meta: { requiresAuth: true, title: "Log activity" } },
+    { path: "/pending", name: "pending", component: () => import("../views/PendingView.vue"), meta: { requiresAuth: true, title: "Waiting for approval" } },
+    { path: "/admin", name: "admin", component: () => import("../views/AdminView.vue"), meta: { requiresAuth: true, requiresAdmin: true, title: "Admin" } },
     { path: "/goals/new", name: "goal-new", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "New goal" } },
     { path: "/goals", name: "goals", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "Goals" } },
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     saveReturnTo(to.fullPath);
@@ -40,6 +43,19 @@ router.beforeEach((to) => {
   }
   if (to.name === "login" && auth.isAuthenticated) {
     return { name: "campaigns" };
+  }
+  // Role and status are a UX gate only; the server enforces both on every call.
+  if (to.meta.requiresAuth && to.name !== "auth-callback") {
+    if (!auth.user) {
+      try {
+        await auth.fetchCurrentUser();
+      } catch {
+        return; // let the view surface its own load error
+      }
+    }
+    if (auth.isPending && to.name !== "pending") return { name: "pending" };
+    if (!auth.isPending && to.name === "pending") return { name: "campaigns" };
+    if (to.meta.requiresAdmin && !auth.isAdmin) return { name: "campaigns" };
   }
 });
 

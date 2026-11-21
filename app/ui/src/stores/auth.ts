@@ -10,6 +10,9 @@ export const useAuthStore = defineStore("auth", () => {
   const token = ref(getToken());
   const isAuthenticated = computed(() => !!token.value);
 
+  const isAdmin = computed(() => user.value?.role === "admin");
+  const isPending = computed(() => user.value?.status === "pending");
+
   async function fetchCurrentUser(): Promise<void> {
     const resp = await userClient.getCurrentUser({});
     user.value = resp.user ?? null;
@@ -26,5 +29,5 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
   }
 
-  return { user, isAuthenticated, fetchCurrentUser, completeLogin, logout };
+  return { user, isAdmin, isPending, isAuthenticated, fetchCurrentUser, completeLogin, logout };
 });

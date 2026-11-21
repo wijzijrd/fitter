@@ -22,7 +22,9 @@ func (q *Queries) CountCampaignGoals(ctx context.Context, campaignID sql.NullStr
 }
 
 const countCampaignMembers = `-- name: CountCampaignMembers :one
-SELECT COUNT(*) AS member_count FROM campaign_members WHERE campaign_id = $1
+SELECT COUNT(*) AS member_count FROM campaign_members cm
+JOIN users u ON u.id = cm.user_id AND u.status <> 'banned'
+WHERE cm.campaign_id = $1
 `
 
 func (q *Queries) CountCampaignMembers(ctx context.Context, campaignID string) (int64, error) {
@@ -179,7 +181,7 @@ const listCampaignMembers = `-- name: ListCampaignMembers :many
 SELECT cm.campaign_id, cm.user_id, cm.joined_at,
        u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM campaign_members cm
-JOIN users u ON u.id = cm.user_id
+JOIN users u ON u.id = cm.user_id AND u.status <> 'banned'
 WHERE cm.campaign_id = $1
 `
 

@@ -16,7 +16,11 @@ function handleLogout(): void {
     <router-link to="/" class="wordmark">Fitter</router-link>
     <nav>
       <router-link to="/" :class="{ 'router-link-active': String($route.name).startsWith('campaign') }">Campaigns</router-link>
-      <router-link to="/goals">Goals</router-link>
+      <template v-if="!auth.isPending">
+        <router-link to="/goals">Goals</router-link>
+        <router-link to="/activities/new">Log activity</router-link>
+        <router-link v-if="auth.isAdmin" to="/admin">Admin</router-link>
+      </template>
       <span class="who" v-if="auth.user">{{ auth.user.name }}</span>
       <button class="logout" @click="handleLogout">Log out</button>
     </nav>

@@ -23,13 +23,15 @@ const (
 )
 
 type GoalClause struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // ignored on create; server-assigned
-	Position      int32                  `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
-	Scope         ClauseScope            `protobuf:"varint,3,opt,name=scope,proto3,enum=fitter.v1.ClauseScope" json:"scope,omitempty"`
-	Metric        ActivityMetric         `protobuf:"varint,4,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
-	Comparator    Comparator             `protobuf:"varint,5,opt,name=comparator,proto3,enum=fitter.v1.Comparator" json:"comparator,omitempty"`
-	Value         float64                `protobuf:"fixed64,6,opt,name=value,proto3" json:"value,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // ignored on create; server-assigned
+	Position   int32                  `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
+	Scope      ClauseScope            `protobuf:"varint,3,opt,name=scope,proto3,enum=fitter.v1.ClauseScope" json:"scope,omitempty"`
+	Metric     ActivityMetric         `protobuf:"varint,4,opt,name=metric,proto3,enum=fitter.v1.ActivityMetric" json:"metric,omitempty"`
+	Comparator Comparator             `protobuf:"varint,5,opt,name=comparator,proto3,enum=fitter.v1.Comparator" json:"comparator,omitempty"`
+	Value      float64                `protobuf:"fixed64,6,opt,name=value,proto3" json:"value,omitempty"`
+	// Required for max_weight_kg (normalised lower-case exercise name); ignored otherwise.
+	Exercise      *string `protobuf:"bytes,7,opt,name=exercise,proto3,oneof" json:"exercise,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -104,6 +106,13 @@ func (x *GoalClause) GetValue() float64 {
 		return x.Value
 	}
 	return 0
+}
+
+func (x *GoalClause) GetExercise() string {
+	if x != nil && x.Exercise != nil {
+		return *x.Exercise
+	}
+	return ""
 }
 
 type ClauseProgress struct {
@@ -846,7 +855,7 @@ var File_fitter_v1_goal_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\n" +
-	"\x14fitter/v1/goal.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe6\x01\n" +
+	"\x14fitter/v1/goal.proto\x12\tfitter.v1\x1a\x16fitter/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x94\x02\n" +
 	"\n" +
 	"GoalClause\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
@@ -856,7 +865,9 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\n" +
 	"comparator\x18\x05 \x01(\x0e2\x15.fitter.v1.ComparatorR\n" +
 	"comparator\x12\x14\n" +
-	"\x05value\x18\x06 \x01(\x01R\x05value\"\xc2\x02\n" +
+	"\x05value\x18\x06 \x01(\x01R\x05value\x12\x1f\n" +
+	"\bexercise\x18\a \x01(\tH\x00R\bexercise\x88\x01\x01B\v\n" +
+	"\t_exercise\"\xc2\x02\n" +
 	"\x0eClauseProgress\x12\x1b\n" +
 	"\tclause_id\x18\x01 \x01(\tR\bclauseId\x12\x1a\n" +
 	"\bposition\x18\x02 \x01(\x05R\bposition\x12#\n" +
@@ -1010,6 +1021,7 @@ func file_fitter_v1_goal_proto_init() {
 		return
 	}
 	file_fitter_v1_common_proto_init()
+	file_fitter_v1_goal_proto_msgTypes[0].OneofWrappers = []any{}
 	file_fitter_v1_goal_proto_msgTypes[2].OneofWrappers = []any{}
 	file_fitter_v1_goal_proto_msgTypes[3].OneofWrappers = []any{}
 	file_fitter_v1_goal_proto_msgTypes[4].OneofWrappers = []any{}

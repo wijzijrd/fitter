@@ -43,6 +43,7 @@ var builtinApplicability = map[Key][]string{
 	WeightedAverageWatts: {"ride"},
 	MaxWatts:             {"ride"},
 	Kilojoules:           {"ride"}, // always paired with a power meter reading, same family as watts
+	MaxWeightKg:          {"strength"},
 	AverageCadence:       {"ride"}, // Strava also reports running cadence, but this taxonomy curates it as cycling-primary
 }
 

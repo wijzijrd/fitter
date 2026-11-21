@@ -85,7 +85,67 @@ message DeleteCustomMetricRequest {
 
 message DeleteCustomMetricResponse {}
 
+message AdminUser {
+  string id = 1;
+  string name = 2;
+  string avatar_url = 3;
+  int64 strava_athlete_id = 4;
+  string role = 5;
+  string status = 6;
+  string ban_reason = 7;
+  string banned_by = 8;
+  google.protobuf.Timestamp banned_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message AdminAction {
+  string id = 1;
+  string actor_id = 2;
+  string actor_name = 3;
+  string action = 4;
+  string target_id = 5;
+  string detail = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message ListUsersRequest {
+  string status = 1; // empty = all
+}
+message ListUsersResponse {
+  repeated AdminUser users = 1;
+}
+message ApproveUserRequest {
+  string id = 1;
+}
+message ApproveUserResponse {}
+message BanUserRequest {
+  string id = 1;
+  string reason = 2; // required, max 500 chars
+}
+message BanUserResponse {}
+message UnbanUserRequest {
+  string id = 1;
+}
+message UnbanUserResponse {}
+message SetUserRoleRequest {
+  string id = 1;
+  string role = 2; // "member" | "admin"
+}
+message SetUserRoleResponse {}
+message ListAdminActionsRequest {
+  int32 limit = 1; // default 100, max 500
+}
+message ListAdminActionsResponse {
+  repeated AdminAction actions = 1;
+}
+
 service AdminService {
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc ApproveUser(ApproveUserRequest) returns (ApproveUserResponse);
+  rpc BanUser(BanUserRequest) returns (BanUserResponse);
+  rpc UnbanUser(UnbanUserRequest) returns (UnbanUserResponse);
+  rpc SetUserRole(SetUserRoleRequest) returns (SetUserRoleResponse);
+  rpc ListAdminActions(ListAdminActionsRequest) returns (ListAdminActionsResponse);
   rpc CreateCustomSport(CreateCustomSportRequest) returns (CreateCustomSportResponse);
   rpc ListCustomSports(ListCustomSportsRequest) returns (ListCustomSportsResponse);
   rpc DeleteCustomSport(DeleteCustomSportRequest) returns (DeleteCustomSportResponse);

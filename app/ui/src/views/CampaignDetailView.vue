@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useCampaignsStore } from "../stores/campaigns";
@@ -11,7 +11,6 @@ import { activityMetricValue } from "../lib/labels";
 import { lead, myEntries, primary, share, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
 import { plural } from "../lib/schedule";
-import TimelineChart from "../components/charts/TimelineChart.vue";
 import BibStack from "../components/BibStack.vue";
 import { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { create } from "@bufbuild/protobuf";
@@ -19,6 +18,9 @@ import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1
 import type { FeedActivity, LeaderboardEntry, LeaderboardGroup, TimelineSeries } from "../gen/fitter/v1/feed_pb";
 import { errorMessage } from "../lib/errors";
 import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black.svg";
+
+// Async: the chart and ECharts load only when the Timeline tab first renders.
+const TimelineChart = defineAsyncComponent(() => import("../components/charts/TimelineChart.vue"));
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -443,10 +445,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.cd-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cd {
   max-width: 1120px;
   margin: 0 auto;

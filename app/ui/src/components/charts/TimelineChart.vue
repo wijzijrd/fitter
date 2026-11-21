@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import * as echarts from "echarts";
+import * as echarts from "echarts/core";
+import { LineChart } from "echarts/charts";
+import { GridComponent, MarkLineComponent, TooltipComponent } from "echarts/components";
+import { LabelLayout } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
 import type { TimelineSeries } from "../../gen/fitter/v1/feed_pb";
 import { toDate } from "../../lib/timestamp";
 
@@ -14,6 +18,9 @@ const props = defineProps<{
 }>();
 
 const el = ref<HTMLDivElement | null>(null);
+// Only the pieces this chart draws; the full "echarts" entry triples the campaign detail chunk.
+echarts.use([LineChart, GridComponent, MarkLineComponent, TooltipComponent, LabelLayout, CanvasRenderer]);
+
 let chart: echarts.ECharts | null = null;
 
 // ECharts draws on canvas and can't read CSS variables, so the palette is read from style.css's tokens when drawing.

@@ -108,7 +108,8 @@ a {
 
 /* Touch: pills are the main tap targets, so they reach 44px+ (the tab-actions pills in GoalsView are 2.25rem on a mouse). */
 @media (pointer: coarse) {
-  .pill {
+  .pill,
+  .choice--pill {
     min-height: 2.75rem;
   }
 }
@@ -334,6 +335,19 @@ select.input {
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
+}
+
+/* Touch screens wide enough for the inline nav (tablets): links and Log out reach 44px. */
+@media (pointer: coarse) and (min-width: 721px) {
+  .navbar nav a,
+  .navbar .logout {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  .navbar {
+    padding-block: var(--space-1);
+  }
 }
 
 /* Phones: the links collapse into a panel under the bar. */

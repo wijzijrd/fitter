@@ -243,10 +243,6 @@ async function create(): Promise<void> {
 </template>
 
 <style scoped>
-.cc-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cc {
   max-width: 1120px;
   margin: 0 auto;

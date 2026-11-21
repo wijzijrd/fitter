@@ -33,6 +33,9 @@ const showErrors = ref(false);
 const saved = ref("");
 const list = ref<ManualActivity[]>([]);
 const listError = ref("");
+const confirmDelete = ref<bigint | null>(null);
+const deleting = ref(false);
+const kept = ref<bigint | null>(null);
 
 const groupOf = (sportType: string) => catalog.sportGroups.find((g) => g.sportTypes.includes(sportType))?.group;
 const isStrength = computed(() => groupOf(form.sport) === "strength");
@@ -41,7 +44,7 @@ const durationS = computed(() => (form.duration.trim() ? parseDuration(form.dura
 const errors = computed(() => ({
   sport: form.sport ? "" : "Pick a sport.",
   when: form.when ? "" : "Pick when it happened.",
-  duration: durationS.value === null ? "Enter a time like 4500 (45:00) or 11500 (1:15:00)." : "",
+  duration: form.duration.trim() && durationS.value === null ? "Enter a time like 4500 (45:00) or 11500 (1:15:00)." : "",
   distance: form.distanceKm.trim() && !(Number(form.distanceKm) >= 0) ? "Enter a distance in km." : "",
   lifts: isStrength.value
     ? form.lifts.map((l) =>
@@ -100,11 +103,16 @@ async function save(): Promise<void> {
 }
 
 async function remove(id: bigint): Promise<void> {
+  deleting.value = true;
+  listError.value = "";
   try {
     await activityClient.deleteManualActivity({ id });
     list.value = list.value.filter((a) => a.id !== id);
+    confirmDelete.value = null;
   } catch (err) {
     listError.value = errorMessage(err, "The activity wasn't deleted. Try again.");
+  } finally {
+    deleting.value = false;
   }
 }
 
@@ -124,13 +132,13 @@ const describe = (a: ManualActivity) => {
       <form class="form" novalidate @submit.prevent="save">
         <div class="rb-field">
           <label for="al-sport">Sport</label>
-          <select id="al-sport" v-model="form.sport" class="input" :aria-invalid="showErrors && !!errors.sport">
+          <select id="al-sport" v-model="form.sport" class="input" :aria-invalid="showErrors && !!errors.sport" aria-describedby="al-sport-error">
             <option value="" disabled>Choose…</option>
             <optgroup v-for="g in catalog.sportGroups" :key="g.group" :label="g.label">
               <option v-for="t in g.sportTypes" :key="t" :value="t">{{ t }}</option>
             </optgroup>
           </select>
-          <span class="field-error" role="alert">{{ showErrors ? errors.sport : "" }}</span>
+          <span id="al-sport-error" class="field-error" role="alert">{{ showErrors ? errors.sport : "" }}</span>
         </div>
 
         <div class="rb-field">
@@ -140,20 +148,20 @@ const describe = (a: ManualActivity) => {
 
         <div class="rb-field">
           <label for="al-when">When</label>
-          <input id="al-when" v-model="form.when" class="input" type="datetime-local" :aria-invalid="showErrors && !!errors.when" />
-          <span class="field-error" role="alert">{{ showErrors ? errors.when : "" }}</span>
+          <input id="al-when" v-model="form.when" class="input" type="datetime-local" :aria-invalid="showErrors && !!errors.when" aria-describedby="al-when-error" />
+          <span id="al-when-error" class="field-error" role="alert">{{ showErrors ? errors.when : "" }}</span>
         </div>
 
         <div class="row">
           <div class="rb-field">
             <label for="al-duration">Time <small>optional</small></label>
-            <input id="al-duration" class="input" :value="form.duration" inputmode="numeric" placeholder="45:00" @input="form.duration = maskDuration(($event.target as HTMLInputElement).value)" :aria-invalid="showErrors && !!errors.duration" />
-            <span class="field-error" role="alert">{{ showErrors ? errors.duration : "" }}</span>
+            <input id="al-duration" class="input" :value="form.duration" inputmode="numeric" placeholder="45:00" @input="form.duration = maskDuration(($event.target as HTMLInputElement).value)" :aria-invalid="showErrors && !!errors.duration" aria-describedby="al-duration-error" />
+            <span id="al-duration-error" class="field-error" role="alert">{{ showErrors ? errors.duration : "" }}</span>
           </div>
           <div v-if="!isStrength" class="rb-field">
             <label for="al-distance">Distance (km) <small>optional</small></label>
-            <input id="al-distance" v-model="form.distanceKm" class="input" inputmode="decimal" :aria-invalid="showErrors && !!errors.distance" />
-            <span class="field-error" role="alert">{{ showErrors ? errors.distance : "" }}</span>
+            <input id="al-distance" v-model="form.distanceKm" class="input" inputmode="decimal" :aria-invalid="showErrors && !!errors.distance" aria-describedby="al-distance-error" />
+            <span id="al-distance-error" class="field-error" role="alert">{{ showErrors ? errors.distance : "" }}</span>
           </div>
         </div>
 
@@ -161,15 +169,15 @@ const describe = (a: ManualActivity) => {
           <legend>Lifts</legend>
           <div v-for="(l, i) in form.lifts" :key="l.key" class="lift">
             <label class="visually-hidden" :for="`al-ex-${l.key}`">Lift {{ i + 1 }} exercise</label>
-            <input :id="`al-ex-${l.key}`" v-model="l.exercise" class="input" list="al-exercises" placeholder="bench press" autocomplete="off" />
+            <input :id="`al-ex-${l.key}`" v-model="l.exercise" class="input" :aria-invalid="showErrors && !!errors.lifts[i]" :aria-describedby="`al-lift-${l.key}-error`" list="al-exercises" placeholder="bench press" autocomplete="off" />
             <label class="visually-hidden" :for="`al-w-${l.key}`">Lift {{ i + 1 }} weight in kg</label>
-            <input :id="`al-w-${l.key}`" v-model="l.weight" class="input input--num" inputmode="decimal" placeholder="kg" />
+            <input :id="`al-w-${l.key}`" v-model="l.weight" class="input input--num" :aria-invalid="showErrors && !!errors.lifts[i]" :aria-describedby="`al-lift-${l.key}-error`" inputmode="decimal" placeholder="kg" />
             <label class="visually-hidden" :for="`al-r-${l.key}`">Lift {{ i + 1 }} reps</label>
-            <input :id="`al-r-${l.key}`" v-model="l.reps" class="input input--num" inputmode="numeric" placeholder="reps" />
+            <input :id="`al-r-${l.key}`" v-model="l.reps" class="input input--num" :aria-invalid="showErrors && !!errors.lifts[i]" :aria-describedby="`al-lift-${l.key}-error`" inputmode="numeric" placeholder="reps" />
             <button v-if="form.lifts.length > 1" type="button" class="pill pill--quiet" @click="form.lifts.splice(i, 1)">
               Remove<span class="visually-hidden"> lift {{ i + 1 }}</span>
             </button>
-            <span class="field-error" role="alert">{{ showErrors ? errors.lifts[i] : "" }}</span>
+            <span :id="`al-lift-${l.key}-error`" class="field-error" role="alert">{{ showErrors ? errors.lifts[i] : "" }}</span>
           </div>
           <button type="button" class="pill" @click="form.lifts.push(blankLift())">Add lift</button>
           <datalist id="al-exercises"><option v-for="e in exercises" :key="e" :value="e" /></datalist>
@@ -189,7 +197,14 @@ const describe = (a: ManualActivity) => {
               <b>{{ a.name }}</b>
               <small>{{ describe(a) }}</small>
             </span>
-            <button type="button" class="pill pill--quiet" @click="remove(a.id)">Delete<span class="visually-hidden"> {{ a.name }}</span></button>
+            <span v-if="confirmDelete === a.id" class="confirm">
+              <span>Delete this activity?</span>
+              <button v-focus="true" type="button" class="pill" @click="kept = a.id; confirmDelete = null">Keep</button>
+              <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(a.id)">
+                {{ deleting ? "Deleting…" : "Delete" }}<span class="visually-hidden"> {{ a.name }}</span>
+              </button>
+            </span>
+            <button v-else v-focus="kept === a.id" type="button" class="pill pill--quiet" @click="confirmDelete = a.id">Delete<span class="visually-hidden"> {{ a.name }}</span></button>
           </li>
         </ol>
       </section>
@@ -198,10 +213,6 @@ const describe = (a: ManualActivity) => {
 </template>
 
 <style scoped>
-.al-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .al {
   max-width: 560px;
   margin: 0 auto;
@@ -249,6 +260,15 @@ h2 {
 .lift .field-error {
   grid-column: 1 / -1;
 }
+/* Narrow phones: the exercise takes its own line so it isn't squeezed by kg, reps and Remove. */
+@media (max-width: 420px) {
+  .lift {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  }
+  .lift > .input:first-of-type {
+    grid-column: 1 / -1;
+  }
+}
 .saved {
   margin: 0;
   font-weight: 700;
@@ -257,7 +277,7 @@ h2 {
   margin: 0;
   padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
-  border-radius: 6px;
+  border-radius: 10px;
   background: var(--cool-blue);
 }
 .history ol {
@@ -276,5 +296,13 @@ h2 {
 .history small {
   display: block;
   color: var(--ink-muted);
+}
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  font-weight: 700;
 }
 </style>

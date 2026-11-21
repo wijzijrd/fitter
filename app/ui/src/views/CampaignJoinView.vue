@@ -158,10 +158,6 @@ async function save(withGoal: boolean): Promise<void> {
 </template>
 
 <style scoped>
-.cj-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cj {
   max-width: 1120px;
   margin: 0 auto;

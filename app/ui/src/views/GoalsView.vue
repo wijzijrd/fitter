@@ -31,6 +31,7 @@ const saving = ref(false);
 const saveError = ref("");
 const confirmDelete = ref("");
 const deleting = ref(false);
+const kept = ref("");
 const deleteError = ref("");
 // "" = personal, else the campaign the goal is assigned to.
 const assignTo = ref("");
@@ -252,7 +253,7 @@ const sorted = computed(() =>
               <template v-if="confirmDelete === g.id">
                 <span>Delete this goal?</span>
                 <span class="tab-actions">
-                  <button type="button" class="pill" @click="confirmDelete = ''">Keep</button>
+                  <button v-focus="true" type="button" class="pill" @click="kept = g.id; confirmDelete = ''">Keep</button>
                   <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(g.id)">
                     {{ deleting ? "Deleting…" : "Delete" }}
                   </button>
@@ -262,7 +263,7 @@ const sorted = computed(() =>
                 <span>{{ dateRange(toDate(g.periodStart), toDate(g.periodEnd)) }}</span>
                 <span class="tab-actions">
                   <button type="button" class="pill" @click="open(g)">Edit<span class="visually-hidden"> {{ g.name }}</span></button>
-                  <button type="button" class="pill pill--quiet" @click="confirmDelete = g.id">
+                  <button v-focus="kept === g.id" type="button" class="pill pill--quiet" @click="confirmDelete = g.id">
                     Delete<span class="visually-hidden"> {{ g.name }}</span>
                   </button>
                 </span>
@@ -277,10 +278,6 @@ const sorted = computed(() =>
 </template>
 
 <style scoped>
-.gl-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .gl {
   max-width: 1120px;
   margin: 0 auto;

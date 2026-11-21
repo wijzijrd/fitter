@@ -33,6 +33,7 @@ var metricKeyByProto = map[fitterv1.ActivityMetric]metrics.Key{
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_AVERAGE_CADENCE:        metrics.AverageCadence,
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_SUFFER_SCORE:           metrics.SufferScore,
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_MAX_WEIGHT_KG:          metrics.MaxWeightKg,
+	fitterv1.ActivityMetric_ACTIVITY_METRIC_ACTIVE_DAYS:            metrics.ActiveDays,
 }
 
 var protoByMetricKey = func() map[metrics.Key]fitterv1.ActivityMetric {

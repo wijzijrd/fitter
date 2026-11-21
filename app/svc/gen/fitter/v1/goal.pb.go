@@ -223,8 +223,15 @@ type GoalProgress struct {
 	ConsideredActivityCount int32                  `protobuf:"varint,4,opt,name=considered_activity_count,json=consideredActivityCount,proto3" json:"considered_activity_count,omitempty"`
 	QualifyingActivityId    *int64                 `protobuf:"varint,5,opt,name=qualifying_activity_id,json=qualifyingActivityId,proto3,oneof" json:"qualifying_activity_id,omitempty"`
 	BestAttemptActivityId   *int64                 `protobuf:"varint,6,opt,name=best_attempt_activity_id,json=bestAttemptActivityId,proto3,oneof" json:"best_attempt_activity_id,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	// Recurring goals only (Goal.recurrence != NONE): `satisfied` means every
+	// bucket in the period was hit, `progress_ratio` is periods_hit /
+	// periods_elapsed (the running bucket counts only once hit), and `clauses`
+	// are the running bucket's live progress.
+	PeriodsHit     int32 `protobuf:"varint,7,opt,name=periods_hit,json=periodsHit,proto3" json:"periods_hit,omitempty"`
+	PeriodsElapsed int32 `protobuf:"varint,8,opt,name=periods_elapsed,json=periodsElapsed,proto3" json:"periods_elapsed,omitempty"`
+	PeriodsTotal   int32 `protobuf:"varint,9,opt,name=periods_total,json=periodsTotal,proto3" json:"periods_total,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *GoalProgress) Reset() {
@@ -299,6 +306,27 @@ func (x *GoalProgress) GetBestAttemptActivityId() int64 {
 	return 0
 }
 
+func (x *GoalProgress) GetPeriodsHit() int32 {
+	if x != nil {
+		return x.PeriodsHit
+	}
+	return 0
+}
+
+func (x *GoalProgress) GetPeriodsElapsed() int32 {
+	if x != nil {
+		return x.PeriodsElapsed
+	}
+	return 0
+}
+
+func (x *GoalProgress) GetPeriodsTotal() int32 {
+	if x != nil {
+		return x.PeriodsTotal
+	}
+	return 0
+}
+
 // Goal is a private, personal fitness target — never shared with other
 // users — unless it belongs to a campaign, in which case it becomes one of
 // that campaign's shared goals.
@@ -313,6 +341,7 @@ type Goal struct {
 	Clauses       []*GoalClause          `protobuf:"bytes,7,rep,name=clauses,proto3" json:"clauses,omitempty"`
 	Progress      *GoalProgress          `protobuf:"bytes,8,opt,name=progress,proto3" json:"progress,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Recurrence    Recurrence             `protobuf:"varint,10,opt,name=recurrence,proto3,enum=fitter.v1.Recurrence" json:"recurrence,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -410,6 +439,13 @@ func (x *Goal) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Goal) GetRecurrence() Recurrence {
+	if x != nil {
+		return x.Recurrence
+	}
+	return Recurrence_RECURRENCE_UNSPECIFIED
+}
+
 type CreateGoalRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CampaignId    *string                `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"` // period is forced to the campaign window when set (see Global Constraints)
@@ -418,6 +454,7 @@ type CreateGoalRequest struct {
 	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
 	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
 	Clauses       []*GoalClause          `protobuf:"bytes,6,rep,name=clauses,proto3" json:"clauses,omitempty"`
+	Recurrence    Recurrence             `protobuf:"varint,7,opt,name=recurrence,proto3,enum=fitter.v1.Recurrence" json:"recurrence,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -492,6 +529,13 @@ func (x *CreateGoalRequest) GetClauses() []*GoalClause {
 		return x.Clauses
 	}
 	return nil
+}
+
+func (x *CreateGoalRequest) GetRecurrence() Recurrence {
+	if x != nil {
+		return x.Recurrence
+	}
+	return Recurrence_RECURRENCE_UNSPECIFIED
 }
 
 type CreateGoalResponse struct {
@@ -643,7 +687,8 @@ type UpdateGoalRequest struct {
 	PeriodEnd   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
 	Clauses     []*GoalClause          `protobuf:"bytes,6,rep,name=clauses,proto3" json:"clauses,omitempty"` // full replacement, not a patch
 	// unset = keep; "" = make personal; an id = move to that campaign (caller must be a member; period is forced to its window)
-	CampaignId    *string `protobuf:"bytes,7,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"`
+	CampaignId    *string    `protobuf:"bytes,7,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"`
+	Recurrence    Recurrence `protobuf:"varint,8,opt,name=recurrence,proto3,enum=fitter.v1.Recurrence" json:"recurrence,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -725,6 +770,13 @@ func (x *UpdateGoalRequest) GetCampaignId() string {
 		return *x.CampaignId
 	}
 	return ""
+}
+
+func (x *UpdateGoalRequest) GetRecurrence() Recurrence {
+	if x != nil {
+		return x.Recurrence
+	}
+	return Recurrence_RECURRENCE_UNSPECIFIED
 }
 
 type UpdateGoalResponse struct {
@@ -876,16 +928,20 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\tsatisfied\x18\x05 \x01(\bR\tsatisfied\x12%\n" +
 	"\x0eprogress_ratio\x18\x06 \x01(\x01R\rprogressRatio\x12:\n" +
 	"\x19considered_activity_count\x18\a \x01(\x05R\x17consideredActivityCount\x124\n" +
-	"\x16counted_activity_count\x18\b \x01(\x05R\x14countedActivityCount\"\xf5\x02\n" +
+	"\x16counted_activity_count\x18\b \x01(\x05R\x14countedActivityCount\"\xe4\x03\n" +
 	"\fGoalProgress\x12\x1c\n" +
 	"\tsatisfied\x18\x01 \x01(\bR\tsatisfied\x12%\n" +
 	"\x0eprogress_ratio\x18\x02 \x01(\x01R\rprogressRatio\x123\n" +
 	"\aclauses\x18\x03 \x03(\v2\x19.fitter.v1.ClauseProgressR\aclauses\x12:\n" +
 	"\x19considered_activity_count\x18\x04 \x01(\x05R\x17consideredActivityCount\x129\n" +
 	"\x16qualifying_activity_id\x18\x05 \x01(\x03H\x00R\x14qualifyingActivityId\x88\x01\x01\x12<\n" +
-	"\x18best_attempt_activity_id\x18\x06 \x01(\x03H\x01R\x15bestAttemptActivityId\x88\x01\x01B\x19\n" +
+	"\x18best_attempt_activity_id\x18\x06 \x01(\x03H\x01R\x15bestAttemptActivityId\x88\x01\x01\x12\x1f\n" +
+	"\vperiods_hit\x18\a \x01(\x05R\n" +
+	"periodsHit\x12'\n" +
+	"\x0fperiods_elapsed\x18\b \x01(\x05R\x0eperiodsElapsed\x12#\n" +
+	"\rperiods_total\x18\t \x01(\x05R\fperiodsTotalB\x19\n" +
 	"\x17_qualifying_activity_idB\x1b\n" +
-	"\x19_best_attempt_activity_id\"\xab\x03\n" +
+	"\x19_best_attempt_activity_id\"\xe2\x03\n" +
 	"\x04Goal\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
 	"\vcampaign_id\x18\x02 \x01(\tH\x00R\n" +
@@ -898,8 +954,12 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\aclauses\x18\a \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\x123\n" +
 	"\bprogress\x18\b \x01(\v2\x17.fitter.v1.GoalProgressR\bprogress\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAtB\x0e\n" +
-	"\f_campaign_id\"\xb8\x02\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x125\n" +
+	"\n" +
+	"recurrence\x18\n" +
+	" \x01(\x0e2\x15.fitter.v1.RecurrenceR\n" +
+	"recurrenceB\x0e\n" +
+	"\f_campaign_id\"\xef\x02\n" +
 	"\x11CreateGoalRequest\x12$\n" +
 	"\vcampaign_id\x18\x01 \x01(\tH\x00R\n" +
 	"campaignId\x88\x01\x01\x12\x12\n" +
@@ -908,7 +968,10 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\fperiod_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
 	"\n" +
 	"period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12/\n" +
-	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclausesB\x0e\n" +
+	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\x125\n" +
+	"\n" +
+	"recurrence\x18\a \x01(\x0e2\x15.fitter.v1.RecurrenceR\n" +
+	"recurrenceB\x0e\n" +
 	"\f_campaign_id\"9\n" +
 	"\x12CreateGoalResponse\x12#\n" +
 	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\"Z\n" +
@@ -918,7 +981,7 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\x03all\x18\x02 \x01(\bR\x03allB\x0e\n" +
 	"\f_campaign_id\":\n" +
 	"\x11ListGoalsResponse\x12%\n" +
-	"\x05goals\x18\x01 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"\xd1\x02\n" +
+	"\x05goals\x18\x01 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"\x88\x03\n" +
 	"\x11UpdateGoalRequest\x12\x17\n" +
 	"\agoal_id\x18\x01 \x01(\tR\x06goalId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12.\n" +
@@ -928,7 +991,10 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12/\n" +
 	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\x12$\n" +
 	"\vcampaign_id\x18\a \x01(\tH\x00R\n" +
-	"campaignId\x88\x01\x01B\x0e\n" +
+	"campaignId\x88\x01\x01\x125\n" +
+	"\n" +
+	"recurrence\x18\b \x01(\x0e2\x15.fitter.v1.RecurrenceR\n" +
+	"recurrenceB\x0e\n" +
 	"\f_campaign_id\"9\n" +
 	"\x12UpdateGoalResponse\x12#\n" +
 	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\",\n" +
@@ -977,6 +1043,7 @@ var file_fitter_v1_goal_proto_goTypes = []any{
 	(Comparator)(0),               // 14: fitter.v1.Comparator
 	(*SportSelector)(nil),         // 15: fitter.v1.SportSelector
 	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
+	(Recurrence)(0),               // 17: fitter.v1.Recurrence
 }
 var file_fitter_v1_goal_proto_depIdxs = []int32{
 	12, // 0: fitter.v1.GoalClause.scope:type_name -> fitter.v1.ClauseScope
@@ -989,30 +1056,33 @@ var file_fitter_v1_goal_proto_depIdxs = []int32{
 	0,  // 7: fitter.v1.Goal.clauses:type_name -> fitter.v1.GoalClause
 	2,  // 8: fitter.v1.Goal.progress:type_name -> fitter.v1.GoalProgress
 	16, // 9: fitter.v1.Goal.created_at:type_name -> google.protobuf.Timestamp
-	15, // 10: fitter.v1.CreateGoalRequest.sport:type_name -> fitter.v1.SportSelector
-	16, // 11: fitter.v1.CreateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
-	16, // 12: fitter.v1.CreateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
-	0,  // 13: fitter.v1.CreateGoalRequest.clauses:type_name -> fitter.v1.GoalClause
-	3,  // 14: fitter.v1.CreateGoalResponse.goal:type_name -> fitter.v1.Goal
-	3,  // 15: fitter.v1.ListGoalsResponse.goals:type_name -> fitter.v1.Goal
-	15, // 16: fitter.v1.UpdateGoalRequest.sport:type_name -> fitter.v1.SportSelector
-	16, // 17: fitter.v1.UpdateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
-	16, // 18: fitter.v1.UpdateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
-	0,  // 19: fitter.v1.UpdateGoalRequest.clauses:type_name -> fitter.v1.GoalClause
-	3,  // 20: fitter.v1.UpdateGoalResponse.goal:type_name -> fitter.v1.Goal
-	4,  // 21: fitter.v1.GoalService.CreateGoal:input_type -> fitter.v1.CreateGoalRequest
-	6,  // 22: fitter.v1.GoalService.ListGoals:input_type -> fitter.v1.ListGoalsRequest
-	8,  // 23: fitter.v1.GoalService.UpdateGoal:input_type -> fitter.v1.UpdateGoalRequest
-	10, // 24: fitter.v1.GoalService.DeleteGoal:input_type -> fitter.v1.DeleteGoalRequest
-	5,  // 25: fitter.v1.GoalService.CreateGoal:output_type -> fitter.v1.CreateGoalResponse
-	7,  // 26: fitter.v1.GoalService.ListGoals:output_type -> fitter.v1.ListGoalsResponse
-	9,  // 27: fitter.v1.GoalService.UpdateGoal:output_type -> fitter.v1.UpdateGoalResponse
-	11, // 28: fitter.v1.GoalService.DeleteGoal:output_type -> fitter.v1.DeleteGoalResponse
-	25, // [25:29] is the sub-list for method output_type
-	21, // [21:25] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	17, // 10: fitter.v1.Goal.recurrence:type_name -> fitter.v1.Recurrence
+	15, // 11: fitter.v1.CreateGoalRequest.sport:type_name -> fitter.v1.SportSelector
+	16, // 12: fitter.v1.CreateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
+	16, // 13: fitter.v1.CreateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
+	0,  // 14: fitter.v1.CreateGoalRequest.clauses:type_name -> fitter.v1.GoalClause
+	17, // 15: fitter.v1.CreateGoalRequest.recurrence:type_name -> fitter.v1.Recurrence
+	3,  // 16: fitter.v1.CreateGoalResponse.goal:type_name -> fitter.v1.Goal
+	3,  // 17: fitter.v1.ListGoalsResponse.goals:type_name -> fitter.v1.Goal
+	15, // 18: fitter.v1.UpdateGoalRequest.sport:type_name -> fitter.v1.SportSelector
+	16, // 19: fitter.v1.UpdateGoalRequest.period_start:type_name -> google.protobuf.Timestamp
+	16, // 20: fitter.v1.UpdateGoalRequest.period_end:type_name -> google.protobuf.Timestamp
+	0,  // 21: fitter.v1.UpdateGoalRequest.clauses:type_name -> fitter.v1.GoalClause
+	17, // 22: fitter.v1.UpdateGoalRequest.recurrence:type_name -> fitter.v1.Recurrence
+	3,  // 23: fitter.v1.UpdateGoalResponse.goal:type_name -> fitter.v1.Goal
+	4,  // 24: fitter.v1.GoalService.CreateGoal:input_type -> fitter.v1.CreateGoalRequest
+	6,  // 25: fitter.v1.GoalService.ListGoals:input_type -> fitter.v1.ListGoalsRequest
+	8,  // 26: fitter.v1.GoalService.UpdateGoal:input_type -> fitter.v1.UpdateGoalRequest
+	10, // 27: fitter.v1.GoalService.DeleteGoal:input_type -> fitter.v1.DeleteGoalRequest
+	5,  // 28: fitter.v1.GoalService.CreateGoal:output_type -> fitter.v1.CreateGoalResponse
+	7,  // 29: fitter.v1.GoalService.ListGoals:output_type -> fitter.v1.ListGoalsResponse
+	9,  // 30: fitter.v1.GoalService.UpdateGoal:output_type -> fitter.v1.UpdateGoalResponse
+	11, // 31: fitter.v1.GoalService.DeleteGoal:output_type -> fitter.v1.DeleteGoalResponse
+	28, // [28:32] is the sub-list for method output_type
+	24, // [24:28] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_goal_proto_init() }

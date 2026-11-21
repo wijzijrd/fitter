@@ -34,6 +34,9 @@ func validateManual(a *fitterv1.ManualActivity) ([]*fitterv1.Lift, error) {
 	if a.GetSportType() == "" {
 		return nil, invalid("sport_type is required")
 	}
+	if off := a.GetUtcOffsetMinutes(); off < -14*60 || off > 14*60 {
+		return nil, invalid("utc_offset_minutes out of range")
+	}
 	if a.GetStartDate() == nil {
 		return nil, invalid("start_date is required")
 	}
@@ -125,6 +128,8 @@ func (s *ActivityService) CreateManualActivity(ctx context.Context, req *connect
 		DistanceM:   a.GetDistanceM(),
 		MovingTimeS: a.GetMovingTimeS(),
 		CreatedAt:   time.Now().Unix(),
+
+		StartDateLocal: localStart(a),
 	})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -171,6 +176,7 @@ func (s *ActivityService) UpdateManualActivity(ctx context.Context, req *connect
 		DistanceM:        a.GetDistanceM(),
 		MovingTimeS:      a.GetMovingTimeS(),
 		UpdatedAt:        time.Now().Unix(),
+		StartDateLocal:   localStart(a),
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("activity not found"))
@@ -225,4 +231,13 @@ func (s *ActivityService) ListManualActivities(ctx context.Context, _ *connect.R
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.ListManualActivitiesResponse{Activities: out}), nil
+}
+
+// localStart is the wall-clock start as unix seconds-as-if-UTC, or NULL when
+// the client didn't say its offset (evaluation then falls back to UTC).
+func localStart(a *fitterv1.ManualActivity) sql.NullInt64 {
+	if a.UtcOffsetMinutes == nil {
+		return sql.NullInt64{}
+	}
+	return sql.NullInt64{Int64: timestampToUnix(a.GetStartDate()) + int64(a.GetUtcOffsetMinutes())*60, Valid: true}
 }

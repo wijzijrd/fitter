@@ -11,8 +11,8 @@ func ptr(f float64) *float64 { return &f }
 
 func TestAllDefsHaveSingleAndNewAcc(t *testing.T) {
 	all := metrics.All()
-	if len(all) != 18 {
-		t.Fatalf("All() returned %d defs, want 18", len(all))
+	if len(all) != 19 {
+		t.Fatalf("All() returned %d defs, want 19", len(all))
 	}
 	seen := make(map[metrics.Key]bool)
 	for _, d := range all {
@@ -50,7 +50,7 @@ func TestAllStableOrder(t *testing.T) {
 
 func TestOnlyActivityCountRejectsSingle(t *testing.T) {
 	for _, d := range metrics.All() {
-		if d.Key == metrics.ActivityCount {
+		if d.Key == metrics.ActivityCount || d.Key == metrics.ActiveDays {
 			if d.SupportsSingle {
 				t.Errorf("%s: SupportsSingle should be false", d.Key)
 			}

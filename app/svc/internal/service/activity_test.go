@@ -100,3 +100,56 @@ func TestManualActivity_RejectsBadNumbers(t *testing.T) {
 		}
 	}
 }
+
+// A weekly "4 active days" habit: a manual entry counts toward its local week,
+// the goal reports buckets hit/elapsed, and a daily goal over years is refused.
+func TestRecurringGoal_ManualEntryCountsAndBucketCapEnforced(t *testing.T) {
+	deps := newDeps(t)
+	alice := seedUser(t, deps.Queries, "alice")
+	acts := service.NewActivityService(deps)
+	goals := service.NewGoalService(deps)
+	ctx := ctxAs(alice.ID)
+
+	off := int32(120)
+	for i := 0; i < 2; i++ {
+		a := manual()
+		a.SportType = "Run"
+		a.StartDate = ts(time.Now().Add(-time.Duration(i) * 25 * time.Hour).Unix())
+		a.UtcOffsetMinutes = &off
+		if _, err := acts.CreateManualActivity(ctx, connect.NewRequest(&fitterv1.CreateManualActivityRequest{Activity: a})); err != nil {
+			t.Fatalf("CreateManualActivity: %v", err)
+		}
+	}
+	clause := []*fitterv1.GoalClause{{
+		Metric: fitterv1.ActivityMetric_ACTIVITY_METRIC_ACTIVE_DAYS, Scope: fitterv1.ClauseScope_CLAUSE_SCOPE_AGGREGATE,
+		Comparator: fitterv1.Comparator_COMPARATOR_GTE, Value: 1,
+	}}
+	start, end := time.Now().Add(-48*time.Hour).Unix(), time.Now().Add(7*24*time.Hour).Unix()
+	g, err := goals.CreateGoal(ctx, connect.NewRequest(&fitterv1.CreateGoalRequest{
+		Name: "Move weekly", PeriodStart: ts(start), PeriodEnd: ts(end), Clauses: clause,
+		Recurrence: fitterv1.Recurrence_RECURRENCE_WEEKLY,
+	}))
+	if err != nil {
+		t.Fatalf("CreateGoal: %v", err)
+	}
+	p := g.Msg.GetGoal().GetProgress()
+	if g.Msg.GetGoal().GetRecurrence() != fitterv1.Recurrence_RECURRENCE_WEEKLY || p.GetPeriodsTotal() < 2 || p.GetPeriodsHit() < 1 {
+		t.Fatalf("recurrence=%v progress=%v", g.Msg.GetGoal().GetRecurrence(), p)
+	}
+
+	_, err = goals.CreateGoal(ctx, connect.NewRequest(&fitterv1.CreateGoalRequest{
+		Name: "Daily forever", PeriodStart: ts(start), PeriodEnd: ts(start + 3*365*24*3600), Clauses: clause,
+		Recurrence: fitterv1.Recurrence_RECURRENCE_DAILY,
+	}))
+	if connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("daily over 3y: got %v, want InvalidArgument", err)
+	}
+
+	bad := manual()
+	bad.SportType = "Run"
+	huge := int32(99999)
+	bad.UtcOffsetMinutes = &huge
+	if _, err := acts.CreateManualActivity(ctx, connect.NewRequest(&fitterv1.CreateManualActivityRequest{Activity: bad})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("offset 99999: got %v, want InvalidArgument", err)
+	}
+}

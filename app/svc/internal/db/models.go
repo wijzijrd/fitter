@@ -34,6 +34,7 @@ type Activity struct {
 	CreatedAt            int64           `json:"created_at"`
 	UpdatedAt            int64           `json:"updated_at"`
 	Source               string          `json:"source"`
+	StartDateLocal       sql.NullInt64   `json:"start_date_local"`
 }
 
 type ActivityLift struct {
@@ -108,6 +109,7 @@ type Goal struct {
 	PeriodStart int64          `json:"period_start"`
 	PeriodEnd   int64          `json:"period_end"`
 	CreatedAt   int64          `json:"created_at"`
+	Recurrence  string         `json:"recurrence"`
 }
 
 type GoalClause struct {

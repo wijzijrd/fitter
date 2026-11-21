@@ -206,10 +206,12 @@ const describe = (a: ManualActivity) => {
             </span>
             <span v-if="confirmDelete === a.id" class="confirm">
               <span>Delete this activity?</span>
+              <span class="actions">
               <button v-focus="true" type="button" class="pill" @click="kept = a.id; confirmDelete = null">Keep</button>
               <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(a.id, i)">
                 {{ deleting ? "Deleting…" : "Delete" }}<span class="visually-hidden"> {{ a.name }}</span>
               </button>
+              </span>
             </span>
             <button v-else v-focus="kept === a.id" type="button" class="pill pill--quiet" data-delete @click="confirmDelete = a.id">Delete<span class="visually-hidden"> {{ a.name }}</span></button>
           </li>
@@ -294,6 +296,7 @@ h2 {
 }
 .history li {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: var(--space-5);
@@ -306,10 +309,18 @@ h2 {
 }
 .confirm {
   display: flex;
+  flex: 1 1 16rem;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-2);
   font-weight: 700;
+}
+.confirm > span:first-child {
+  margin-right: auto;
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
 }
 </style>

@@ -85,8 +85,18 @@ h2[tabindex="-1"]:focus {
   padding: var(--space-2) var(--bib-inset);
   cursor: pointer;
 }
-.pill:hover:not(:disabled):not([aria-disabled="true"]) {
-  background: var(--cool-blue);
+/* Hover fills only where hover exists, so a tapped pill doesn't stay blue on touch screens. */
+@media (hover: hover) {
+  .pill:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--cool-blue);
+  }
+  .pill--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+    background: var(--tangerine-hover);
+  }
+  .navbar .logout:hover,
+  .navbar .menu-btn:hover {
+    background: var(--cool-blue);
+  }
 }
 .pill:disabled,
 .pill[aria-disabled="true"] {
@@ -105,9 +115,6 @@ h2[tabindex="-1"]:focus {
   background: var(--tangerine);
   font-size: 0.9375rem;
   padding-inline: var(--space-5);
-}
-.pill--primary:hover:not(:disabled):not([aria-disabled="true"]) {
-  background: var(--tangerine-hover);
 }
 .pill--primary:disabled,
 .pill--primary[aria-disabled="true"] {
@@ -308,9 +315,6 @@ select.input {
   cursor: pointer;
 }
 
-.navbar .logout:hover {
-  background: var(--cool-blue);
-}
 
 .navbar a:focus-visible,
 .navbar .logout:focus-visible {
@@ -331,7 +335,6 @@ select.input {
   color: var(--ink);
   cursor: pointer;
 }
-.navbar .menu-btn:hover,
 .navbar.is-open .menu-btn {
   background: var(--cool-blue);
 }

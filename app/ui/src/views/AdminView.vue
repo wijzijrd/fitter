@@ -137,7 +137,7 @@ async function deleteMetric(m: CustomMetric, i: number): Promise<void> {
   }
 }
 
-const fmtDate = (ts: Parameters<typeof toDate>[0]) => toDate(ts)?.toLocaleString() ?? "";
+const fmtDate = (ts: Parameters<typeof toDate>[0]) => toDate(ts)?.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) ?? "";
 const isSelf = (u: AdminUser) => u.id === auth.user?.id;
 </script>
 
@@ -167,17 +167,20 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <p v-if="!pending.length" class="quiet">Nobody waiting.</p>
       <ul class="rows">
         <li v-for="u in pending" :key="u.id">
-          <span class="name">{{ u.name }}</span>
-          <span class="meta">Joined {{ fmtDate(u.createdAt) }}</span>
-          <button type="button" class="pill pill--primary" v-busy="busy" @click="approve(u)">Approve</button>
-          <button type="button" class="pill" :data-ban="u.id" v-busy="busy" @click="startBan(u)">Ban…</button>
+          <span class="who"><span class="name">{{ u.name }}</span><span class="meta">Joined {{ fmtDate(u.createdAt) }}</span></span>
+          <span class="actions">
+            <button type="button" class="pill pill--primary" v-busy="busy" @click="approve(u)">Approve</button>
+            <button type="button" class="pill" :data-ban="u.id" v-busy="busy" @click="startBan(u)">Ban…</button>
+          </span>
           <form v-if="banning === u.id" class="ban" @submit.prevent="confirmBan(u)">
             <div class="rb-field">
               <label :for="`ban-${u.id}`">Reason for banning {{ u.name }}</label>
               <input :id="`ban-${u.id}`" v-focus="true" v-model="banReason" class="input" maxlength="500" required />
             </div>
-            <button type="button" class="pill" @click="cancelBan(u)">Cancel</button>
-            <button type="submit" class="pill pill--primary" v-busy="busy || !banReason.trim()">Confirm ban</button>
+            <span class="actions">
+              <button type="button" class="pill" @click="cancelBan(u)">Cancel</button>
+              <button type="submit" class="pill pill--primary" v-busy="busy || !banReason.trim()">Confirm ban</button>
+            </span>
           </form>
         </li>
       </ul>
@@ -185,21 +188,21 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <h2>Active ({{ active.length }})</h2>
       <ul class="rows">
         <li v-for="u in active" :key="u.id">
-          <span class="name">{{ u.name }}</span>
-          <span class="meta">{{ u.role }}</span>
-          <template v-if="!isSelf(u)">
+          <span class="who"><span class="name">{{ u.name }}</span><span class="meta">{{ u.role }}{{ isSelf(u) ? " · you" : "" }}</span></span>
+          <span v-if="!isSelf(u)" class="actions">
             <button v-if="u.role === 'member'" type="button" class="pill" v-busy="busy" @click="setRole(u, 'admin')">Promote</button>
             <button v-else type="button" class="pill" v-busy="busy" @click="setRole(u, 'member')">Demote</button>
             <button v-if="u.role === 'member'" type="button" class="pill" :data-ban="u.id" v-busy="busy" @click="startBan(u)">Ban…</button>
-          </template>
-          <span v-else class="meta">you</span>
+          </span>
           <form v-if="banning === u.id" class="ban" @submit.prevent="confirmBan(u)">
             <div class="rb-field">
               <label :for="`ban-${u.id}`">Reason for banning {{ u.name }}</label>
               <input :id="`ban-${u.id}`" v-focus="true" v-model="banReason" class="input" maxlength="500" required />
             </div>
-            <button type="button" class="pill" @click="cancelBan(u)">Cancel</button>
-            <button type="submit" class="pill pill--primary" v-busy="busy || !banReason.trim()">Confirm ban</button>
+            <span class="actions">
+              <button type="button" class="pill" @click="cancelBan(u)">Cancel</button>
+              <button type="submit" class="pill pill--primary" v-busy="busy || !banReason.trim()">Confirm ban</button>
+            </span>
           </form>
         </li>
       </ul>
@@ -208,8 +211,7 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <p v-if="!banned.length" class="quiet">No bans.</p>
       <ul class="rows">
         <li v-for="u in banned" :key="u.id">
-          <span class="name">{{ u.name }}</span>
-          <span class="meta">{{ u.banReason }} · {{ fmtDate(u.bannedAt) }}</span>
+          <span class="who"><span class="name">{{ u.name }}</span><span class="meta">{{ u.banReason }} · {{ fmtDate(u.bannedAt) }}</span></span>
           <button type="button" class="pill" :data-unban="u.id" v-busy="busy" @click="unban(u)">Unban</button>
         </li>
       </ul>
@@ -219,13 +221,15 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <h2 id="admin-sports" tabindex="-1">Custom sports</h2>
       <ul class="rows">
         <li v-for="(s, i) in sports" :key="s.id">
-          <span class="name">{{ s.label }}</span><span class="meta">{{ s.key }}</span>
+          <span class="who"><span class="name">{{ s.label }}</span><span class="meta">{{ s.key }}</span></span>
           <span v-if="confirmDelete === `sport:${s.id}`" class="confirm">
             <span>Delete this sport?</span>
+            <span class="actions">
             <button v-focus="true" type="button" class="pill" @click="kept = `sport:${s.id}`; confirmDelete = ''">Keep</button>
             <button type="button" class="pill pill--primary" v-busy="busy" @click="deleteSport(s, i)">
               Delete<span class="visually-hidden"> {{ s.label }}</span>
             </button>
+            </span>
           </span>
           <button v-else v-focus="kept === `sport:${s.id}`" type="button" class="pill pill--quiet" data-delete-sport @click="confirmDelete = `sport:${s.id}`">
             Delete<span class="visually-hidden"> {{ s.label }}</span>
@@ -247,13 +251,15 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <h2 id="admin-metrics" tabindex="-1">Custom metrics</h2>
       <ul class="rows">
         <li v-for="(m, i) in metrics" :key="m.id">
-          <span class="name">{{ m.label }}</span><span class="meta">{{ m.key }} · {{ m.aggregation }}{{ m.unit ? " · " + m.unit : "" }}</span>
+          <span class="who"><span class="name">{{ m.label }}</span><span class="meta">{{ m.key }} · {{ m.aggregation }}{{ m.unit ? " · " + m.unit : "" }}</span></span>
           <span v-if="confirmDelete === `metric:${m.id}`" class="confirm">
             <span>Delete this metric?</span>
+            <span class="actions">
             <button v-focus="true" type="button" class="pill" @click="kept = `metric:${m.id}`; confirmDelete = ''">Keep</button>
             <button type="button" class="pill pill--primary" v-busy="busy" @click="deleteMetric(m, i)">
               Delete<span class="visually-hidden"> {{ m.label }}</span>
             </button>
+            </span>
           </span>
           <button v-else v-focus="kept === `metric:${m.id}`" type="button" class="pill pill--quiet" data-delete-metric @click="confirmDelete = `metric:${m.id}`">
             Delete<span class="visually-hidden"> {{ m.label }}</span>
@@ -382,9 +388,16 @@ h2 {
 .name {
   font-weight: 700;
 }
-.meta {
-  flex: 1;
-  min-width: 8rem;
+/* Name over meta, actions to the right; on a phone the actions wrap under the name. */
+.who {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  min-width: 0;
+}
+.who .name,
+.who .meta {
+  overflow-wrap: anywhere;
 }
 .ban {
   display: flex;
@@ -394,7 +407,7 @@ h2 {
   width: 100%;
 }
 .ban .rb-field {
-  flex: 1 1 16rem;
+  flex: 1 1 100%;
   margin: 0;
 }
 .form {
@@ -433,10 +446,19 @@ h2 {
 }
 .confirm {
   display: flex;
+  flex: 1 1 16rem;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-2);
   font-weight: 700;
+}
+.confirm > span:first-child {
+  margin-right: auto;
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
 }
 .table-wrap {
   overflow-x: auto;

@@ -219,14 +219,25 @@ func (d *Deps) batchActivitiesByUser(ctx context.Context, goals []db.Goal) (map[
 // what keeps ListGoals and the leaderboard from regressing into the old N+1
 // pattern.
 func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoalID map[string][]progress.Clause) (map[string]progress.Result, error) {
+	results, _, err := d.evaluateGoalsIn(ctx, goals, clausesByGoalID, nil)
+	return results, err
+}
+
+// evaluateGoalsIn is evaluateGoals restricted to a leaderboard window (nil =
+// the whole goal period). It also returns the goals as evaluated (clipped
+// period, pro-rated targets) so callers can show the target actually used;
+// goals the window misses, or that have nothing to judge in it, are absent
+// from both maps.
+func (d *Deps) evaluateGoalsIn(ctx context.Context, goals []db.Goal, clausesByGoalID map[string][]progress.Clause, win *progress.Window) (map[string]progress.Result, map[string]progress.Goal, error) {
 	results := make(map[string]progress.Result, len(goals))
+	used := make(map[string]progress.Goal, len(goals))
 	if len(goals) == 0 {
-		return results, nil
+		return results, used, nil
 	}
 
 	actsByUser, err := d.batchActivitiesByUser(ctx, goals)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	now := time.Now().Unix()
@@ -240,9 +251,23 @@ func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoal
 			Recurrence:  recurrenceFromDB(g.Recurrence),
 			Now:         now,
 		}
-		results[g.ID] = progress.Evaluate(pg, actsByUser[g.UserID])
+		if win != nil {
+			var ok bool
+			if pg, ok = progress.ForWindow(pg, *win); !ok {
+				continue
+			}
+		}
+		res := progress.Evaluate(pg, actsByUser[g.UserID])
+		if win != nil {
+			if progress.WindowExcluded(pg, res) {
+				continue
+			}
+			res.SatisfiedAt = 0 // "finished early" only means something over the whole period
+		}
+		results[g.ID] = res
+		used[g.ID] = pg
 	}
-	return results, nil
+	return results, used, nil
 }
 
 // clauseDefsToProto maps a goal's persisted clause definitions

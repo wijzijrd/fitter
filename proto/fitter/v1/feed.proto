@@ -72,8 +72,20 @@ message PersonStanding {
   int32 rank = 8;
 }
 
+// LeaderboardWindow slices the standings to a calendar week (Monday start) or
+// month, in UTC. Sum/count targets are pro-rated to the window, best/average
+// targets stay whole, and the pooled campaign target only shows on CAMPAIGN.
+enum LeaderboardWindow {
+  LEADERBOARD_WINDOW_UNSPECIFIED = 0; // same as CAMPAIGN
+  LEADERBOARD_WINDOW_CAMPAIGN = 1;
+  LEADERBOARD_WINDOW_WEEK = 2;
+  LEADERBOARD_WINDOW_MONTH = 3;
+}
+
 message GetCampaignLeaderboardRequest {
   string campaign_id = 1;
+  LeaderboardWindow window = 2;
+  optional google.protobuf.Timestamp anchor = 3; // which week/month; default now
 }
 
 // One member's share of pooled_progress_value, in the campaign metric's units.
@@ -92,6 +104,10 @@ message GetCampaignLeaderboardResponse {
   // Every member, largest contribution first. Empty unless the pooled metric
   // adds up across activities (sum or count): an average has no per-member share.
   repeated PooledContribution pooled_contributions = 5;
+  // The window actually scored (unset for CAMPAIGN). A goal with no data in a
+  // window that only counts best/average values is left off that board.
+  optional google.protobuf.Timestamp window_start = 7;
+  optional google.protobuf.Timestamp window_end = 8;
 }
 
 message TimelinePoint {

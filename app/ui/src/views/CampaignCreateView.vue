@@ -229,7 +229,7 @@ async function create(): Promise<void> {
             </button>
             <router-link v-else to="/" class="pill pill--quiet">Cancel</router-link>
             <span class="count" aria-hidden="true">{{ step + 1 }} / {{ steps.length }}</span>
-            <button type="submit" class="pill pill--primary" :disabled="creating">
+            <button type="submit" class="pill pill--primary" v-busy="creating">
               <template v-if="step < steps.length - 1">
                 Next<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" /></svg>
               </template>

@@ -95,14 +95,22 @@ a {
   font-size: 0.9375rem;
   padding-inline: var(--space-5);
 }
-.pill--primary:hover:not(:disabled) {
+.pill--primary:hover:not(:disabled):not([aria-disabled="true"]) {
   background: var(--tangerine-hover);
 }
-.pill--primary:disabled {
+.pill--primary:disabled,
+.pill--primary[aria-disabled="true"] {
   border-color: var(--ink);
   color: var(--ink);
   opacity: 0.6;
   cursor: progress;
+}
+
+/* Touch: pills are the main tap targets, so they reach 44px+ (the tab-actions pills in GoalsView are 2.25rem on a mouse). */
+@media (pointer: coarse) {
+  .pill {
+    min-height: 2.75rem;
+  }
 }
 
 /* Race Bib form controls. */

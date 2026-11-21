@@ -36,7 +36,7 @@ function logout(): void {
         <h2>Waiting for approval</h2>
         <p>An admin needs to approve your account before you can race. Check back soon.</p>
         <p v-if="error" role="alert">{{ error }}</p>
-        <button type="button" class="pill pill--primary" :disabled="checking" @click="recheck">Check again</button>
+        <button type="button" class="pill pill--primary" v-busy="checking" @click="recheck">Check again</button>
         <button type="button" class="pill" @click="logout">Log out</button>
       </div>
     </CampaignBib>

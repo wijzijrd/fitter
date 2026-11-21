@@ -287,7 +287,7 @@ onMounted(() => {
                 type="button"
                 class="pill"
                 :aria-pressed="feed.window === w.id"
-                :disabled="feed.windowLoading"
+                v-busy="feed.windowLoading"
                 @click="pickWindow(w.id)"
               >
                 {{ w.label }}
@@ -426,7 +426,7 @@ onMounted(() => {
             <p>Leave {{ campaign.name }}? Your activities stop counting here.</p>
             <span class="leave-actions">
               <button type="button" class="pill" @click="confirmLeave = false">Stay</button>
-              <button type="button" class="pill pill--primary" :disabled="leaving" @click="leave">
+              <button type="button" class="pill pill--primary" v-busy="leaving" @click="leave">
                 {{ leaving ? "Leaving…" : "Leave" }}
               </button>
             </span>

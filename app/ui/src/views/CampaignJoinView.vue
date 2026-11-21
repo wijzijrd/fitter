@@ -165,14 +165,14 @@ async function save(withGoal: boolean): Promise<void> {
 .cj {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: var(--space-5) var(--gutter) var(--space-8);
   font-family: var(--font-body);
   color: var(--ink);
 }
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-weight: 600;
@@ -185,25 +185,25 @@ async function save(withGoal: boolean): Promise<void> {
   outline-offset: 2px;
 }
 h1 {
-  margin: 0.75rem 0 0;
+  margin: var(--space-4) 0 0;
   font: 400 clamp(1.625rem, 6.5vw, 2.5rem) / 1.05 var(--font-display);
   text-transform: uppercase;
 }
 .meta {
-  margin: 0.4rem 0 1.5rem;
+  margin: var(--space-2) 0 var(--space-7);
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 .preview {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-7);
 }
 /* No rank numeral here, so the bib body sizes to its content. */
 .preview :deep(.main) {
   min-height: 0;
   align-items: center;
-  padding-block: 0.9rem;
+  padding-block: var(--bib-inset);
 }
 .claim {
   display: flex;
@@ -233,10 +233,10 @@ h1 {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: var(--space-3);
 }
 .lede {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   max-width: 50ch;
 }
 .notice {
@@ -244,9 +244,9 @@ h1 {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
   border-radius: 10px;
   background: var(--cool-blue);
@@ -257,7 +257,7 @@ h1 {
 }
 .quiet {
   color: var(--ink-muted);
-  padding: 1rem 0;
+  padding: var(--space-5) 0;
 }
 svg {
   width: 1rem;
@@ -271,12 +271,12 @@ svg {
 
 @media (min-width: 900px) {
   .cj {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
   .cj-body {
     display: grid;
     grid-template-columns: minmax(340px, 400px) minmax(0, 480px);
-    column-gap: 3rem;
+    column-gap: var(--pane-gap);
     align-items: start;
   }
   .preview {

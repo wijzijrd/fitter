@@ -205,34 +205,34 @@ const describe = (a: ManualActivity) => {
 .al {
   max-width: 560px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: var(--space-5) var(--gutter) var(--space-8);
   font-family: var(--font-body);
   color: var(--ink);
 }
 h1 {
-  margin: 0.5rem 0 0;
+  margin: var(--space-3) 0 0;
   font: 400 clamp(1.625rem, 6.5vw, 2.5rem) / 1.05 var(--font-display);
   text-transform: uppercase;
 }
 h2 {
-  margin: 2rem 0 0.75rem;
+  margin: var(--space-8) 0 var(--space-4);
   font: 400 1.125rem/1.1 var(--font-display);
   text-transform: uppercase;
 }
 .meta {
-  margin: 0.4rem 0 1.25rem;
+  margin: var(--space-2) 0 var(--space-6);
   color: var(--ink-muted);
   font-size: 0.875rem;
 }
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-5);
 }
 .row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 1rem;
+  gap: var(--space-5);
 }
 .lifts {
   border: 0;
@@ -242,9 +242,9 @@ h2 {
 .lift {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 5rem 4.5rem auto;
-  gap: 0.5rem;
+  gap: var(--space-3);
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-3);
 }
 .lift .field-error {
   grid-column: 1 / -1;
@@ -255,7 +255,7 @@ h2 {
 }
 .notice {
   margin: 0;
-  padding: 0.75rem 1rem;
+  padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
   border-radius: 6px;
   background: var(--cool-blue);
@@ -269,8 +269,8 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 0.6rem 0;
+  gap: var(--space-5);
+  padding: var(--space-3) 0;
   border-bottom: 1px solid var(--hairline);
 }
 .history small {

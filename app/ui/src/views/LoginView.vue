@@ -50,8 +50,8 @@ const error = computed(() => {
 
 <style scoped>
 .notice {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
   border-radius: 10px;
   background: var(--cool-blue);
@@ -62,8 +62,8 @@ const error = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding-block: 0.5rem 0.4rem;
+  gap: var(--space-3);
+  padding-block: var(--space-3) var(--space-2);
 }
 h2 {
   margin: 0;
@@ -73,7 +73,7 @@ h2 {
   text-wrap: balance;
 }
 .claim p {
-  margin: 0 0 0.6rem;
+  margin: 0 0 var(--space-3);
   max-width: 28ch;
   overflow-wrap: anywhere;
   font-size: 1.0625rem;

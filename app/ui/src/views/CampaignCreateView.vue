@@ -250,14 +250,14 @@ async function create(): Promise<void> {
 .cc {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 0;
+  padding: var(--space-5) var(--space-5) 0;
   font-family: var(--font-body);
   color: var(--ink);
 }
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-weight: 600;
@@ -270,13 +270,13 @@ async function create(): Promise<void> {
   outline-offset: 2px;
 }
 h1 {
-  margin: 0.75rem 0 1.25rem;
+  margin: var(--space-4) 0 var(--space-6);
   font: 400 clamp(1.625rem, 6.5vw, 2.5rem) / 1.05 var(--font-display);
   text-transform: uppercase;
 }
 
 .preview {
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--group-gap);
 }
 .preview :deep(.main) {
   min-height: 5.5rem;
@@ -289,7 +289,7 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 h2 {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   font: 400 1.5rem/1.1 var(--font-display);
   text-transform: uppercase;
 }
@@ -301,21 +301,21 @@ fieldset.rb-field {
   border: 0;
   margin-inline: 0;
   padding: 0;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 legend {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-3);
 }
 .dates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  column-gap: 1rem;
+  column-gap: var(--space-5);
 }
 .dates .rb-field {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-3);
 }
 .note {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
@@ -333,18 +333,18 @@ legend {
   font: 400 1.625rem/1.1 var(--font-display);
 }
 .lede {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   max-width: 50ch;
 }
 .summary {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   max-width: 60ch;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
 }
 .notice {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
   border-radius: 10px;
   background: var(--cool-blue);
@@ -356,9 +356,9 @@ legend {
   bottom: 0;
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0 -1rem;
-  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  gap: var(--space-4);
+  margin: 0 calc(var(--space-5) * -1);
+  padding: var(--space-4) var(--space-5) calc(var(--space-4) + env(safe-area-inset-bottom));
   border-top: 2px solid var(--ink);
   background: var(--paper);
 }
@@ -383,12 +383,12 @@ svg {
 
 @media (min-width: 900px) {
   .cc {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
   .cc-body {
     display: grid;
     grid-template-columns: minmax(340px, 400px) minmax(0, 560px);
-    column-gap: 3rem;
+    column-gap: var(--pane-gap);
     align-items: start;
   }
   .preview {
@@ -401,8 +401,8 @@ svg {
   }
   .bar {
     position: static;
-    margin: 0.5rem 0 0;
-    padding: 1.25rem 0 0;
+    margin: var(--space-3) 0 0;
+    padding: var(--space-6) 0 0;
   }
 }
 </style>

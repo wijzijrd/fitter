@@ -284,7 +284,7 @@ const sorted = computed(() =>
 .gl {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: var(--space-5) var(--gutter) var(--space-8);
   font-family: var(--font-body);
   color: var(--ink);
 }
@@ -293,8 +293,8 @@ const sorted = computed(() =>
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin: 0.5rem 0 1.25rem;
+  gap: var(--space-5);
+  margin: var(--space-3) 0 var(--space-6);
 }
 h1 {
   margin: 0;
@@ -302,17 +302,17 @@ h1 {
   text-transform: uppercase;
 }
 .meta {
-  margin: 0.4rem 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--ink-muted);
   font-size: 0.875rem;
 }
 h2 {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   font: 400 1.5rem/1.1 var(--font-display);
   text-transform: uppercase;
 }
 .group-head {
-  margin: 1rem 0 0.75rem;
+  margin: var(--space-5) 0 var(--space-4);
   font-size: 1.125rem;
 }
 h2:focus {
@@ -324,30 +324,30 @@ h2:focus {
 }
 .editor {
   max-width: 560px;
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--space-7);
   border-bottom: 2px solid var(--ink);
 }
 .presets {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 .dates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  column-gap: 1rem;
+  column-gap: var(--space-5);
 }
 .dates .rb-field {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-3);
 }
 .field-error {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-5);
   font-weight: 700;
   font-size: 0.875rem;
 }
 .actions {
   display: flex;
-  gap: 0.6rem;
+  gap: var(--space-3);
 }
 
 .goals {
@@ -356,11 +356,11 @@ h2:focus {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  gap: 1.25rem;
+  gap: var(--space-6);
 }
 .tab-actions {
   display: flex;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 .tab-actions .pill {
   min-height: 2.25rem;
@@ -371,7 +371,7 @@ h2:focus {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 .unclaimed b {
   font: 400 1.5rem/1.1 var(--font-display);
@@ -382,21 +382,21 @@ h2:focus {
   max-width: 46ch;
 }
 .unclaimed .pill {
-  margin-top: 0.4rem;
+  margin-top: var(--space-2);
 }
 
 .quiet {
   color: var(--ink-muted);
-  padding: 1rem 0;
+  padding: var(--space-5) 0;
 }
 .notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
   border: 2px solid var(--ink);
   border-radius: 10px;
   background: var(--cool-blue);
@@ -408,7 +408,7 @@ h2:focus {
 
 @media (min-width: 900px) {
   .gl {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
 }
 </style>

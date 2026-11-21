@@ -48,8 +48,8 @@ function logout(): void {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding-block: 0.5rem 0.4rem;
+  gap: var(--space-3);
+  padding-block: var(--space-3) var(--space-2);
 }
 h2 {
   margin: 0;
@@ -58,7 +58,7 @@ h2 {
   text-wrap: balance;
 }
 .claim p {
-  margin: 0 0 0.6rem;
+  margin: 0 0 var(--space-3);
   max-width: 32ch;
   font-size: 1.0625rem;
   line-height: 1.45;

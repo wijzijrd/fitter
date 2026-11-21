@@ -220,20 +220,94 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
 </template>
 
 <style scoped>
-.admin { max-width: 960px; margin: 0 auto; padding: var(--space-5) var(--gutter) var(--space-8); }
-h1 { font: 400 2rem / 1 var(--font-display); text-transform: uppercase; margin: 0 0 var(--space-5); }
-h2 { font-size: 1.1rem; margin: var(--space-7) 0 var(--space-3); }
-.tabs { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); }
-.notice { padding: var(--space-4) var(--space-5); border: 2px solid var(--ink); border-radius: 10px; background: var(--cool-blue); font-weight: 700; }
-.quiet, .meta { color: var(--ink-muted); }
-.rows { list-style: none; margin: 0; padding: 0; }
-.rows li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); padding: var(--row) 0; border-bottom: 1px solid var(--hairline); }
-.name { font-weight: 700; }
-.meta { flex: 1; min-width: 8rem; }
-.ban, .form { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; width: 100%; }
-.form { margin-top: var(--space-4); }
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-th, td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--hairline); vertical-align: top; }
-.mono { font-family: ui-monospace, monospace; font-size: 0.75rem; overflow-wrap: anywhere; }
+.admin {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) var(--space-8);
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+h1 {
+  margin: 0 0 var(--space-5);
+  font: 400 clamp(1.625rem, 6.5vw, 2rem) / 1.05 var(--font-display);
+  text-transform: uppercase;
+}
+/* Group labels share the standings' label style (DESIGN.md). */
+h2 {
+  margin: var(--group-gap) 0 var(--space-3);
+  font: 400 0.875rem / 1.3 var(--font-display);
+  text-transform: uppercase;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.notice {
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--cool-blue);
+  font-weight: 700;
+}
+.quiet,
+.meta {
+  color: var(--ink-muted);
+}
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--row) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.name {
+  font-weight: 700;
+}
+.meta {
+  flex: 1;
+  min-width: 8rem;
+}
+.ban,
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+.form {
+  margin-top: var(--space-4);
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  border-bottom: 2px solid var(--ink);
+}
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
 </style>

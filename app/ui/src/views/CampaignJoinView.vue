@@ -145,10 +145,10 @@ async function save(withGoal: boolean): Promise<void> {
 
             <p v-if="saveError" class="notice" role="alert">{{ saveError }}</p>
             <div class="actions">
-              <button type="submit" class="pill pill--primary" :disabled="saving">
+              <button type="submit" class="pill pill--primary" v-busy="saving">
                 {{ saving ? "Saving…" : joined ? "Add goal" : "Join campaign" }}
               </button>
-              <button v-if="!joined" type="button" class="pill pill--quiet" :disabled="saving" @click="save(false)">Join without a goal</button>
+              <button v-if="!joined" type="button" class="pill pill--quiet" v-busy="saving" @click="save(false)">Join without a goal</button>
             </div>
           </div>
         </form>

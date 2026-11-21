@@ -81,10 +81,11 @@ defineProps<{
 .name {
   color: inherit;
 }
-.name:focus-visible {
+/* Stretched link: the campaign name carries the accessible name, the bib carries the hit area.
+   The ring moves to the bib's edge (below), so the link's own outline is dropped. */
+.rbib--link .name:focus-visible {
   outline: none;
 }
-/* Stretched link: the campaign name carries the accessible name, the bib carries the hit area. */
 .rbib--link .name::after {
   content: "";
   position: absolute;

@@ -236,7 +236,7 @@ const sorted = computed(() =>
             <p v-if="saveError" class="notice" role="alert">{{ saveError }}</p>
             <div class="actions">
               <button type="button" class="pill pill--quiet" @click="close">Cancel</button>
-              <button type="submit" class="pill pill--primary" :disabled="saving">{{ saving ? "Saving…" : "Save goal" }}</button>
+              <button type="submit" class="pill pill--primary" v-busy="saving">{{ saving ? "Saving…" : "Save goal" }}</button>
             </div>
           </form>
           <CampaignBib
@@ -253,7 +253,7 @@ const sorted = computed(() =>
                 <span>Delete this goal?</span>
                 <span class="tab-actions">
                   <button type="button" class="pill" @click="confirmDelete = ''">Keep</button>
-                  <button type="button" class="pill pill--primary" :disabled="deleting" @click="remove(g.id)">
+                  <button type="button" class="pill pill--primary" v-busy="deleting" @click="remove(g.id)">
                     {{ deleting ? "Deleting…" : "Delete" }}
                   </button>
                 </span>
@@ -365,6 +365,11 @@ h2:focus {
 .tab-actions .pill {
   min-height: 2.25rem;
   padding-block: 0.2rem;
+}
+@media (pointer: coarse) {
+  .tab-actions .pill {
+    min-height: 2.75rem;
+  }
 }
 
 .unclaimed {

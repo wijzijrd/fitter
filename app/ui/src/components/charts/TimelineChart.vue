@@ -16,11 +16,12 @@ const props = defineProps<{
 const el = ref<HTMLDivElement | null>(null);
 let chart: echarts.ECharts | null = null;
 
-// Mirrors the CSS tokens in style.css; ECharts draws on canvas and can't read them.
-const INK = "#351e28";
-const MUTED = "#5a4a52";
-const TANGERINE = "#ff5c34";
-const OTHERS = [INK, MUTED];
+// ECharts draws on canvas and can't read CSS variables, so the palette is read from style.css's tokens when drawing.
+function palette() {
+  const css = getComputedStyle(document.documentElement);
+  const token = (name: string) => css.getPropertyValue(name).trim();
+  return { ink: token("--ink"), muted: token("--ink-muted"), tangerine: token("--tangerine"), paper: token("--paper"), hairline: token("--hairline") };
+}
 // Lines differ by dash as well as colour, and each is named at its end, so colour is never the only cue.
 const DASHES = ["solid", "dashed", "dotted"] as const;
 const FONT = "Hanken Grotesk Variable, system-ui, sans-serif";
@@ -63,6 +64,8 @@ const summary = computed(() => {
 
 function render(): void {
   if (!chart) return;
+  const { ink: INK, muted: MUTED, tangerine: TANGERINE, paper: PAPER, hairline: HAIRLINE } = palette();
+  const OTHERS = [INK, MUTED];
   let other = 0;
   // Ending the time axis at the last point keeps the target rule out of the end-label column.
   const lastT = Math.max(...props.series.flatMap((s) => s.points.map((p) => toDate(p.date)?.getTime() ?? 0)));
@@ -86,7 +89,7 @@ function render(): void {
         color: INK,
         fontFamily: FONT,
         fontWeight: 700,
-        backgroundColor: "#ffffff",
+        backgroundColor: PAPER,
         padding: [1, 3],
         distance: 8,
       },
@@ -112,7 +115,7 @@ function render(): void {
         max: target.value === undefined ? undefined : (v: { max: number }) => Math.max(v.max, target.value!),
         // Axis ticks are round numbers; drop the formatter's ".0".
         axisLabel: { color: MUTED, formatter: (v: number) => props.formatValue(v).replace(/\.0(?=\D|$)/, "") },
-        splitLine: { lineStyle: { color: "#e9e2e6" } },
+        splitLine: { lineStyle: { color: HAIRLINE } },
       },
       series: [
         ...series,

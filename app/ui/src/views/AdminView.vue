@@ -126,11 +126,11 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
         <li v-for="u in pending" :key="u.id">
           <span class="name">{{ u.name }}</span>
           <span class="meta">Joined {{ fmtDate(u.createdAt) }}</span>
-          <button type="button" class="pill pill--primary" :disabled="busy" @click="approve(u)">Approve</button>
-          <button type="button" class="pill" :disabled="busy" @click="startBan(u)">Ban…</button>
+          <button type="button" class="pill pill--primary" v-busy="busy" @click="approve(u)">Approve</button>
+          <button type="button" class="pill" v-busy="busy" @click="startBan(u)">Ban…</button>
           <form v-if="banning === u.id" class="ban" @submit.prevent="confirmBan(u)">
             <input v-model="banReason" class="input" maxlength="500" required placeholder="Reason" :aria-label="`Ban reason for ${u.name}`" />
-            <button type="submit" class="pill" :disabled="busy || !banReason.trim()">Confirm ban</button>
+            <button type="submit" class="pill" v-busy="busy || !banReason.trim()">Confirm ban</button>
           </form>
         </li>
       </ul>
@@ -141,14 +141,14 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
           <span class="name">{{ u.name }}</span>
           <span class="meta">{{ u.role }}</span>
           <template v-if="!isSelf(u)">
-            <button v-if="u.role === 'member'" type="button" class="pill" :disabled="busy" @click="setRole(u, 'admin')">Promote</button>
-            <button v-else type="button" class="pill" :disabled="busy" @click="setRole(u, 'member')">Demote</button>
-            <button v-if="u.role === 'member'" type="button" class="pill" :disabled="busy" @click="startBan(u)">Ban…</button>
+            <button v-if="u.role === 'member'" type="button" class="pill" v-busy="busy" @click="setRole(u, 'admin')">Promote</button>
+            <button v-else type="button" class="pill" v-busy="busy" @click="setRole(u, 'member')">Demote</button>
+            <button v-if="u.role === 'member'" type="button" class="pill" v-busy="busy" @click="startBan(u)">Ban…</button>
           </template>
           <span v-else class="meta">you</span>
           <form v-if="banning === u.id" class="ban" @submit.prevent="confirmBan(u)">
             <input v-model="banReason" class="input" maxlength="500" required placeholder="Reason" :aria-label="`Ban reason for ${u.name}`" />
-            <button type="submit" class="pill" :disabled="busy || !banReason.trim()">Confirm ban</button>
+            <button type="submit" class="pill" v-busy="busy || !banReason.trim()">Confirm ban</button>
           </form>
         </li>
       </ul>
@@ -159,7 +159,7 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
         <li v-for="u in banned" :key="u.id">
           <span class="name">{{ u.name }}</span>
           <span class="meta">{{ u.banReason }} · {{ fmtDate(u.bannedAt) }}</span>
-          <button type="button" class="pill" :disabled="busy" @click="unban(u)">Unban</button>
+          <button type="button" class="pill" v-busy="busy" @click="unban(u)">Unban</button>
         </li>
       </ul>
     </section>
@@ -169,20 +169,20 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <ul class="rows">
         <li v-for="s in sports" :key="s.id">
           <span class="name">{{ s.label }}</span><span class="meta">{{ s.key }}</span>
-          <button type="button" class="pill" :disabled="busy" @click="deleteSport(s)">Delete</button>
+          <button type="button" class="pill" v-busy="busy" @click="deleteSport(s)">Delete</button>
         </li>
       </ul>
       <form class="form" @submit.prevent="createSport">
         <input v-model="sportForm.key" class="input" required placeholder="key (e.g. powerlifting)" aria-label="Sport key" />
         <input v-model="sportForm.label" class="input" required placeholder="Label" aria-label="Sport label" />
-        <button type="submit" class="pill pill--primary" :disabled="busy">Add sport</button>
+        <button type="submit" class="pill pill--primary" v-busy="busy">Add sport</button>
       </form>
 
       <h2>Custom metrics</h2>
       <ul class="rows">
         <li v-for="m in metrics" :key="m.id">
           <span class="name">{{ m.label }}</span><span class="meta">{{ m.key }} · {{ m.aggregation }}{{ m.unit ? " · " + m.unit : "" }}</span>
-          <button type="button" class="pill" :disabled="busy" @click="deleteMetric(m)">Delete</button>
+          <button type="button" class="pill" v-busy="busy" @click="deleteMetric(m)">Delete</button>
         </li>
       </ul>
       <form class="form" @submit.prevent="createMetric">
@@ -197,14 +197,15 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
         <label><input v-model="metricForm.lowerIsBetter" type="checkbox" /> Lower is better</label>
         <label><input v-model="metricForm.supportsSingleScope" type="checkbox" /> Single scope</label>
         <label><input v-model="metricForm.supportsAggregateScope" type="checkbox" /> Aggregate scope</label>
-        <button type="submit" class="pill pill--primary" :disabled="busy">Add metric</button>
+        <button type="submit" class="pill pill--primary" v-busy="busy">Add metric</button>
       </form>
     </section>
 
     <section v-else>
       <h2>Audit log</h2>
       <p v-if="!actions.length" class="quiet">Nothing recorded yet.</p>
-      <table v-else>
+      <div v-else class="table-wrap" tabindex="0" role="region" aria-label="Audit log table">
+      <table>
         <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
         <tbody>
           <tr v-for="a in actions" :key="a.id">
@@ -213,24 +214,100 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
   </main>
 </template>
 
 <style scoped>
-.admin { max-width: 960px; margin: 0 auto; padding: var(--space-5) var(--gutter) var(--space-8); }
-h1 { font: 400 2rem / 1 var(--font-display); text-transform: uppercase; margin: 0 0 var(--space-5); }
-h2 { font-size: 1.1rem; margin: var(--space-7) 0 var(--space-3); }
-.tabs { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); }
-.notice { padding: var(--space-4) var(--space-5); border: 2px solid var(--ink); border-radius: 10px; background: var(--cool-blue); font-weight: 700; }
-.quiet, .meta { color: var(--ink-muted); }
-.rows { list-style: none; margin: 0; padding: 0; }
-.rows li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-4); padding: var(--row) 0; border-bottom: 1px solid var(--hairline); }
-.name { font-weight: 700; }
-.meta { flex: 1; min-width: 8rem; }
-.ban, .form { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; width: 100%; }
-.form { margin-top: var(--space-4); }
-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-th, td { text-align: left; padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--hairline); vertical-align: top; }
-.mono { font-family: ui-monospace, monospace; font-size: 0.75rem; overflow-wrap: anywhere; }
+.admin {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) var(--space-8);
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+h1 {
+  margin: 0 0 var(--space-5);
+  font: 400 clamp(1.625rem, 6.5vw, 2rem) / 1.05 var(--font-display);
+  text-transform: uppercase;
+}
+/* Group labels share the standings' label style (DESIGN.md). */
+h2 {
+  margin: var(--group-gap) 0 var(--space-3);
+  font: 400 0.875rem / 1.3 var(--font-display);
+  text-transform: uppercase;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.notice {
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--cool-blue);
+  font-weight: 700;
+}
+.quiet,
+.meta {
+  color: var(--ink-muted);
+}
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--row) 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.name {
+  font-weight: 700;
+}
+.meta {
+  flex: 1;
+  min-width: 8rem;
+}
+.ban,
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+.form {
+  margin-top: var(--space-4);
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  border-bottom: 2px solid var(--ink);
+}
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
 </style>

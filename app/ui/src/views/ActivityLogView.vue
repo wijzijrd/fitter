@@ -177,7 +177,7 @@ const describe = (a: ManualActivity) => {
 
         <p v-if="error" class="notice" role="alert">{{ error }}</p>
         <p v-if="saved" class="saved" role="status">{{ saved }}</p>
-        <button type="submit" class="pill pill--primary" :disabled="saving">{{ saving ? "Saving…" : "Log activity" }}</button>
+        <button type="submit" class="pill pill--primary" v-busy="saving">{{ saving ? "Saving…" : "Log activity" }}</button>
       </form>
 
       <section v-if="list.length || listError" class="history">

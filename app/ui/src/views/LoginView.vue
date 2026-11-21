@@ -14,6 +14,7 @@ const loginUrl = `${apiBaseUrl}/auth/strava/login`;
 const messages: Record<string, string> = {
   access_denied: "You cancelled on Strava, so nothing was connected. Try again when you're ready.",
   state: "Sign-in timed out or your browser blocked a cookie. Try connecting again.",
+  banned: "This account has been banned from Fitter.",
   scope: "Fitter needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
 };
 const route = useRoute();

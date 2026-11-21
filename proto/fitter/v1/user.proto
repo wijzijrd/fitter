@@ -6,6 +6,8 @@ message User {
   string id = 1;
   string name = 2;
   string avatar_url = 3;
+  string role = 4;   // "member" | "admin"; UX gate only, server enforces
+  string status = 5; // "pending" | "active" | "banned"
 }
 
 message GetCurrentUserRequest {}

@@ -56,7 +56,7 @@ ORDER BY start_date ASC;
 SELECT a.*, u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM activities a
 JOIN campaign_members cm ON cm.user_id = a.user_id
-JOIN users u ON u.id = a.user_id
+JOIN users u ON u.id = a.user_id AND u.status <> 'banned'
 WHERE cm.campaign_id = $1 AND a.start_date >= $2 AND a.start_date <= $3
 ORDER BY a.start_date DESC
 LIMIT 100;

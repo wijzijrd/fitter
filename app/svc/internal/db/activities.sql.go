@@ -236,7 +236,7 @@ const listCampaignFeedActivities = `-- name: ListCampaignFeedActivities :many
 SELECT a.strava_activity_id, a.user_id, a.type, a.sport_type, a.name, a.start_date, a.distance_m, a.elevation_m, a.moving_time_s, a.elapsed_time_s, a.average_speed_ms, a.max_speed_ms, a.average_heartrate, a.max_heartrate, a.average_watts, a.weighted_average_watts, a.max_watts, a.device_watts, a.kilojoules, a.calories, a.average_cadence, a.suffer_score, a.created_at, a.updated_at, a.source, u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM activities a
 JOIN campaign_members cm ON cm.user_id = a.user_id
-JOIN users u ON u.id = a.user_id
+JOIN users u ON u.id = a.user_id AND u.status <> 'banned'
 WHERE cm.campaign_id = $1 AND a.start_date >= $2 AND a.start_date <= $3
 ORDER BY a.start_date DESC
 LIMIT 100

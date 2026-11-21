@@ -27,6 +27,8 @@ func (s *UserService) GetCurrentUser(ctx context.Context, req *connect.Request[f
 			Id:        u.ID,
 			Name:      u.Name,
 			AvatarUrl: u.AvatarUrl,
+			Role:      u.Role,
+			Status:    u.Status,
 		},
 	}), nil
 }

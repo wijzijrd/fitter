@@ -44,6 +44,15 @@ type ActivityLift struct {
 	Reps       int32   `json:"reps"`
 }
 
+type AdminAction struct {
+	ID        string `json:"id"`
+	ActorID   string `json:"actor_id"`
+	Action    string `json:"action"`
+	TargetID  string `json:"target_id"`
+	Detail    string `json:"detail"`
+	CreatedAt int64  `json:"created_at"`
+}
+
 type Campaign struct {
 	ID          string          `json:"id"`
 	Name        string          `json:"name"`
@@ -113,13 +122,17 @@ type GoalClause struct {
 }
 
 type User struct {
-	ID              string `json:"id"`
-	StravaAthleteID int64  `json:"strava_athlete_id"`
-	Name            string `json:"name"`
-	AvatarUrl       string `json:"avatar_url"`
-	AccessToken     string `json:"access_token"`
-	RefreshToken    string `json:"refresh_token"`
-	TokenExpiresAt  int64  `json:"token_expires_at"`
-	CreatedAt       int64  `json:"created_at"`
-	Role            string `json:"role"`
+	ID              string         `json:"id"`
+	StravaAthleteID int64          `json:"strava_athlete_id"`
+	Name            string         `json:"name"`
+	AvatarUrl       string         `json:"avatar_url"`
+	AccessToken     string         `json:"access_token"`
+	RefreshToken    string         `json:"refresh_token"`
+	TokenExpiresAt  int64          `json:"token_expires_at"`
+	CreatedAt       int64          `json:"created_at"`
+	Role            string         `json:"role"`
+	Status          string         `json:"status"`
+	BanReason       string         `json:"ban_reason"`
+	BannedBy        sql.NullString `json:"banned_by"`
+	BannedAt        sql.NullInt64  `json:"banned_at"`
 }

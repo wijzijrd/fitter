@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -28,12 +30,16 @@ func NewInterceptor(secret []byte, queries *db.Queries) connect.Interceptor {
 	return &interceptor{secret: secret, queries: queries}
 }
 
+// pendingAllowedProcedure is the only call a not-yet-approved user may make,
+// so the UI can learn their status and show the waiting screen.
+const pendingAllowedProcedure = "/fitter.v1.UserService/GetCurrentUser"
+
 type interceptor struct {
 	secret  []byte
 	queries *db.Queries
 }
 
-func (i *interceptor) authenticate(ctx context.Context, header interface{ Get(string) string }) (context.Context, error) {
+func (i *interceptor) authenticate(ctx context.Context, procedure string, header interface{ Get(string) string }) (context.Context, error) {
 	raw := header.Get("Authorization")
 	token, ok := strings.CutPrefix(raw, "Bearer ")
 	if !ok || token == "" {
@@ -48,8 +54,20 @@ func (i *interceptor) authenticate(ctx context.Context, header interface{ Get(st
 	// demotion) takes effect on the very next call instead of waiting for
 	// the token to expire and be reissued.
 	u, err := i.queries.GetUserByID(ctx, userID)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeUnauthenticated, ErrInvalidToken)
+	}
+	if err != nil {
+		// A DB hiccup must not log the user out.
+		return nil, connect.NewError(connect.CodeInternal, errors.New("user lookup failed"))
+	}
+	switch u.Status {
+	case "banned":
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("account banned"))
+	case "pending":
+		if procedure != pendingAllowedProcedure {
+			return nil, connect.NewError(connect.CodePermissionDenied, errors.New("account pending approval"))
+		}
 	}
 	ctx = WithUserID(ctx, userID)
 	ctx = WithRole(ctx, u.Role)
@@ -61,7 +79,7 @@ func (i *interceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		if exemptProcedures[req.Spec().Procedure] {
 			return next(ctx, req)
 		}
-		ctx, err := i.authenticate(ctx, req.Header())
+		ctx, err := i.authenticate(ctx, req.Spec().Procedure, req.Header())
 		if err != nil {
 			return nil, err
 		}
@@ -78,7 +96,7 @@ func (i *interceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) co
 		if exemptProcedures[conn.Spec().Procedure] {
 			return next(ctx, conn)
 		}
-		ctx, err := i.authenticate(ctx, conn.RequestHeader())
+		ctx, err := i.authenticate(ctx, conn.Spec().Procedure, conn.RequestHeader())
 		if err != nil {
 			return err
 		}

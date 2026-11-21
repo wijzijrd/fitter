@@ -306,27 +306,79 @@ select.input {
   outline-offset: 2px;
 }
 
-@media (max-width: 480px) {
-  .navbar .who {
-    display: none;
-  }
-  .navbar nav {
-    gap: var(--space-4);
-  }
+.navbar .menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) calc(var(--space-2) * -1) auto;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+}
+.navbar .menu-btn:hover,
+.navbar.is-open .menu-btn {
+  background: var(--cool-blue);
+}
+.navbar .menu-btn:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+.navbar .menu-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
-@media (max-width: 360px) {
+/* Phones: the links collapse into a panel under the bar. */
+@media (max-width: 720px) {
   .navbar {
-    padding-inline: var(--space-4);
+    position: relative;
   }
-  .navbar .wordmark {
-    font-size: 1.05rem;
+  .navbar .menu-btn {
+    display: inline-flex;
   }
   .navbar nav {
-    gap: var(--space-3);
+    display: none;
+    position: absolute;
+    inset: 100% 0 auto 0;
+    z-index: 10;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0 var(--space-5) var(--space-4);
+    background: var(--paper);
+    border-bottom: 2px solid var(--ink);
+  }
+  .navbar.is-open nav {
+    display: flex;
+  }
+  .navbar nav a {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 1rem;
+  }
+  .navbar nav a.router-link-active {
+    text-decoration-line: underline;
+  }
+  .navbar .who {
+    display: block;
+    max-width: none;
+    padding: var(--space-4) 0 var(--space-2);
   }
   .navbar .logout {
-    padding-inline: var(--space-3);
+    align-self: flex-start;
+    min-height: 2.75rem;
+    padding-inline: var(--space-5);
   }
 }
 

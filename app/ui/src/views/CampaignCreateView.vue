@@ -150,7 +150,7 @@ async function create(): Promise<void> {
                 :aria-invalid="!!errors.name"
                 aria-describedby="cc-name-error"
               />
-              <span id="cc-name-error" class="field-error" role="alert">{{ errors.name }}</span>
+              <span id="cc-name-error" class="field-error">{{ errors.name }}</span>
             </div>
             <div class="rb-field">
               <label for="cc-desc">Description <small>optional</small></label>
@@ -214,7 +214,7 @@ async function create(): Promise<void> {
                   :aria-invalid="!!errors.target"
                   aria-describedby="cc-target-error"
                 />
-                <span id="cc-target-error" class="field-error" role="alert">{{ errors.target }}</span>
+                <span id="cc-target-error" class="field-error">{{ errors.target }}</span>
               </div>
             </template>
 

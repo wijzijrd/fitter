@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { activityClient } from "../lib/connect";
 import { useCatalogStore } from "../stores/catalog";
 import type { ManualActivity } from "../gen/fitter/v1/activity_pb";
@@ -72,7 +72,12 @@ onMounted(load);
 
 async function save(): Promise<void> {
   showErrors.value = true;
-  if (hasErrors.value) return;
+  if (hasErrors.value) {
+    // Errors are linked to their fields, so landing on the first one reads its message.
+    await nextTick();
+    document.querySelector<HTMLElement>('.form [aria-invalid="true"]')?.focus();
+    return;
+  }
   saving.value = true;
   error.value = "";
   saved.value = "";
@@ -140,7 +145,7 @@ const describe = (a: ManualActivity) => {
               <option v-for="t in g.sportTypes" :key="t" :value="t">{{ t }}</option>
             </optgroup>
           </select>
-          <span id="al-sport-error" class="field-error" role="alert">{{ showErrors ? errors.sport : "" }}</span>
+          <span id="al-sport-error" class="field-error">{{ showErrors ? errors.sport : "" }}</span>
         </div>
 
         <div class="rb-field">
@@ -151,19 +156,19 @@ const describe = (a: ManualActivity) => {
         <div class="rb-field">
           <label for="al-when">When</label>
           <input id="al-when" v-model="form.when" class="input" type="datetime-local" :aria-invalid="showErrors && !!errors.when" aria-describedby="al-when-error" />
-          <span id="al-when-error" class="field-error" role="alert">{{ showErrors ? errors.when : "" }}</span>
+          <span id="al-when-error" class="field-error">{{ showErrors ? errors.when : "" }}</span>
         </div>
 
         <div class="row">
           <div class="rb-field">
             <label for="al-duration">Time <small>optional</small></label>
             <input id="al-duration" class="input" :value="form.duration" inputmode="numeric" placeholder="45:00" @input="form.duration = maskDuration(($event.target as HTMLInputElement).value)" :aria-invalid="showErrors && !!errors.duration" aria-describedby="al-duration-error" />
-            <span id="al-duration-error" class="field-error" role="alert">{{ showErrors ? errors.duration : "" }}</span>
+            <span id="al-duration-error" class="field-error">{{ showErrors ? errors.duration : "" }}</span>
           </div>
           <div v-if="!isStrength" class="rb-field">
             <label for="al-distance">Distance (km) <small>optional</small></label>
             <input id="al-distance" v-model="form.distanceKm" class="input" inputmode="decimal" :aria-invalid="showErrors && !!errors.distance" aria-describedby="al-distance-error" />
-            <span id="al-distance-error" class="field-error" role="alert">{{ showErrors ? errors.distance : "" }}</span>
+            <span id="al-distance-error" class="field-error">{{ showErrors ? errors.distance : "" }}</span>
           </div>
         </div>
 
@@ -179,7 +184,7 @@ const describe = (a: ManualActivity) => {
             <button v-if="form.lifts.length > 1" type="button" class="pill pill--quiet" @click="form.lifts.splice(i, 1)">
               Remove<span class="visually-hidden"> lift {{ i + 1 }}</span>
             </button>
-            <span :id="`al-lift-${l.key}-error`" class="field-error" role="alert">{{ showErrors ? errors.lifts[i] : "" }}</span>
+            <span :id="`al-lift-${l.key}-error`" class="field-error">{{ showErrors ? errors.lifts[i] : "" }}</span>
           </div>
           <button type="button" class="pill" @click="form.lifts.push(blankLift())">Add lift</button>
           <datalist id="al-exercises"><option v-for="e in exercises" :key="e" :value="e" /></datalist>

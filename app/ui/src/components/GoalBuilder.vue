@@ -105,7 +105,7 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
         :aria-invalid="showErrors && !!errors.name"
         :aria-describedby="id('name-error')"
       />
-      <span :id="id('name-error')" class="field-error" role="alert">{{ showErrors ? errors.name : "" }}</span>
+      <span :id="id('name-error')" class="field-error">{{ showErrors ? errors.name : "" }}</span>
     </div>
 
     <div class="rb-field">
@@ -203,7 +203,7 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
             </span>
           </div>
           <small v-if="isDuration(c)" class="time-hint">Type digits only, the colons fill in: {{ isPace(c) ? "435 becomes 4:35" : "13000 becomes 1:30:00" }}.</small>
-          <span :id="id(`value-${c.key}-error`)" class="field-error" role="alert">{{ showErrors ? errors.clauses[i] : "" }}</span>
+          <span :id="id(`value-${c.key}-error`)" class="field-error">{{ showErrors ? errors.clauses[i] : "" }}</span>
         </li>
       </ol>
       <button v-if="catalog.loaded" type="button" class="pill add" @click="add">

@@ -88,7 +88,14 @@ function startBan(u: AdminUser): void {
 }
 async function confirmBan(u: AdminUser): Promise<void> {
   await act(() => adminClient.banUser({ id: u.id, reason: banReason.value.trim() }));
-  if (!error.value) banning.value = "";
+  if (error.value) return;
+  banning.value = "";
+  // The row moves to Banned; follow it to its Unban button.
+  focusNthOr(`[data-unban="${u.id}"]`, 0, "#admin-banned");
+}
+function cancelBan(u: AdminUser): void {
+  banning.value = "";
+  focusNthOr(`[data-ban="${u.id}"]`, 0, "#admin-panel");
 }
 
 const sportForm = reactive({ key: "", label: "" });
@@ -154,7 +161,7 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
     </div>
     <p v-if="error" class="notice" role="alert">{{ error }}</p>
 
-    <div id="admin-panel" role="tabpanel" :aria-labelledby="`admin-tab-${tab}`">
+    <div id="admin-panel" role="tabpanel" tabindex="-1" :aria-labelledby="`admin-tab-${tab}`">
     <section v-if="tab === 'users'">
       <h2>Pending ({{ pending.length }})</h2>
       <p v-if="!pending.length" class="quiet">Nobody waiting.</p>
@@ -163,13 +170,13 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
           <span class="name">{{ u.name }}</span>
           <span class="meta">Joined {{ fmtDate(u.createdAt) }}</span>
           <button type="button" class="pill pill--primary" v-busy="busy" @click="approve(u)">Approve</button>
-          <button type="button" class="pill" v-busy="busy" @click="startBan(u)">Ban…</button>
+          <button type="button" class="pill" :data-ban="u.id" v-busy="busy" @click="startBan(u)">Ban…</button>
           <form v-if="banning === u.id" class="ban" @submit.prevent="confirmBan(u)">
             <div class="rb-field">
               <label :for="`ban-${u.id}`">Reason for banning {{ u.name }}</label>
-              <input :id="`ban-${u.id}`" v-model="banReason" class="input" maxlength="500" required />
+              <input :id="`ban-${u.id}`" v-focus="true" v-model="banReason" class="input" maxlength="500" required />
             </div>
-            <button type="button" class="pill" @click="banning = ''">Cancel</button>
+            <button type="button" class="pill" @click="cancelBan(u)">Cancel</button>
             <button type="submit" class="pill pill--primary" v-busy="busy || !banReason.trim()">Confirm ban</button>
           </form>
         </li>
@@ -183,27 +190,27 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
           <template v-if="!isSelf(u)">
             <button v-if="u.role === 'member'" type="button" class="pill" v-busy="busy" @click="setRole(u, 'admin')">Promote</button>
             <button v-else type="button" class="pill" v-busy="busy" @click="setRole(u, 'member')">Demote</button>
-            <button v-if="u.role === 'member'" type="button" class="pill" v-busy="busy" @click="startBan(u)">Ban…</button>
+            <button v-if="u.role === 'member'" type="button" class="pill" :data-ban="u.id" v-busy="busy" @click="startBan(u)">Ban…</button>
           </template>
           <span v-else class="meta">you</span>
           <form v-if="banning === u.id" class="ban" @submit.prevent="confirmBan(u)">
             <div class="rb-field">
               <label :for="`ban-${u.id}`">Reason for banning {{ u.name }}</label>
-              <input :id="`ban-${u.id}`" v-model="banReason" class="input" maxlength="500" required />
+              <input :id="`ban-${u.id}`" v-focus="true" v-model="banReason" class="input" maxlength="500" required />
             </div>
-            <button type="button" class="pill" @click="banning = ''">Cancel</button>
+            <button type="button" class="pill" @click="cancelBan(u)">Cancel</button>
             <button type="submit" class="pill pill--primary" v-busy="busy || !banReason.trim()">Confirm ban</button>
           </form>
         </li>
       </ul>
 
-      <h2>Banned ({{ banned.length }})</h2>
+      <h2 id="admin-banned" tabindex="-1">Banned ({{ banned.length }})</h2>
       <p v-if="!banned.length" class="quiet">No bans.</p>
       <ul class="rows">
         <li v-for="u in banned" :key="u.id">
           <span class="name">{{ u.name }}</span>
           <span class="meta">{{ u.banReason }} · {{ fmtDate(u.bannedAt) }}</span>
-          <button type="button" class="pill" v-busy="busy" @click="unban(u)">Unban</button>
+          <button type="button" class="pill" :data-unban="u.id" v-busy="busy" @click="unban(u)">Unban</button>
         </li>
       </ul>
     </section>

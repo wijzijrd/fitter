@@ -316,25 +316,35 @@ onMounted(() => {
                 </ol>
               </section>
               <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">No goals set yet. Standings appear once members set theirs.</p>
-              <section v-for="g in feed.leaderboardGroups" :key="g.sportGroup" class="standings-group">
-                <h2 v-if="feed.leaderboardGroups.length > 1 || pooled">{{ g.sportGroupLabel }}</h2>
-                <ol class="rows">
-                  <li v-for="e in g.entries" :key="e.goalId" :class="{ me: e.userId === meId, podium: onPodium(e.rank, e.progressRatio) }">
-                    <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
-                      <span class="chip">{{ e.rank }}</span>
-                      <span class="who">
-                        <b>{{ e.userId === meId ? "You" : e.userName }}</b>
-                        <small>{{ rowNote(e) }}</small>
-                        <small v-if="e.satisfied" class="finisher">Finisher</small>
-                      </span>
-                      <span class="val">
-                        {{ primary(e, catalog.format) }}
-                        <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
-                      </span>
-                    </button>
-                  </li>
-                </ol>
-              </section>
+              <ol v-if="feed.people.length" class="rows standings-group">
+                <li v-for="p in feed.people" :key="p.userId" :class="{ me: p.userId === meId, podium: onPodium(p.rank, p.averageRatio) }">
+                  <div class="row">
+                    <span class="chip">{{ p.rank }}</span>
+                    <span class="who">
+                      <b>{{ p.userId === meId ? "You" : p.userName }}</b>
+                      <small>{{ p.goalsSatisfied }} of {{ p.goalCount }} {{ p.goalCount === 1 ? "goal" : "goals" }} done</small>
+                      <small v-if="p.goalCount && p.goalsSatisfied === p.goalCount" class="finisher">Finisher</small>
+                      <small v-if="p.earlyFinishes" class="finisher">Early finish</small>
+                    </span>
+                    <span class="val">{{ Math.floor(p.averageRatio * 100 + 1e-9) }}%<small>average</small></span>
+                  </div>
+                  <ul class="goal-rows">
+                    <li v-for="e in goalsOf(p.userId)" :key="e.goalId">
+                      <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
+                        <span />
+                        <span class="who">
+                          <b>{{ e.goalName }}</b>
+                          <small>{{ rowNote(e) }}</small>
+                        </span>
+                        <span class="val">
+                          {{ primary(e, catalog.format) }}
+                          <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
+                        </span>
+                      </button>
+                    </li>
+                  </ul>
+                </li>
+              </ol>
               <router-link v-if="mine.length && !schedule.ended" :to="`/goals/new?campaign=${campaign.id}`" class="pill add-goal">
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Add a goal
               </router-link>

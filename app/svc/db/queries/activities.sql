@@ -4,14 +4,14 @@ INSERT INTO activities (
     distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms,
     average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts,
     device_watts, kilojoules, calories, average_cadence, suffer_score,
-    created_at, updated_at
+    created_at, updated_at, start_date_local
 )
 VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10, $11, $12,
     $13, $14, $15, $16, $17,
     $18, $19, $20, $21, $22,
-    $23, $24
+    $23, $24, $25
 )
 ON CONFLICT (strava_activity_id) DO UPDATE SET
     user_id                = excluded.user_id,
@@ -35,7 +35,8 @@ ON CONFLICT (strava_activity_id) DO UPDATE SET
     calories               = COALESCE(excluded.calories, activities.calories),
     average_cadence        = COALESCE(excluded.average_cadence, activities.average_cadence),
     suffer_score           = COALESCE(excluded.suffer_score, activities.suffer_score),
-    updated_at             = excluded.updated_at
+    updated_at             = excluded.updated_at,
+    start_date_local       = COALESCE(excluded.start_date_local, activities.start_date_local)
 RETURNING *;
 
 -- name: DeleteActivityByStravaID :exec
@@ -67,15 +68,15 @@ SELECT COALESCE(MAX(start_date), 0)::bigint FROM activities WHERE user_id = $1;
 -- name: CreateManualActivity :one
 INSERT INTO activities (
     strava_activity_id, user_id, type, sport_type, name, start_date,
-    distance_m, moving_time_s, elapsed_time_s, source, created_at, updated_at
+    distance_m, moving_time_s, elapsed_time_s, source, created_at, updated_at, start_date_local
 )
-VALUES (nextval('manual_activity_id'), $1, $2, $2, $3, $4, $5, $6, $6, 'manual', $7, $7)
+VALUES (nextval('manual_activity_id'), $1, $2, $2, $3, $4, $5, $6, $6, 'manual', $7, $7, $8)
 RETURNING *;
 
 -- name: UpdateManualActivity :one
 UPDATE activities
 SET type = $3, sport_type = $3, name = $4, start_date = $5, distance_m = $6,
-    moving_time_s = $7, elapsed_time_s = $7, updated_at = $8
+    moving_time_s = $7, elapsed_time_s = $7, updated_at = $8, start_date_local = $9
 WHERE strava_activity_id = $1 AND user_id = $2 AND source = 'manual'
 RETURNING *;
 

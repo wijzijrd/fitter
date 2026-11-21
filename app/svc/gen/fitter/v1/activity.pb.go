@@ -84,16 +84,19 @@ func (x *Lift) GetReps() int32 {
 }
 
 type ManualActivity struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"` // negative, server-assigned
-	SportType     string                 `protobuf:"bytes,2,opt,name=sport_type,json=sportType,proto3" json:"sport_type,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	StartDate     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
-	MovingTimeS   int64                  `protobuf:"varint,5,opt,name=moving_time_s,json=movingTimeS,proto3" json:"moving_time_s,omitempty"`
-	DistanceM     *float64               `protobuf:"fixed64,6,opt,name=distance_m,json=distanceM,proto3,oneof" json:"distance_m,omitempty"`
-	Lifts         []*Lift                `protobuf:"bytes,7,rep,name=lifts,proto3" json:"lifts,omitempty"` // strength sports only
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"` // negative, server-assigned
+	SportType   string                 `protobuf:"bytes,2,opt,name=sport_type,json=sportType,proto3" json:"sport_type,omitempty"`
+	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	StartDate   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	MovingTimeS int64                  `protobuf:"varint,5,opt,name=moving_time_s,json=movingTimeS,proto3" json:"moving_time_s,omitempty"`
+	DistanceM   *float64               `protobuf:"fixed64,6,opt,name=distance_m,json=distanceM,proto3,oneof" json:"distance_m,omitempty"`
+	Lifts       []*Lift                `protobuf:"bytes,7,rep,name=lifts,proto3" json:"lifts,omitempty"` // strength sports only
+	// Browser UTC offset (minutes east of UTC) at start_date, so day/week goals
+	// bucket by the user's local day. Unset = treat as UTC.
+	UtcOffsetMinutes *int32 `protobuf:"varint,8,opt,name=utc_offset_minutes,json=utcOffsetMinutes,proto3,oneof" json:"utc_offset_minutes,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *ManualActivity) Reset() {
@@ -173,6 +176,13 @@ func (x *ManualActivity) GetLifts() []*Lift {
 		return x.Lifts
 	}
 	return nil
+}
+
+func (x *ManualActivity) GetUtcOffsetMinutes() int32 {
+	if x != nil && x.UtcOffsetMinutes != nil {
+		return *x.UtcOffsetMinutes
+	}
+	return 0
 }
 
 type CreateManualActivityRequest struct {
@@ -519,7 +529,7 @@ const file_fitter_v1_activity_proto_rawDesc = "" +
 	"\x04Lift\x12\x1a\n" +
 	"\bexercise\x18\x01 \x01(\tR\bexercise\x12\x1b\n" +
 	"\tweight_kg\x18\x02 \x01(\x01R\bweightKg\x12\x12\n" +
-	"\x04reps\x18\x03 \x01(\x05R\x04reps\"\x8c\x02\n" +
+	"\x04reps\x18\x03 \x01(\x05R\x04reps\"\xd6\x02\n" +
 	"\x0eManualActivity\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
@@ -530,8 +540,10 @@ const file_fitter_v1_activity_proto_rawDesc = "" +
 	"\rmoving_time_s\x18\x05 \x01(\x03R\vmovingTimeS\x12\"\n" +
 	"\n" +
 	"distance_m\x18\x06 \x01(\x01H\x00R\tdistanceM\x88\x01\x01\x12%\n" +
-	"\x05lifts\x18\a \x03(\v2\x0f.fitter.v1.LiftR\x05liftsB\r\n" +
-	"\v_distance_m\"T\n" +
+	"\x05lifts\x18\a \x03(\v2\x0f.fitter.v1.LiftR\x05lifts\x121\n" +
+	"\x12utc_offset_minutes\x18\b \x01(\x05H\x01R\x10utcOffsetMinutes\x88\x01\x01B\r\n" +
+	"\v_distance_mB\x15\n" +
+	"\x13_utc_offset_minutes\"T\n" +
 	"\x1bCreateManualActivityRequest\x125\n" +
 	"\bactivity\x18\x01 \x01(\v2\x19.fitter.v1.ManualActivityR\bactivity\"U\n" +
 	"\x1cCreateManualActivityResponse\x125\n" +

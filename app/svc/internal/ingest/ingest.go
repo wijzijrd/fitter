@@ -42,6 +42,13 @@ func UpsertActivity(ctx context.Context, q *db.Queries, userID string, a strava.
 		sportType = a.Type
 	}
 
+	// Strava's start_date_local carries the wall clock with a bogus "Z";
+	// reading it as UTC yields the local-clock-as-unix-seconds we store.
+	var startLocal sql.NullInt64
+	if t, perr := time.Parse(time.RFC3339, a.StartDateLocal); perr == nil {
+		startLocal = sql.NullInt64{Int64: t.Unix(), Valid: true}
+	}
+
 	now := time.Now().Unix()
 	_, err = q.UpsertActivity(ctx, db.UpsertActivityParams{
 		StravaActivityID:     a.ID,
@@ -68,6 +75,7 @@ func UpsertActivity(ctx context.Context, q *db.Queries, userID string, a strava.
 		SufferScore:          nullF(a.SufferScore),
 		CreatedAt:            now,
 		UpdatedAt:            now,
+		StartDateLocal:       startLocal,
 	})
 	return err
 }

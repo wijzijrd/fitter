@@ -19,6 +19,9 @@ message ManualActivity {
   int64 moving_time_s = 5;
   optional double distance_m = 6;
   repeated Lift lifts = 7; // strength sports only
+  // Browser UTC offset (minutes east of UTC) at start_date, so day/week goals
+  // bucket by the user's local day. Unset = treat as UTC.
+  optional int32 utc_offset_minutes = 8;
 }
 
 message CreateManualActivityRequest {

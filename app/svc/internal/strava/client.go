@@ -163,7 +163,8 @@ type Activity struct {
 	TotalElevationGain   float64  `json:"total_elevation_gain"` // meters
 	MovingTime           int64    `json:"moving_time"`          // seconds
 	ElapsedTime          int64    `json:"elapsed_time"`
-	StartDate            string   `json:"start_date"` // RFC3339
+	StartDate            string   `json:"start_date"`       // RFC3339
+	StartDateLocal       string   `json:"start_date_local"` // RFC3339 wall clock; its "Z" is a lie, only the clock reading matters
 	AverageSpeed         float64  `json:"average_speed"`
 	MaxSpeed             float64  `json:"max_speed"`
 	HasHeartrate         bool     `json:"has_heartrate"`

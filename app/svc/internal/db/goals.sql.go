@@ -11,9 +11,9 @@ import (
 )
 
 const createGoal = `-- name: CreateGoal :one
-INSERT INTO goals (id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at
+INSERT INTO goals (id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, COALESCE(NULLIF($10::text, ''), 'none'))
+RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence
 `
 
 type CreateGoalParams struct {
@@ -26,6 +26,7 @@ type CreateGoalParams struct {
 	PeriodStart int64          `json:"period_start"`
 	PeriodEnd   int64          `json:"period_end"`
 	CreatedAt   int64          `json:"created_at"`
+	Recurrence  string         `json:"recurrence"`
 }
 
 func (q *Queries) CreateGoal(ctx context.Context, arg CreateGoalParams) (Goal, error) {
@@ -39,6 +40,7 @@ func (q *Queries) CreateGoal(ctx context.Context, arg CreateGoalParams) (Goal, e
 		arg.PeriodStart,
 		arg.PeriodEnd,
 		arg.CreatedAt,
+		arg.Recurrence,
 	)
 	var i Goal
 	err := row.Scan(
@@ -51,6 +53,7 @@ func (q *Queries) CreateGoal(ctx context.Context, arg CreateGoalParams) (Goal, e
 		&i.PeriodStart,
 		&i.PeriodEnd,
 		&i.CreatedAt,
+		&i.Recurrence,
 	)
 	return i, err
 }
@@ -70,7 +73,7 @@ func (q *Queries) DeleteGoal(ctx context.Context, arg DeleteGoalParams) error {
 }
 
 const getGoal = `-- name: GetGoal :one
-SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE id = $1
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence FROM goals WHERE id = $1
 `
 
 func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
@@ -86,12 +89,13 @@ func (q *Queries) GetGoal(ctx context.Context, id string) (Goal, error) {
 		&i.PeriodStart,
 		&i.PeriodEnd,
 		&i.CreatedAt,
+		&i.Recurrence,
 	)
 	return i, err
 }
 
 const listAllGoalsForUser = `-- name: ListAllGoalsForUser :many
-SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE user_id = $1 ORDER BY campaign_id NULLS FIRST, period_start DESC, created_at ASC
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence FROM goals WHERE user_id = $1 ORDER BY campaign_id NULLS FIRST, period_start DESC, created_at ASC
 `
 
 // Personal goals plus every campaign goal of the user, for the goal hub.
@@ -114,6 +118,7 @@ func (q *Queries) ListAllGoalsForUser(ctx context.Context, userID string) ([]Goa
 			&i.PeriodStart,
 			&i.PeriodEnd,
 			&i.CreatedAt,
+			&i.Recurrence,
 		); err != nil {
 			return nil, err
 		}
@@ -129,7 +134,7 @@ func (q *Queries) ListAllGoalsForUser(ctx context.Context, userID string) ([]Goa
 }
 
 const listCampaignGoalsWithUsers = `-- name: ListCampaignGoalsWithUsers :many
-SELECT g.id, g.user_id, g.campaign_id, g.name, g.sport_group, g.sport_type, g.period_start, g.period_end, g.created_at, u.name AS user_name, u.avatar_url AS user_avatar_url
+SELECT g.id, g.user_id, g.campaign_id, g.name, g.sport_group, g.sport_type, g.period_start, g.period_end, g.created_at, g.recurrence, u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM goals g
 JOIN users u ON u.id = g.user_id
 WHERE g.campaign_id = $1
@@ -146,6 +151,7 @@ type ListCampaignGoalsWithUsersRow struct {
 	PeriodStart   int64          `json:"period_start"`
 	PeriodEnd     int64          `json:"period_end"`
 	CreatedAt     int64          `json:"created_at"`
+	Recurrence    string         `json:"recurrence"`
 	UserName      string         `json:"user_name"`
 	UserAvatarUrl string         `json:"user_avatar_url"`
 }
@@ -170,6 +176,7 @@ func (q *Queries) ListCampaignGoalsWithUsers(ctx context.Context, campaignID sql
 			&i.PeriodStart,
 			&i.PeriodEnd,
 			&i.CreatedAt,
+			&i.Recurrence,
 			&i.UserName,
 			&i.UserAvatarUrl,
 		); err != nil {
@@ -187,7 +194,7 @@ func (q *Queries) ListCampaignGoalsWithUsers(ctx context.Context, campaignID sql
 }
 
 const listGoalsForUserInCampaign = `-- name: ListGoalsForUserInCampaign :many
-SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE user_id = $1 AND campaign_id = $2 ORDER BY created_at ASC
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence FROM goals WHERE user_id = $1 AND campaign_id = $2 ORDER BY created_at ASC
 `
 
 type ListGoalsForUserInCampaignParams struct {
@@ -214,6 +221,7 @@ func (q *Queries) ListGoalsForUserInCampaign(ctx context.Context, arg ListGoalsF
 			&i.PeriodStart,
 			&i.PeriodEnd,
 			&i.CreatedAt,
+			&i.Recurrence,
 		); err != nil {
 			return nil, err
 		}
@@ -229,7 +237,7 @@ func (q *Queries) ListGoalsForUserInCampaign(ctx context.Context, arg ListGoalsF
 }
 
 const listPersonalGoalsForUser = `-- name: ListPersonalGoalsForUser :many
-SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at FROM goals WHERE user_id = $1 AND campaign_id IS NULL ORDER BY period_start DESC
+SELECT id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence FROM goals WHERE user_id = $1 AND campaign_id IS NULL ORDER BY period_start DESC
 `
 
 func (q *Queries) ListPersonalGoalsForUser(ctx context.Context, userID string) ([]Goal, error) {
@@ -251,6 +259,7 @@ func (q *Queries) ListPersonalGoalsForUser(ctx context.Context, userID string) (
 			&i.PeriodStart,
 			&i.PeriodEnd,
 			&i.CreatedAt,
+			&i.Recurrence,
 		); err != nil {
 			return nil, err
 		}
@@ -266,9 +275,10 @@ func (q *Queries) ListPersonalGoalsForUser(ctx context.Context, userID string) (
 }
 
 const updateGoalMeta = `-- name: UpdateGoalMeta :one
-UPDATE goals SET name = $1, sport_group = $2, sport_type = $3, period_start = $4, period_end = $5, campaign_id = $8
+UPDATE goals SET name = $1, sport_group = $2, sport_type = $3, period_start = $4, period_end = $5, campaign_id = $8,
+    recurrence = COALESCE(NULLIF($9::text, ''), 'none')
 WHERE id = $6 AND user_id = $7
-RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at
+RETURNING id, user_id, campaign_id, name, sport_group, sport_type, period_start, period_end, created_at, recurrence
 `
 
 type UpdateGoalMetaParams struct {
@@ -280,6 +290,7 @@ type UpdateGoalMetaParams struct {
 	ID          string         `json:"id"`
 	UserID      string         `json:"user_id"`
 	CampaignID  sql.NullString `json:"campaign_id"`
+	Recurrence  string         `json:"recurrence"`
 }
 
 func (q *Queries) UpdateGoalMeta(ctx context.Context, arg UpdateGoalMetaParams) (Goal, error) {
@@ -292,6 +303,7 @@ func (q *Queries) UpdateGoalMeta(ctx context.Context, arg UpdateGoalMetaParams) 
 		arg.ID,
 		arg.UserID,
 		arg.CampaignID,
+		arg.Recurrence,
 	)
 	var i Goal
 	err := row.Scan(
@@ -304,6 +316,7 @@ func (q *Queries) UpdateGoalMeta(ctx context.Context, arg UpdateGoalMetaParams) 
 		&i.PeriodStart,
 		&i.PeriodEnd,
 		&i.CreatedAt,
+		&i.Recurrence,
 	)
 	return i, err
 }

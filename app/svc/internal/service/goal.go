@@ -229,6 +229,7 @@ func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoal
 		return nil, err
 	}
 
+	now := time.Now().Unix()
 	for _, g := range goals {
 		pg := progress.Goal{
 			ID:          g.ID,
@@ -236,6 +237,8 @@ func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoal
 			PeriodStart: g.PeriodStart,
 			PeriodEnd:   g.PeriodEnd,
 			Clauses:     clausesByGoalID[g.ID],
+			Recurrence:  recurrenceFromDB(g.Recurrence),
+			Now:         now,
 		}
 		results[g.ID] = progress.Evaluate(pg, actsByUser[g.UserID])
 	}
@@ -273,6 +276,9 @@ func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitte
 		ProgressRatio:           res.Ratio,
 		Clauses:                 clauseResultsToProto(res.Clauses),
 		ConsideredActivityCount: int32(res.ConsideredCount),
+		PeriodsHit:              int32(res.PeriodsHit),
+		PeriodsElapsed:          int32(res.PeriodsElapsed),
+		PeriodsTotal:            int32(res.PeriodsTotal),
 	}
 	if res.QualifyingActivityID != 0 {
 		v := res.QualifyingActivityID
@@ -299,6 +305,7 @@ func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitte
 		Clauses:     protoClauses,
 		Progress:    progressProto,
 		CreatedAt:   unixToTimestamp(g.CreatedAt),
+		Recurrence:  recurrenceToProto(g.Recurrence),
 	}
 }
 
@@ -392,6 +399,10 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 		return db.Goal{}, nil, connect.NewError(connect.CodeInvalidArgument, errors.New("period_end must be after period_start"))
 	}
 
+	if err := checkBuckets(msg.GetRecurrence(), periodStart, periodEnd); err != nil {
+		return db.Goal{}, nil, err
+	}
+
 	g, err := qtx.CreateGoal(ctx, db.CreateGoalParams{
 		// Time-ordered, so goal_id order is creation order: the leaderboard's
 		// final tie-break, and the UI's "first created" lead-goal rule.
@@ -404,6 +415,7 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 		PeriodStart: periodStart,
 		PeriodEnd:   periodEnd,
 		CreatedAt:   time.Now().Unix(),
+		Recurrence:  recurrenceToDB(msg.GetRecurrence()),
 	})
 	if err != nil {
 		return db.Goal{}, nil, connect.NewError(connect.CodeInternal, err)
@@ -592,6 +604,10 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("period_end must be after period_start"))
 	}
 
+	if err := checkBuckets(msg.GetRecurrence(), periodStart, periodEnd); err != nil {
+		return nil, err
+	}
+
 	g, err := qtx.UpdateGoalMeta(ctx, db.UpdateGoalMetaParams{
 		Name:        msg.GetName(),
 		SportGroup:  sportGroup,
@@ -601,6 +617,7 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 		ID:          msg.GetGoalId(),
 		UserID:      userID,
 		CampaignID:  campaignID,
+		Recurrence:  recurrenceToDB(msg.GetRecurrence()),
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("goal not found"))

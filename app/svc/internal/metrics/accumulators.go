@@ -125,3 +125,15 @@ func (a *paceAcc) Result() (float64, int, bool) {
 	}
 	return a.movingTimeS / (a.distanceM / 1000), a.counted, true
 }
+
+// daysAcc counts distinct local calendar days. Local time is "wall clock as
+// unix seconds", so integer division by 86400 yields the local day number.
+type daysAcc struct {
+	days map[int64]struct{}
+}
+
+func (a *daysAcc) Add(act Activity) { a.days[act.LocalStart()/86400] = struct{}{} }
+
+func (a *daysAcc) Result() (float64, int, bool) {
+	return float64(len(a.days)), len(a.days), true
+}

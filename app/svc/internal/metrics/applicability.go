@@ -32,6 +32,7 @@ var builtinApplicability = map[Key][]string{
 	MovingTime:       nil,
 	ElapsedTime:      nil,
 	ActivityCount:    nil,
+	ActiveDays:       nil,
 	AverageHeartrate: nil,
 	MaxHeartrate:     nil,
 	Calories:         nil,

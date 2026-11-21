@@ -2,6 +2,9 @@ package auth
 
 import (
 	"context"
+	"database/sql"
+	"errors"
+	"log/slog"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -24,13 +27,18 @@ var exemptProcedures = map[string]bool{
 // "Authorization: Bearer <jwt>" header on every unary and streaming call
 // (except exemptProcedures), and injects the authenticated user id and
 // current role into the request context.
-func NewInterceptor(secret []byte, queries *db.Queries) connect.Interceptor {
+func NewInterceptor(secret []byte, queries userGetter) connect.Interceptor {
 	return &interceptor{secret: secret, queries: queries}
+}
+
+// userGetter is the one query the interceptor needs; *db.Queries satisfies it.
+type userGetter interface {
+	GetUserByID(ctx context.Context, id string) (db.User, error)
 }
 
 type interceptor struct {
 	secret  []byte
-	queries *db.Queries
+	queries userGetter
 }
 
 func (i *interceptor) authenticate(ctx context.Context, header interface{ Get(string) string }) (context.Context, error) {
@@ -48,8 +56,14 @@ func (i *interceptor) authenticate(ctx context.Context, header interface{ Get(st
 	// demotion) takes effect on the very next call instead of waiting for
 	// the token to expire and be reissued.
 	u, err := i.queries.GetUserByID(ctx, userID)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeUnauthenticated, ErrInvalidToken)
+	}
+	if err != nil {
+		// A transient DB failure must not read as "logged out": the UI wipes
+		// its JWT on Unauthenticated.
+		slog.Error("auth user lookup failed", "user_id", userID, "err", err)
+		return nil, connect.NewError(connect.CodeUnavailable, errors.New("user lookup unavailable"))
 	}
 	ctx = WithUserID(ctx, userID)
 	ctx = WithRole(ctx, u.Role)

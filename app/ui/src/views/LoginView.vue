@@ -15,6 +15,10 @@ const messages: Record<string, string> = {
   access_denied: "You cancelled on Strava, so nothing was connected. Try again when you're ready.",
   state: "Sign-in timed out or your browser blocked a cookie. Try connecting again.",
   scope: "Fitter needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
+  capacity: "Fitter is full right now. Ask the organiser to make room.",
+  rate_limited: "Strava is busy right now. Wait a few minutes and try again.",
+  exchange: "Strava didn't accept the sign-in. Try connecting again.",
+  server: "Something went wrong on our side. Try again in a moment.",
 };
 const route = useRoute();
 const error = computed(() => {

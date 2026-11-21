@@ -532,6 +532,7 @@ func (x *CreateGoalResponse) GetGoal() *Goal {
 type ListGoalsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CampaignId    *string                `protobuf:"bytes,1,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"` // unset = personal goals only
+	All           bool                   `protobuf:"varint,2,opt,name=all,proto3" json:"all,omitempty"`                                      // personal goals plus every campaign goal of the caller; campaign_id is ignored
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -571,6 +572,13 @@ func (x *ListGoalsRequest) GetCampaignId() string {
 		return *x.CampaignId
 	}
 	return ""
+}
+
+func (x *ListGoalsRequest) GetAll() bool {
+	if x != nil {
+		return x.All
+	}
+	return false
 }
 
 type ListGoalsResponse struct {
@@ -618,13 +626,15 @@ func (x *ListGoalsResponse) GetGoals() []*Goal {
 }
 
 type UpdateGoalRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GoalId        string                 `protobuf:"bytes,1,opt,name=goal_id,json=goalId,proto3" json:"goal_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Sport         *SportSelector         `protobuf:"bytes,3,opt,name=sport,proto3" json:"sport,omitempty"`
-	PeriodStart   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
-	PeriodEnd     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
-	Clauses       []*GoalClause          `protobuf:"bytes,6,rep,name=clauses,proto3" json:"clauses,omitempty"` // full replacement, not a patch
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	GoalId      string                 `protobuf:"bytes,1,opt,name=goal_id,json=goalId,proto3" json:"goal_id,omitempty"`
+	Name        string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Sport       *SportSelector         `protobuf:"bytes,3,opt,name=sport,proto3" json:"sport,omitempty"`
+	PeriodStart *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Clauses     []*GoalClause          `protobuf:"bytes,6,rep,name=clauses,proto3" json:"clauses,omitempty"` // full replacement, not a patch
+	// unset = keep; "" = make personal; an id = move to that campaign (caller must be a member; period is forced to its window)
+	CampaignId    *string `protobuf:"bytes,7,opt,name=campaign_id,json=campaignId,proto3,oneof" json:"campaign_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -699,6 +709,13 @@ func (x *UpdateGoalRequest) GetClauses() []*GoalClause {
 		return x.Clauses
 	}
 	return nil
+}
+
+func (x *UpdateGoalRequest) GetCampaignId() string {
+	if x != nil && x.CampaignId != nil {
+		return *x.CampaignId
+	}
+	return ""
 }
 
 type UpdateGoalResponse struct {
@@ -883,13 +900,14 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclausesB\x0e\n" +
 	"\f_campaign_id\"9\n" +
 	"\x12CreateGoalResponse\x12#\n" +
-	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\"H\n" +
+	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\"Z\n" +
 	"\x10ListGoalsRequest\x12$\n" +
 	"\vcampaign_id\x18\x01 \x01(\tH\x00R\n" +
-	"campaignId\x88\x01\x01B\x0e\n" +
+	"campaignId\x88\x01\x01\x12\x10\n" +
+	"\x03all\x18\x02 \x01(\bR\x03allB\x0e\n" +
 	"\f_campaign_id\":\n" +
 	"\x11ListGoalsResponse\x12%\n" +
-	"\x05goals\x18\x01 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"\x9b\x02\n" +
+	"\x05goals\x18\x01 \x03(\v2\x0f.fitter.v1.GoalR\x05goals\"\xd1\x02\n" +
 	"\x11UpdateGoalRequest\x12\x17\n" +
 	"\agoal_id\x18\x01 \x01(\tR\x06goalId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12.\n" +
@@ -897,7 +915,10 @@ const file_fitter_v1_goal_proto_rawDesc = "" +
 	"\fperiod_start\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vperiodStart\x129\n" +
 	"\n" +
 	"period_end\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tperiodEnd\x12/\n" +
-	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\"9\n" +
+	"\aclauses\x18\x06 \x03(\v2\x15.fitter.v1.GoalClauseR\aclauses\x12$\n" +
+	"\vcampaign_id\x18\a \x01(\tH\x00R\n" +
+	"campaignId\x88\x01\x01B\x0e\n" +
+	"\f_campaign_id\"9\n" +
 	"\x12UpdateGoalResponse\x12#\n" +
 	"\x04goal\x18\x01 \x01(\v2\x0f.fitter.v1.GoalR\x04goal\",\n" +
 	"\x11DeleteGoalRequest\x12\x17\n" +
@@ -993,6 +1014,7 @@ func file_fitter_v1_goal_proto_init() {
 	file_fitter_v1_goal_proto_msgTypes[3].OneofWrappers = []any{}
 	file_fitter_v1_goal_proto_msgTypes[4].OneofWrappers = []any{}
 	file_fitter_v1_goal_proto_msgTypes[6].OneofWrappers = []any{}
+	file_fitter_v1_goal_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

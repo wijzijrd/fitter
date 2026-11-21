@@ -2,30 +2,24 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useCampaignsStore } from "../stores/campaigns";
-import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { ActivityMetric, MetricAggregation } from "../gen/fitter/v1/common_pb";
 import { DAY, plural, dateRange, isoDay, localDay } from "../lib/schedule";
 import { editStringToBaseValue, editUnitHint } from "../lib/metricFormat";
-import { blankDraft, draftErrors, draftToInput, unitDraft } from "../lib/goalInput";
-import { clauseText } from "../lib/labels";
 import { errorMessage } from "../lib/errors";
 import CampaignBib from "../components/CampaignBib.vue";
-import GoalBuilder from "../components/GoalBuilder.vue";
 
 const router = useRouter();
 const store = useCampaignsStore();
-const goals = useGoalsStore();
 const catalog = useCatalogStore();
 onMounted(() => catalog.ensureLoaded().catch(() => {}));
 
-const steps = ["Name it", "Set the window", "Group target", "Your goal"] as const;
+const steps = ["Name it", "Set the window", "Group target"] as const;
 const step = ref(0);
 const heading = ref<HTMLElement | null>(null);
 const creating = ref(false);
 const createError = ref("");
 const errors = reactive({ name: "", dates: "", target: "" });
-const showGoalErrors = ref(false);
 
 const form = reactive({
   name: "",
@@ -36,7 +30,6 @@ const form = reactive({
   start: isoDay(new Date()),
   end: isoDay(new Date(Date.now() + 30 * DAY)),
 });
-const goal = ref(blankDraft());
 
 // A group target adds everyone's activities together, so only metrics that sum make sense.
 const targetMetrics = computed(() =>
@@ -54,24 +47,16 @@ const days = computed(() => Math.max(0, Math.round((localDay(form.end).getTime()
 const range = computed(() => dateRange(localDay(form.start), localDay(form.end)));
 const groupLine = computed(() => `${fmt(form.metric, shownTarget.value)} together`);
 
-// goalLine reads the first finished condition of the draft goal.
-const goalLine = computed(() => {
-  const input = draftToInput(goal.value, catalog.unitOf);
-  const c = input.clauses.find((c) => c.value > 0);
-  return c ? clauseText(c, catalog.metricInfo(c.metric), fmt) : "";
-});
-
 const preview = computed(() => {
   const name = form.name.trim() || "Your campaign";
   const length = plural(days.value, "day");
-  if (step.value === 3 || !form.hasTarget) {
-    const c = unitDraft(goal.value);
+  if (!form.hasTarget) {
     return {
       band: [name, "You"] as [string, string],
       numeral: "1",
-      value: c ? fmt(c.metric, 0) : "0%",
-      subs: [goal.value.name.trim() || "Your goal", goalLine.value || length],
-      tab: form.hasTarget ? `Group: ${groupLine.value}` : `Own goals · ${range.value}`,
+      value: "0%",
+      subs: ["Your goal", length],
+      tab: `Own goals · ${range.value}`,
     };
   }
   return {
@@ -92,14 +77,11 @@ function validate(): boolean {
   errors.name = step.value === 0 && !form.name.trim() ? "Give the campaign a name." : "";
   errors.dates = step.value === 1 && form.end < form.start ? "The end date can't be before the start date." : "";
   errors.target = step.value === 2 && form.hasTarget && !(rawTarget.value > 0) ? "Set a target above zero." : "";
-  showGoalErrors.value = step.value === 3;
-  const goalBad = step.value === 3 && draftErrors(goal.value, catalog.unitOf).any;
-  return !errors.name && !errors.dates && !errors.target && !goalBad;
+  return !errors.name && !errors.dates && !errors.target;
 }
 
 async function go(to: number): Promise<void> {
   step.value = to;
-  showGoalErrors.value = false;
   await nextTick();
   heading.value?.focus();
 }
@@ -114,13 +96,12 @@ async function next(): Promise<void> {
     return;
   }
   if (step.value < steps.length - 1) return go(step.value + 1);
-  await create(true);
+  await create();
 }
 
-async function create(withGoal: boolean): Promise<void> {
+async function create(): Promise<void> {
   creating.value = true;
   createError.value = "";
-  let id = "";
   try {
     const c = await store.createCampaign({
       name: form.name.trim(),
@@ -131,12 +112,9 @@ async function create(withGoal: boolean): Promise<void> {
       // The end day counts in full: the server includes activities up to end_date.
       endDate: new Date(localDay(form.end).getTime() + DAY - 1),
     });
-    id = c.id;
-    if (withGoal) await goals.createGoal(draftToInput(goal.value, catalog.unitOf), c.id);
-    router.push(`/campaigns/${c.id}`);
+    // Goals are made in one place: the goal hub, preselected on this campaign.
+    router.push(`/goals/new?campaign=${c.id}`);
   } catch (err) {
-    // The campaign exists but the goal didn't save: send them to add it there.
-    if (id) return void router.push(`/campaigns/${id}/join`);
     createError.value = errorMessage(err, "The campaign wasn't created. Try again.");
   } finally {
     creating.value = false;
@@ -205,7 +183,7 @@ async function create(withGoal: boolean): Promise<void> {
             </p>
           </template>
 
-          <template v-else-if="step === 2">
+          <template v-else>
             <fieldset class="rb-field">
               <legend>Is there a shared number?</legend>
               <label class="choice">
@@ -241,12 +219,6 @@ async function create(withGoal: boolean): Promise<void> {
             </template>
 
             <p class="summary">{{ summary }}</p>
-          </template>
-
-          <template v-else>
-            <p class="lede">You're in from the start. Set what you're chasing; friends see it on the standings.</p>
-            <GoalBuilder v-model="goal" id-prefix="cc-goal" :show-errors="showGoalErrors" />
-            <button type="button" class="pill pill--quiet" :disabled="creating" @click="create(false)">Create without a goal</button>
           </template>
 
           <p v-if="createError" class="notice" role="alert">{{ createError }}</p>

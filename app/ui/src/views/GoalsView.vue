@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useGoalsStore } from "../stores/goals";
+import { useCampaignsStore } from "../stores/campaigns";
 import { useCatalogStore } from "../stores/catalog";
 import { ClauseScope, Comparator } from "../gen/fitter/v1/common_pb";
 import type { Goal } from "../gen/fitter/v1/goal_pb";
@@ -13,6 +15,9 @@ import CampaignBib from "../components/CampaignBib.vue";
 import GoalBuilder from "../components/GoalBuilder.vue";
 
 const store = useGoalsStore();
+const campaigns = useCampaignsStore();
+const route = useRoute();
+const router = useRouter();
 const catalog = useCatalogStore();
 const fmt = catalog.format;
 
@@ -27,11 +32,18 @@ const saveError = ref("");
 const confirmDelete = ref("");
 const deleting = ref(false);
 const deleteError = ref("");
+// "" = personal, else the campaign the goal is assigned to.
+const assignTo = ref("");
+const joinedCampaigns = computed(() => campaigns.campaigns.filter((c) => c.joined));
+const assigned = computed(() => joinedCampaigns.value.find((c) => c.id === assignTo.value));
+const campaignName = (id: string) => campaigns.campaigns.find((c) => c.id === id)?.name ?? "Campaign";
 
 async function load(): Promise<void> {
   listError.value = "";
   try {
-    await Promise.all([store.fetchGoals(), catalog.ensureLoaded()]);
+    await Promise.all([store.fetchAllGoals(), campaigns.fetchCampaigns(), catalog.ensureLoaded()]);
+    // /goals/new?campaign=<id> opens the editor preselected on that campaign.
+    if (route.name === "goal-new") await open(undefined, String(route.query.campaign ?? ""));
   } catch (err) {
     listError.value = errorMessage(err, "Goals didn't load. Try again.");
   }
@@ -39,11 +51,12 @@ async function load(): Promise<void> {
 
 onMounted(load);
 
-async function open(g?: Goal): Promise<void> {
+async function open(g?: Goal, campaignId = ""): Promise<void> {
   showErrors.value = false;
   saveError.value = "";
   dates.error = "";
   editing.value = g?.id ?? "new";
+  assignTo.value = g ? (g.campaignId ?? "") : joinedCampaigns.value.some((c) => c.id === campaignId) ? campaignId : "";
   draft.value = g
     ? inputToDraft({ name: g.name, sport: g.sport?.selector ?? { case: undefined }, clauses: g.clauses }, catalog.unitOf)
     : blankDraft();
@@ -51,9 +64,24 @@ async function open(g?: Goal): Promise<void> {
   const end = (g && toDate(g.periodEnd)) || new Date(Date.now() + 30 * DAY);
   dates.start = isoDay(start);
   dates.end = isoDay(end);
+  syncDates();
   await nextTick();
   // The editor sits inside the list's v-for, so it's found by id rather than a template ref.
   document.getElementById("gl-heading")?.focus();
+}
+
+// A campaign goal runs for the campaign's window, so the dates follow it.
+function syncDates(): void {
+  const c = assigned.value;
+  if (!c) return;
+  dates.start = isoDay(toDate(c.startDate) ?? new Date());
+  dates.end = isoDay(toDate(c.endDate) ?? new Date());
+}
+watch(assignTo, syncDates);
+
+function close(): void {
+  editing.value = "";
+  if (route.name === "goal-new") router.replace("/goals");
 }
 
 async function save(): Promise<void> {
@@ -73,9 +101,9 @@ async function save(): Promise<void> {
   saving.value = true;
   saveError.value = "";
   try {
-    if (editing.value === "new") await store.createGoal(input);
-    else await store.updateGoal(editing.value, input);
-    editing.value = "";
+    if (editing.value === "new") await store.createGoal(input, assignTo.value || undefined);
+    else await store.updateGoal(editing.value, input, assignTo.value);
+    close();
   } catch (err) {
     saveError.value = errorMessage(err, "The goal wasn't saved. Try again.");
   } finally {
@@ -114,9 +142,21 @@ function subs(g: Goal): string[] {
 // While a new goal is open, its editor takes the first slot of the list.
 const items = computed(() => (editing.value === "new" ? [{ id: "new" } as Goal, ...sorted.value] : sorted.value));
 
+// Personal goals first, then one run per campaign; soonest to end first within each.
+const heading = (g: Goal, i: number): string => {
+  if (g.id === "new") return "";
+  const prev = items.value[i - 1];
+  if (prev && prev.id !== "new" && (prev.campaignId ?? "") === (g.campaignId ?? "")) return "";
+  return g.campaignId ? campaignName(g.campaignId) : "Personal";
+};
+
 const sorted = computed(() =>
-  // Soonest to end first.
-  [...store.goals].sort((a, b) => (toDate(a.periodEnd)?.getTime() ?? 0) - (toDate(b.periodEnd)?.getTime() ?? 0)),
+  [...store.allGoals].sort(
+    (a, b) =>
+      (a.campaignId ? 1 : 0) - (b.campaignId ? 1 : 0) ||
+      (a.campaignId ?? "").localeCompare(b.campaignId ?? "") ||
+      (toDate(a.periodEnd)?.getTime() ?? 0) - (toDate(b.periodEnd)?.getTime() ?? 0),
+  ),
 );
 </script>
 
@@ -126,18 +166,18 @@ const sorted = computed(() =>
       <header class="gl-head">
         <div>
           <h1>Goals</h1>
-          <p class="meta">Private. Only you see these.</p>
+          <p class="meta">Personal goals are private. Campaign goals show in that campaign's standings.</p>
         </div>
-        <button v-if="!editing && store.goals.length" type="button" class="pill pill--primary" @click="open()">New goal</button>
+        <button v-if="!editing && store.allGoals.length" type="button" class="pill pill--primary" @click="open()">New goal</button>
       </header>
 
       <div v-if="listError" class="notice" role="alert">
         <p>{{ listError }}</p>
         <button type="button" class="pill" @click="load">Try again</button>
       </div>
-      <p v-else-if="store.loading && !store.goals.length" class="quiet" aria-live="polite">Loading goals…</p>
+      <p v-else-if="store.loading && !store.allGoals.length" class="quiet" aria-live="polite">Loading goals…</p>
 
-      <CampaignBib v-else-if="!store.goals.length && !editing" :band="['No. —', 'Private']">
+      <CampaignBib v-else-if="!store.allGoals.length && !editing" :band="['No. —', 'Private']">
         <div class="unclaimed">
           <b>No goals yet</b>
           <small>Set a private target, like 200 km of riding this month. Your Strava activities count toward it.</small>
@@ -146,14 +186,23 @@ const sorted = computed(() =>
       </CampaignBib>
 
       <ol v-else class="goals">
-        <li v-for="g in items" :key="g.id" :class="{ 'is-editing': editing === g.id }">
+        <li v-for="(g, i) in items" :key="g.id" :class="{ 'is-editing': editing === g.id, 'has-heading': !!heading(g, i) }">
+          <h2 v-if="heading(g, i)" class="group-head">{{ heading(g, i) }}</h2>
           <form v-if="editing === g.id" class="editor" novalidate @submit.prevent="save">
             <h2 id="gl-heading" tabindex="-1">{{ editing === "new" ? "New goal" : "Edit goal" }}</h2>
             <GoalBuilder v-model="draft" id-prefix="gl-goal" :show-errors="showErrors" />
+            <div class="rb-field">
+              <label for="gl-assign">Assign to</label>
+              <select id="gl-assign" v-model="assignTo" class="input">
+                <option value="">Personal (private)</option>
+                <option v-for="c in joinedCampaigns" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+              <small v-if="assigned">Runs for the campaign's dates. Others in the campaign see it.</small>
+            </div>
             <div class="dates">
               <div class="rb-field">
                 <label for="gl-start">Starts</label>
-                <input id="gl-start" v-model="dates.start" class="input" type="date" required />
+                <input id="gl-start" v-model="dates.start" class="input" type="date" :disabled="!!assigned" required />
               </div>
               <div class="rb-field">
                 <label for="gl-end">Ends</label>
@@ -163,6 +212,7 @@ const sorted = computed(() =>
                   class="input"
                   type="date"
                   :min="dates.start"
+                  :disabled="!!assigned"
                   required
                   :aria-invalid="!!dates.error"
                   aria-describedby="gl-dates-error"
@@ -172,7 +222,7 @@ const sorted = computed(() =>
             <p id="gl-dates-error" class="field-error" role="alert">{{ dates.error }}</p>
             <p v-if="saveError" class="notice" role="alert">{{ saveError }}</p>
             <div class="actions">
-              <button type="button" class="pill pill--quiet" @click="editing = ''">Cancel</button>
+              <button type="button" class="pill pill--quiet" @click="close">Cancel</button>
               <button type="submit" class="pill pill--primary" :disabled="saving">{{ saving ? "Saving…" : "Save goal" }}</button>
             </div>
           </form>
@@ -247,6 +297,10 @@ h2 {
   margin: 0 0 1.25rem;
   font: 400 1.5rem/1.1 var(--font-display);
   text-transform: uppercase;
+}
+.group-head {
+  margin: 1rem 0 0.75rem;
+  font-size: 1.125rem;
 }
 h2:focus {
   outline: none;

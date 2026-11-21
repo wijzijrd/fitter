@@ -261,3 +261,32 @@ func TestGoal_OwnershipEnforced(t *testing.T) {
 		t.Fatalf("alice's goal was deleted by bob's request: got %d goals, want 1", len(aliceList.Msg.GetGoals()))
 	}
 }
+
+func TestUpdateGoal_MoveToCampaignRequiresMembership(t *testing.T) {
+	deps := newDeps(t)
+	alice := seedUser(t, deps.Queries, "alice")
+	svc := service.NewGoalService(deps)
+	ctx := ctxAs(alice.ID)
+
+	start := time.Now().Add(-7 * 24 * time.Hour).Unix()
+	end := time.Now().Add(7 * 24 * time.Hour).Unix()
+	created, err := svc.CreateGoal(ctx, connect.NewRequest(twoClauseCreateGoalRequest(start, end)))
+	if err != nil {
+		t.Fatalf("CreateGoal: %v", err)
+	}
+	g := created.Msg.GetGoal()
+
+	campaignID := "not-a-campaign-alice-joined"
+	_, err = svc.UpdateGoal(ctx, connect.NewRequest(&fitterv1.UpdateGoalRequest{
+		GoalId: g.GetId(), Name: g.GetName(), PeriodStart: ts(start), PeriodEnd: ts(end),
+		Clauses: g.GetClauses(), CampaignId: &campaignID,
+	}))
+	if connect.CodeOf(err) != connect.CodePermissionDenied {
+		t.Fatalf("move to unjoined campaign: got %v, want PermissionDenied", err)
+	}
+
+	all, err := svc.ListGoals(ctx, connect.NewRequest(&fitterv1.ListGoalsRequest{All: true}))
+	if err != nil || len(all.Msg.GetGoals()) != 1 {
+		t.Fatalf("ListGoals(all): goals=%d err=%v, want the one personal goal", len(all.Msg.GetGoals()), err)
+	}
+}

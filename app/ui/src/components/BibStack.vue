@@ -396,8 +396,10 @@ function tap(to: "ahead" | "behind"): void {
 button.peek {
   cursor: pointer;
 }
-button.peek:hover {
-  background: var(--cool-blue-soft);
+@media (hover: hover) {
+  button.peek:hover {
+    background: var(--cool-blue-soft);
+  }
 }
 .peek--ahead {
   top: 0;
@@ -524,8 +526,10 @@ button.peek:hover {
 button.tab {
   cursor: pointer;
 }
-button.tab:hover {
-  background: var(--cool-blue-deep);
+@media (hover: hover) {
+  button.tab:hover {
+    background: var(--cool-blue-deep);
+  }
 }
 
 .bib--join .join-body {

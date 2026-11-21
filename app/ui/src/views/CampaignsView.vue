@@ -291,10 +291,6 @@ function finalResult(c: Campaign): { num: string; numLabel?: string; value: stri
 </template>
 
 <style scoped>
-.cl-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cl {
   max-width: 1120px;
   margin: 0 auto;

@@ -150,7 +150,7 @@ async function create(): Promise<void> {
                 :aria-invalid="!!errors.name"
                 aria-describedby="cc-name-error"
               />
-              <span id="cc-name-error" class="field-error" role="alert">{{ errors.name }}</span>
+              <span id="cc-name-error" class="field-error">{{ errors.name }}</span>
             </div>
             <div class="rb-field">
               <label for="cc-desc">Description <small>optional</small></label>
@@ -214,7 +214,7 @@ async function create(): Promise<void> {
                   :aria-invalid="!!errors.target"
                   aria-describedby="cc-target-error"
                 />
-                <span id="cc-target-error" class="field-error" role="alert">{{ errors.target }}</span>
+                <span id="cc-target-error" class="field-error">{{ errors.target }}</span>
               </div>
             </template>
 
@@ -243,10 +243,6 @@ async function create(): Promise<void> {
 </template>
 
 <style scoped>
-.cc-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cc {
   max-width: 1120px;
   margin: 0 auto;
@@ -292,9 +288,6 @@ h2 {
   margin: 0 0 var(--space-6);
   font: 400 1.5rem/1.1 var(--font-display);
   text-transform: uppercase;
-}
-h2:focus {
-  outline: none;
 }
 
 fieldset.rb-field {

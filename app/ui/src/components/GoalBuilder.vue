@@ -7,7 +7,7 @@ import type { ClauseDraft, GoalDraft } from "../lib/goalInput";
 import { blankClause, draftErrors } from "../lib/goalInput";
 import { comparatorLabels, fasterLabels, scopeLabels } from "../lib/labels";
 import { editUnitHint, isDurationUnit, maskDuration } from "../lib/metricFormat";
-import { exercises } from "../lib/exercises";
+import { useExerciseStore } from "../stores/exercises";
 import { recurrenceLabels } from "../lib/goalInput";
 import { ActivityMetric as Metric } from "../gen/fitter/v1/common_pb";
 
@@ -20,7 +20,11 @@ const props = defineProps<{
 }>();
 
 const catalog = useCatalogStore();
-onMounted(() => catalog.ensureLoaded().catch(() => {}));
+const exerciseStore = useExerciseStore();
+onMounted(() => {
+  catalog.ensureLoaded().catch(() => {});
+  exerciseStore.ensureLoaded().catch(() => {}); // suggestions only: a name typed by hand still works
+});
 
 const id = (s: string) => `${props.idPrefix}-${s}`;
 const errors = computed(() => draftErrors(draft.value, catalog.unitOf));
@@ -211,7 +215,7 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
       </button>
       <small v-if="draft.clauses.length > 1">All conditions must be met.</small>
     </fieldset>
-  <datalist id="gb-exercises"><option v-for="e in exercises" :key="e" :value="e" /></datalist>
+  <datalist id="gb-exercises"><option v-for="e in exerciseStore.weightBearing" :key="e.id" :value="e.key" /></datalist>
   </div>
 </template>
 

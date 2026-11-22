@@ -3,6 +3,7 @@ import type { SportSelector } from "../gen/fitter/v1/common_pb";
 import type { MetricInfo, SportGroupInfo } from "../gen/fitter/v1/catalog_pb";
 import type { FeedActivity } from "../gen/fitter/v1/feed_pb";
 import type { GoalClause } from "../gen/fitter/v1/goal_pb";
+import { ExerciseMeasure, Muscle } from "../gen/fitter/v1/exercise_pb";
 
 // ClauseScope and Comparator are small, stable protocol-level enums (not
 // part of the 17-metric catalog), so they stay as plain maps here rather
@@ -84,3 +85,38 @@ export function activityMetricValue(a: FeedActivity, metric: ActivityMetric): nu
       return undefined;
   }
 }
+
+// Muscles in the order they're offered: upper body, then lower, then the whole-body ones.
+export const muscleOrder: Muscle[] = [
+  Muscle.CHEST, Muscle.BACK, Muscle.SHOULDERS, Muscle.BICEPS, Muscle.TRICEPS, Muscle.FOREARMS, Muscle.CORE,
+  Muscle.GLUTES, Muscle.QUADS, Muscle.HAMSTRINGS, Muscle.CALVES, Muscle.FULL_BODY, Muscle.CARDIO,
+];
+
+export const muscleLabels: Record<Muscle, string> = {
+  [Muscle.UNSPECIFIED]: "Unspecified",
+  [Muscle.CHEST]: "Chest",
+  [Muscle.BACK]: "Back",
+  [Muscle.SHOULDERS]: "Shoulders",
+  [Muscle.BICEPS]: "Biceps",
+  [Muscle.TRICEPS]: "Triceps",
+  [Muscle.FOREARMS]: "Forearms",
+  [Muscle.CORE]: "Core",
+  [Muscle.GLUTES]: "Glutes",
+  [Muscle.QUADS]: "Quads",
+  [Muscle.HAMSTRINGS]: "Hamstrings",
+  [Muscle.CALVES]: "Calves",
+  [Muscle.FULL_BODY]: "Full body",
+  [Muscle.CARDIO]: "Cardio",
+};
+
+export const measureOrder: ExerciseMeasure[] = [
+  ExerciseMeasure.WEIGHT_REPS, ExerciseMeasure.REPS, ExerciseMeasure.DISTANCE, ExerciseMeasure.TIME,
+];
+
+export const measureLabels: Record<ExerciseMeasure, string> = {
+  [ExerciseMeasure.UNSPECIFIED]: "Unspecified",
+  [ExerciseMeasure.WEIGHT_REPS]: "Weight × reps",
+  [ExerciseMeasure.REPS]: "Reps only",
+  [ExerciseMeasure.DISTANCE]: "Distance",
+  [ExerciseMeasure.TIME]: "Time",
+};

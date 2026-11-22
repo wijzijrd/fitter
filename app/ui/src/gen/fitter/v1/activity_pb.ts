@@ -12,10 +12,12 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/activity.proto.
  */
 export const file_fitter_v1_activity: GenFile = /*@__PURE__*/
-  fileDesc("ChhmaXR0ZXIvdjEvYWN0aXZpdHkucHJvdG8SCWZpdHRlci52MSI5CgRMaWZ0EhAKCGV4ZXJjaXNlGAEgASgJEhEKCXdlaWdodF9rZxgCIAEoARIMCgRyZXBzGAMgASgFIoUCCg5NYW51YWxBY3Rpdml0eRIKCgJpZBgBIAEoAxISCgpzcG9ydF90eXBlGAIgASgJEgwKBG5hbWUYAyABKAkSLgoKc3RhcnRfZGF0ZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFQoNbW92aW5nX3RpbWVfcxgFIAEoAxIXCgpkaXN0YW5jZV9tGAYgASgBSACIAQESHgoFbGlmdHMYByADKAsyDy5maXR0ZXIudjEuTGlmdBIfChJ1dGNfb2Zmc2V0X21pbnV0ZXMYCCABKAVIAYgBAUINCgtfZGlzdGFuY2VfbUIVChNfdXRjX29mZnNldF9taW51dGVzIkoKG0NyZWF0ZU1hbnVhbEFjdGl2aXR5UmVxdWVzdBIrCghhY3Rpdml0eRgBIAEoCzIZLmZpdHRlci52MS5NYW51YWxBY3Rpdml0eSJLChxDcmVhdGVNYW51YWxBY3Rpdml0eVJlc3BvbnNlEisKCGFjdGl2aXR5GAEgASgLMhkuZml0dGVyLnYxLk1hbnVhbEFjdGl2aXR5IkoKG1VwZGF0ZU1hbnVhbEFjdGl2aXR5UmVxdWVzdBIrCghhY3Rpdml0eRgBIAEoCzIZLmZpdHRlci52MS5NYW51YWxBY3Rpdml0eSJLChxVcGRhdGVNYW51YWxBY3Rpdml0eVJlc3BvbnNlEisKCGFjdGl2aXR5GAEgASgLMhkuZml0dGVyLnYxLk1hbnVhbEFjdGl2aXR5IikKG0RlbGV0ZU1hbnVhbEFjdGl2aXR5UmVxdWVzdBIKCgJpZBgBIAEoAyIeChxEZWxldGVNYW51YWxBY3Rpdml0eVJlc3BvbnNlIh0KG0xpc3RNYW51YWxBY3Rpdml0aWVzUmVxdWVzdCJNChxMaXN0TWFudWFsQWN0aXZpdGllc1Jlc3BvbnNlEi0KCmFjdGl2aXRpZXMYASADKAsyGS5maXR0ZXIudjEuTWFudWFsQWN0aXZpdHkytQMKD0FjdGl2aXR5U2VydmljZRJnChRDcmVhdGVNYW51YWxBY3Rpdml0eRImLmZpdHRlci52MS5DcmVhdGVNYW51YWxBY3Rpdml0eVJlcXVlc3QaJy5maXR0ZXIudjEuQ3JlYXRlTWFudWFsQWN0aXZpdHlSZXNwb25zZRJnChRVcGRhdGVNYW51YWxBY3Rpdml0eRImLmZpdHRlci52MS5VcGRhdGVNYW51YWxBY3Rpdml0eVJlcXVlc3QaJy5maXR0ZXIudjEuVXBkYXRlTWFudWFsQWN0aXZpdHlSZXNwb25zZRJnChREZWxldGVNYW51YWxBY3Rpdml0eRImLmZpdHRlci52MS5EZWxldGVNYW51YWxBY3Rpdml0eVJlcXVlc3QaJy5maXR0ZXIudjEuRGVsZXRlTWFudWFsQWN0aXZpdHlSZXNwb25zZRJnChRMaXN0TWFudWFsQWN0aXZpdGllcxImLmZpdHRlci52MS5MaXN0TWFudWFsQWN0aXZpdGllc1JlcXVlc3QaJy5maXR0ZXIudjEuTGlzdE1hbnVhbEFjdGl2aXRpZXNSZXNwb25zZUKRAQoNY29tLmZpdHRlci52MUINQWN0aXZpdHlQcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChhmaXR0ZXIvdjEvYWN0aXZpdHkucHJvdG8SCWZpdHRlci52MSI5CgRMaWZ0EhAKCGV4ZXJjaXNlGAEgASgJEhEKCXdlaWdodF9rZxgCIAEoARIMCgRyZXBzGAMgASgFIscBCgdTdGF0aW9uEhMKC2V4ZXJjaXNlX2lkGAEgASgJEhUKDWV4ZXJjaXNlX25hbWUYAiABKAkSFgoJd2VpZ2h0X2tnGAMgASgBSACIAQESEQoEcmVwcxgEIAEoBUgBiAEBEhcKCmRpc3RhbmNlX20YBSABKAFIAogBARIXCgpkdXJhdGlvbl9zGAYgASgDSAOIAQFCDAoKX3dlaWdodF9rZ0IHCgVfcmVwc0INCgtfZGlzdGFuY2VfbUINCgtfZHVyYXRpb25fcyI9CgVCbG9jaxIOCgZyb3VuZHMYASABKAUSJAoIc3RhdGlvbnMYAiADKAsyEi5maXR0ZXIudjEuU3RhdGlvbiKrAgoOTWFudWFsQWN0aXZpdHkSCgoCaWQYASABKAMSEgoKc3BvcnRfdHlwZRgCIAEoCRIMCgRuYW1lGAMgASgJEi4KCnN0YXJ0X2RhdGUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDW1vdmluZ190aW1lX3MYBSABKAMSFwoKZGlzdGFuY2VfbRgGIAEoAUgAiAEBEiIKBWxpZnRzGAcgAygLMg8uZml0dGVyLnYxLkxpZnRCAhgBEh8KEnV0Y19vZmZzZXRfbWludXRlcxgIIAEoBUgBiAEBEiAKBmJsb2NrcxgJIAMoCzIQLmZpdHRlci52MS5CbG9ja0INCgtfZGlzdGFuY2VfbUIVChNfdXRjX29mZnNldF9taW51dGVzIkoKG0NyZWF0ZU1hbnVhbEFjdGl2aXR5UmVxdWVzdBIrCghhY3Rpdml0eRgBIAEoCzIZLmZpdHRlci52MS5NYW51YWxBY3Rpdml0eSJLChxDcmVhdGVNYW51YWxBY3Rpdml0eVJlc3BvbnNlEisKCGFjdGl2aXR5GAEgASgLMhkuZml0dGVyLnYxLk1hbnVhbEFjdGl2aXR5IkoKG1VwZGF0ZU1hbnVhbEFjdGl2aXR5UmVxdWVzdBIrCghhY3Rpdml0eRgBIAEoCzIZLmZpdHRlci52MS5NYW51YWxBY3Rpdml0eSJLChxVcGRhdGVNYW51YWxBY3Rpdml0eVJlc3BvbnNlEisKCGFjdGl2aXR5GAEgASgLMhkuZml0dGVyLnYxLk1hbnVhbEFjdGl2aXR5IikKG0RlbGV0ZU1hbnVhbEFjdGl2aXR5UmVxdWVzdBIKCgJpZBgBIAEoAyIeChxEZWxldGVNYW51YWxBY3Rpdml0eVJlc3BvbnNlIh0KG0xpc3RNYW51YWxBY3Rpdml0aWVzUmVxdWVzdCJNChxMaXN0TWFudWFsQWN0aXZpdGllc1Jlc3BvbnNlEi0KCmFjdGl2aXRpZXMYASADKAsyGS5maXR0ZXIudjEuTWFudWFsQWN0aXZpdHkytQMKD0FjdGl2aXR5U2VydmljZRJnChRDcmVhdGVNYW51YWxBY3Rpdml0eRImLmZpdHRlci52MS5DcmVhdGVNYW51YWxBY3Rpdml0eVJlcXVlc3QaJy5maXR0ZXIudjEuQ3JlYXRlTWFudWFsQWN0aXZpdHlSZXNwb25zZRJnChRVcGRhdGVNYW51YWxBY3Rpdml0eRImLmZpdHRlci52MS5VcGRhdGVNYW51YWxBY3Rpdml0eVJlcXVlc3QaJy5maXR0ZXIudjEuVXBkYXRlTWFudWFsQWN0aXZpdHlSZXNwb25zZRJnChREZWxldGVNYW51YWxBY3Rpdml0eRImLmZpdHRlci52MS5EZWxldGVNYW51YWxBY3Rpdml0eVJlcXVlc3QaJy5maXR0ZXIudjEuRGVsZXRlTWFudWFsQWN0aXZpdHlSZXNwb25zZRJnChRMaXN0TWFudWFsQWN0aXZpdGllcxImLmZpdHRlci52MS5MaXN0TWFudWFsQWN0aXZpdGllc1JlcXVlc3QaJy5maXR0ZXIudjEuTGlzdE1hbnVhbEFjdGl2aXRpZXNSZXNwb25zZUKRAQoNY29tLmZpdHRlci52MUINQWN0aXZpdHlQcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
- * One set-summary for an exercise: the heaviest weight and its reps.
+ * Deprecated: superseded by Block and Station. Still filled on reads (heaviest
+ * weight per exercise) and accepted on writes (as one 1-round block per lift)
+ * so the previous release keeps working while old and new containers overlap.
  *
  * @generated from message fitter.v1.Lift
  */
@@ -42,6 +44,82 @@ export type Lift = Message<"fitter.v1.Lift"> & {
  */
 export const LiftSchema: GenMessage<Lift> = /*@__PURE__*/
   messageDesc(file_fitter_v1_activity, 0);
+
+/**
+ * One exercise within a block. Which result fields are set follows the
+ * exercise's measure: weight_reps (weight_kg, reps), reps (reps), distance
+ * (distance_m, weight_kg when the exercise is loaded) or time (duration_s,
+ * weight_kg when loaded).
+ *
+ * @generated from message fitter.v1.Station
+ */
+export type Station = Message<"fitter.v1.Station"> & {
+  /**
+   * @generated from field: string exercise_id = 1;
+   */
+  exerciseId: string;
+
+  /**
+   * output only
+   *
+   * @generated from field: string exercise_name = 2;
+   */
+  exerciseName: string;
+
+  /**
+   * @generated from field: optional double weight_kg = 3;
+   */
+  weightKg?: number | undefined;
+
+  /**
+   * @generated from field: optional int32 reps = 4;
+   */
+  reps?: number | undefined;
+
+  /**
+   * @generated from field: optional double distance_m = 5;
+   */
+  distanceM?: number | undefined;
+
+  /**
+   * @generated from field: optional int64 duration_s = 6;
+   */
+  durationS?: bigint | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.Station.
+ * Use `create(StationSchema)` to create a new message.
+ */
+export const StationSchema: GenMessage<Station> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_activity, 1);
+
+/**
+ * A block repeats its stations, in order, for `rounds`. A superset is two
+ * stations; straight sets are one station with rounds = number of sets.
+ *
+ * @generated from message fitter.v1.Block
+ */
+export type Block = Message<"fitter.v1.Block"> & {
+  /**
+   * >= 1
+   *
+   * @generated from field: int32 rounds = 1;
+   */
+  rounds: number;
+
+  /**
+   * @generated from field: repeated fitter.v1.Station stations = 2;
+   */
+  stations: Station[];
+};
+
+/**
+ * Describes the message fitter.v1.Block.
+ * Use `create(BlockSchema)` to create a new message.
+ */
+export const BlockSchema: GenMessage<Block> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_activity, 2);
 
 /**
  * @generated from message fitter.v1.ManualActivity
@@ -80,9 +158,10 @@ export type ManualActivity = Message<"fitter.v1.ManualActivity"> & {
   distanceM?: number | undefined;
 
   /**
-   * strength sports only
+   * see Lift
    *
-   * @generated from field: repeated fitter.v1.Lift lifts = 7;
+   * @generated from field: repeated fitter.v1.Lift lifts = 7 [deprecated = true];
+   * @deprecated
    */
   lifts: Lift[];
 
@@ -93,6 +172,13 @@ export type ManualActivity = Message<"fitter.v1.ManualActivity"> & {
    * @generated from field: optional int32 utc_offset_minutes = 8;
    */
   utcOffsetMinutes?: number | undefined;
+
+  /**
+   * strength and circuits sports only
+   *
+   * @generated from field: repeated fitter.v1.Block blocks = 9;
+   */
+  blocks: Block[];
 };
 
 /**
@@ -100,7 +186,7 @@ export type ManualActivity = Message<"fitter.v1.ManualActivity"> & {
  * Use `create(ManualActivitySchema)` to create a new message.
  */
 export const ManualActivitySchema: GenMessage<ManualActivity> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 1);
+  messageDesc(file_fitter_v1_activity, 3);
 
 /**
  * @generated from message fitter.v1.CreateManualActivityRequest
@@ -119,7 +205,7 @@ export type CreateManualActivityRequest = Message<"fitter.v1.CreateManualActivit
  * Use `create(CreateManualActivityRequestSchema)` to create a new message.
  */
 export const CreateManualActivityRequestSchema: GenMessage<CreateManualActivityRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 2);
+  messageDesc(file_fitter_v1_activity, 4);
 
 /**
  * @generated from message fitter.v1.CreateManualActivityResponse
@@ -136,7 +222,7 @@ export type CreateManualActivityResponse = Message<"fitter.v1.CreateManualActivi
  * Use `create(CreateManualActivityResponseSchema)` to create a new message.
  */
 export const CreateManualActivityResponseSchema: GenMessage<CreateManualActivityResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 3);
+  messageDesc(file_fitter_v1_activity, 5);
 
 /**
  * @generated from message fitter.v1.UpdateManualActivityRequest
@@ -155,7 +241,7 @@ export type UpdateManualActivityRequest = Message<"fitter.v1.UpdateManualActivit
  * Use `create(UpdateManualActivityRequestSchema)` to create a new message.
  */
 export const UpdateManualActivityRequestSchema: GenMessage<UpdateManualActivityRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 4);
+  messageDesc(file_fitter_v1_activity, 6);
 
 /**
  * @generated from message fitter.v1.UpdateManualActivityResponse
@@ -172,7 +258,7 @@ export type UpdateManualActivityResponse = Message<"fitter.v1.UpdateManualActivi
  * Use `create(UpdateManualActivityResponseSchema)` to create a new message.
  */
 export const UpdateManualActivityResponseSchema: GenMessage<UpdateManualActivityResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 5);
+  messageDesc(file_fitter_v1_activity, 7);
 
 /**
  * @generated from message fitter.v1.DeleteManualActivityRequest
@@ -189,7 +275,7 @@ export type DeleteManualActivityRequest = Message<"fitter.v1.DeleteManualActivit
  * Use `create(DeleteManualActivityRequestSchema)` to create a new message.
  */
 export const DeleteManualActivityRequestSchema: GenMessage<DeleteManualActivityRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 6);
+  messageDesc(file_fitter_v1_activity, 8);
 
 /**
  * @generated from message fitter.v1.DeleteManualActivityResponse
@@ -202,7 +288,7 @@ export type DeleteManualActivityResponse = Message<"fitter.v1.DeleteManualActivi
  * Use `create(DeleteManualActivityResponseSchema)` to create a new message.
  */
 export const DeleteManualActivityResponseSchema: GenMessage<DeleteManualActivityResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 7);
+  messageDesc(file_fitter_v1_activity, 9);
 
 /**
  * @generated from message fitter.v1.ListManualActivitiesRequest
@@ -215,7 +301,7 @@ export type ListManualActivitiesRequest = Message<"fitter.v1.ListManualActivitie
  * Use `create(ListManualActivitiesRequestSchema)` to create a new message.
  */
 export const ListManualActivitiesRequestSchema: GenMessage<ListManualActivitiesRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 8);
+  messageDesc(file_fitter_v1_activity, 10);
 
 /**
  * @generated from message fitter.v1.ListManualActivitiesResponse
@@ -232,7 +318,7 @@ export type ListManualActivitiesResponse = Message<"fitter.v1.ListManualActiviti
  * Use `create(ListManualActivitiesResponseSchema)` to create a new message.
  */
 export const ListManualActivitiesResponseSchema: GenMessage<ListManualActivitiesResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_activity, 9);
+  messageDesc(file_fitter_v1_activity, 11);
 
 /**
  * ActivityService manages the caller's own manually-logged activities.

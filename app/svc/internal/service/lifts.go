@@ -1,8 +1,8 @@
 package service
 
 import (
-	"database/sql"
 	"context"
+	"database/sql"
 	"strings"
 
 	"github.com/fitter/svc/internal/db"
@@ -24,8 +24,9 @@ func clauseDef(def metrics.Def, c db.GoalClause) metrics.Def {
 	return def
 }
 
-// attachLifts fills Activity.Lifts (heaviest kg per exercise) for the manual
-// activities in acts, with one query. Strava rows never carry lifts.
+// attachLifts fills Activity.Lifts (heaviest kg per exercise key) for the manual activities
+// in acts: from their stations, or from activity_lifts for an activity a previous-release
+// container wrote without blocks. Strava rows never carry lifts.
 func attachLifts(ctx context.Context, q *db.Queries, acts []metrics.Activity) error {
 	var ids []int64
 	for _, a := range acts {
@@ -36,19 +37,35 @@ func attachLifts(ctx context.Context, q *db.Queries, acts []metrics.Activity) er
 	if len(ids) == 0 {
 		return nil
 	}
-	rows, err := q.ListLiftsForActivities(ctx, ids)
+	stations, err := q.ListStationsForActivities(ctx, ids)
+	if err != nil {
+		return err
+	}
+	legacy, err := q.ListLiftsForActivities(ctx, ids)
 	if err != nil {
 		return err
 	}
 	byID := map[int64]map[string]float64{}
-	for _, r := range rows {
-		m := byID[r.ActivityID]
+	withBlocks := map[int64]bool{}
+	add := func(activityID int64, exercise string, kg float64) {
+		m := byID[activityID]
 		if m == nil {
 			m = map[string]float64{}
-			byID[r.ActivityID] = m
+			byID[activityID] = m
 		}
-		if r.WeightKg > m[r.Exercise] {
-			m[r.Exercise] = r.WeightKg
+		if kg > m[exercise] {
+			m[exercise] = kg
+		}
+	}
+	for _, r := range stations {
+		withBlocks[r.ActivityID] = true
+		if r.WeightKg.Valid {
+			add(r.ActivityID, r.ExerciseKey, r.WeightKg.Float64)
+		}
+	}
+	for _, r := range legacy {
+		if !withBlocks[r.ActivityID] {
+			add(r.ActivityID, r.Exercise, r.WeightKg)
 		}
 	}
 	for i := range acts {

@@ -228,7 +228,7 @@ h1 {
   gap: var(--space-4);
   margin: 0 0 var(--space-5);
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;

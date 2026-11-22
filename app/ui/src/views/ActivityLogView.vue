@@ -3,22 +3,16 @@ import { computed, nextTick, onMounted, reactive, ref } from "vue";
 import { activityClient } from "../lib/connect";
 import { useCatalogStore } from "../stores/catalog";
 import type { ManualActivity } from "../gen/fitter/v1/activity_pb";
-import { exercises, normalizeExercise } from "../lib/exercises";
+import { useExerciseStore } from "../stores/exercises";
+import { blankBlock, describeBlocks, toProtoBlocks, validateBlocks, type BlockDraft } from "../lib/blocks";
+import BlockEditor from "../components/BlockEditor.vue";
 import { focusNthOr } from "../lib/focus";
 import { maskDuration, parseDuration } from "../lib/metricFormat";
 import { fromDate, toDate } from "../lib/timestamp";
 import { errorMessage } from "../lib/errors";
 
 const catalog = useCatalogStore();
-
-interface LiftRow {
-  key: number;
-  exercise: string;
-  weight: string;
-  reps: string;
-}
-let nextKey = 0;
-const blankLift = (): LiftRow => ({ key: nextKey++, exercise: "", weight: "", reps: "" });
+const exerciseStore = useExerciseStore();
 
 // datetime-local wants "YYYY-MM-DDTHH:mm" in local time.
 const localNow = () => {
@@ -27,7 +21,7 @@ const localNow = () => {
   return d.toISOString().slice(0, 16);
 };
 
-const form = reactive({ sport: "", name: "", when: localNow(), duration: "", distanceKm: "", lifts: [blankLift()] });
+const form = reactive({ sport: "", name: "", when: localNow(), duration: "", distanceKm: "", blocks: [blankBlock()] as BlockDraft[] });
 const saving = ref(false);
 const error = ref("");
 const showErrors = ref(false);
@@ -39,7 +33,8 @@ const deleting = ref(false);
 const kept = ref<bigint | null>(null);
 
 const groupOf = (sportType: string) => catalog.sportGroups.find((g) => g.sportTypes.includes(sportType))?.group;
-const isStrength = computed(() => groupOf(form.sport) === "strength");
+// Lifting and HIIT / circuit sessions are logged as blocks of exercises.
+const hasBlocks = computed(() => ["strength", "circuits"].includes(groupOf(form.sport) ?? ""));
 
 const durationS = computed(() => (form.duration.trim() ? parseDuration(form.duration) : null));
 const errors = computed(() => ({
@@ -47,22 +42,14 @@ const errors = computed(() => ({
   when: form.when ? "" : "Pick when it happened.",
   duration: form.duration.trim() && durationS.value === null ? "Enter a time like 4500 (45:00) or 11500 (1:15:00)." : "",
   distance: form.distanceKm.trim() && !(Number(form.distanceKm) >= 0) ? "Enter a distance in km." : "",
-  lifts: isStrength.value
-    ? form.lifts.map((l) =>
-        !l.exercise.trim() && !l.weight && !l.reps
-          ? ""
-          : !normalizeExercise(l.exercise) || !(Number(l.weight) > 0) || !(Number(l.reps) > 0)
-            ? "Exercise, weight and reps are all needed."
-            : "",
-      )
-    : [],
+  blocks: hasBlocks.value ? validateBlocks(form.blocks, exerciseStore.byId) : new Map<number, string>(),
 }));
-const hasErrors = computed(() => !!(errors.value.sport || errors.value.when || errors.value.duration || errors.value.distance || errors.value.lifts.some(Boolean)));
+const hasErrors = computed(() => !!(errors.value.sport || errors.value.when || errors.value.duration || errors.value.distance || errors.value.blocks.size));
 
 async function load(): Promise<void> {
   listError.value = "";
   try {
-    const [resp] = await Promise.all([activityClient.listManualActivities({}), catalog.ensureLoaded()]);
+    const [resp] = await Promise.all([activityClient.listManualActivities({}), catalog.ensureLoaded(), exerciseStore.ensureLoaded()]);
     list.value = resp.activities;
   } catch (err) {
     listError.value = errorMessage(err, "Your logged activities didn't load.");
@@ -90,16 +77,12 @@ async function save(): Promise<void> {
         utcOffsetMinutes: -new Date(form.when).getTimezoneOffset(),
         movingTimeS: BigInt(durationS.value ?? 0),
         distanceM: form.distanceKm.trim() ? Number(form.distanceKm) * 1000 : undefined,
-        lifts: isStrength.value
-          ? form.lifts
-              .filter((l) => l.exercise.trim())
-              .map((l) => ({ exercise: normalizeExercise(l.exercise), weightKg: Number(l.weight), reps: Number(l.reps) }))
-          : [],
+        blocks: hasBlocks.value ? toProtoBlocks(form.blocks, exerciseStore.byId) : [],
       },
     });
     if (resp.activity) list.value.unshift(resp.activity);
     saved.value = "Logged. It counts toward your goals.";
-    Object.assign(form, { name: "", duration: "", distanceKm: "", lifts: [blankLift()], when: localNow() });
+    Object.assign(form, { name: "", duration: "", distanceKm: "", blocks: [blankBlock()], when: localNow() });
     showErrors.value = false;
   } catch (err) {
     error.value = errorMessage(err, "The activity wasn't saved. Try again.");
@@ -125,9 +108,19 @@ async function remove(id: bigint, i: number): Promise<void> {
 
 const describe = (a: ManualActivity) => {
   const when = toDate(a.startDate)?.toLocaleDateString() ?? "";
-  const lifts = a.lifts.map((l) => `${l.exercise} ${l.weightKg} kg × ${l.reps}`).join(", ");
-  return [a.sportType, when, lifts].filter(Boolean).join(" · ");
+  return [a.sportType, when, describeBlocks(a.blocks)].filter(Boolean).join(" · ");
 };
+
+async function addBlock(): Promise<void> {
+  const b = blankBlock();
+  form.blocks.push(b);
+  await nextTick();
+  document.getElementById(`al-b${b.key}-ex-${b.stations[0].key}`)?.focus();
+}
+function removeBlock(i: number): void {
+  form.blocks.splice(i, 1);
+  focusNthOr("[data-remove-block]", i, "#al-add-block");
+}
 </script>
 
 <template>
@@ -165,29 +158,28 @@ const describe = (a: ManualActivity) => {
             <input id="al-duration" class="input" :value="form.duration" inputmode="numeric" placeholder="45:00" @input="form.duration = maskDuration(($event.target as HTMLInputElement).value)" :aria-invalid="showErrors && !!errors.duration" aria-describedby="al-duration-error" />
             <span id="al-duration-error" class="field-error">{{ showErrors ? errors.duration : "" }}</span>
           </div>
-          <div v-if="!isStrength" class="rb-field">
+          <div v-if="!hasBlocks" class="rb-field">
             <label for="al-distance">Distance (km) <small>optional</small></label>
             <input id="al-distance" v-model="form.distanceKm" class="input" inputmode="decimal" :aria-invalid="showErrors && !!errors.distance" aria-describedby="al-distance-error" />
             <span id="al-distance-error" class="field-error">{{ showErrors ? errors.distance : "" }}</span>
           </div>
         </div>
 
-        <fieldset v-if="isStrength" class="rb-field lifts">
-          <legend>Lifts</legend>
-          <div v-for="(l, i) in form.lifts" :key="l.key" class="lift">
-            <label class="visually-hidden" :for="`al-ex-${l.key}`">Lift {{ i + 1 }} exercise</label>
-            <input :id="`al-ex-${l.key}`" v-model="l.exercise" class="input" :aria-invalid="showErrors && !!errors.lifts[i]" :aria-describedby="`al-lift-${l.key}-error`" list="al-exercises" placeholder="bench press" autocomplete="off" />
-            <label class="visually-hidden" :for="`al-w-${l.key}`">Lift {{ i + 1 }} weight in kg</label>
-            <input :id="`al-w-${l.key}`" v-model="l.weight" class="input input--num" :aria-invalid="showErrors && !!errors.lifts[i]" :aria-describedby="`al-lift-${l.key}-error`" inputmode="decimal" placeholder="kg" />
-            <label class="visually-hidden" :for="`al-r-${l.key}`">Lift {{ i + 1 }} reps</label>
-            <input :id="`al-r-${l.key}`" v-model="l.reps" class="input input--num" :aria-invalid="showErrors && !!errors.lifts[i]" :aria-describedby="`al-lift-${l.key}-error`" inputmode="numeric" placeholder="reps" />
-            <button v-if="form.lifts.length > 1" type="button" class="pill pill--quiet" @click="form.lifts.splice(i, 1)">
-              Remove<span class="visually-hidden"> lift {{ i + 1 }}</span>
-            </button>
-            <span :id="`al-lift-${l.key}-error`" class="field-error">{{ showErrors ? errors.lifts[i] : "" }}</span>
-          </div>
-          <button type="button" class="pill" @click="form.lifts.push(blankLift())">Add lift</button>
-          <datalist id="al-exercises"><option v-for="e in exercises" :key="e" :value="e" /></datalist>
+        <fieldset v-if="hasBlocks" class="rb-field blocks">
+          <legend>Exercises</legend>
+          <p class="hint">A block repeats its exercises for the rounds you set: straight sets are one exercise, a superset is two.</p>
+          <BlockEditor
+            v-for="(b, i) in form.blocks"
+            :key="b.key"
+            v-model="form.blocks[i]"
+            :index="i"
+            :id-prefix="`al-b${b.key}`"
+            :errors="errors.blocks"
+            :show-errors="showErrors"
+            :can-remove="form.blocks.length > 1"
+            @remove="removeBlock(i)"
+          />
+          <button id="al-add-block" type="button" class="pill" @click="addBlock">Add block</button>
         </fieldset>
 
         <p v-if="error" class="notice" role="alert">{{ error }}</p>
@@ -254,29 +246,23 @@ h2 {
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: var(--space-5);
 }
-.lifts {
+.blocks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
   border: 0;
   padding: 0;
   margin: 0;
+  min-width: 0;
 }
-.lift {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 5rem 4.5rem auto;
-  gap: var(--space-3);
-  align-items: center;
-  margin-bottom: var(--space-3);
+.blocks > section {
+  align-self: stretch;
 }
-.lift .field-error {
-  grid-column: 1 / -1;
-}
-/* Narrow phones: the exercise takes its own line so it isn't squeezed by kg, reps and Remove. */
-@media (max-width: 420px) {
-  .lift {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  }
-  .lift > .input:first-of-type {
-    grid-column: 1 / -1;
-  }
+.hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
 }
 .saved {
   margin: 0;
@@ -285,7 +271,7 @@ h2 {
 .notice {
   margin: 0;
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
 }

@@ -46,7 +46,7 @@ defineProps<{
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
   background: var(--paper);
@@ -143,7 +143,7 @@ defineProps<{
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  border-top: 2px dashed var(--ink);
+  border-top: 2px dashed var(--line);
   background: var(--cool-blue);
   padding: var(--space-3) var(--bib-inset);
   font-weight: 700;

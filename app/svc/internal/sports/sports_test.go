@@ -35,7 +35,7 @@ func TestGroupsOrderStable(t *testing.T) {
 	}
 	wantOrder := []sports.Group{
 		sports.GroupRun, sports.GroupRide, sports.GroupSwim, sports.GroupWalk,
-		sports.GroupHike, sports.GroupWinter, sports.GroupWater, sports.GroupStrength,
+		sports.GroupHike, sports.GroupWinter, sports.GroupWater, sports.GroupStrength, sports.GroupCircuits,
 		sports.GroupOther,
 	}
 	if !reflect.DeepEqual(firstOrder, wantOrder) {
@@ -127,5 +127,19 @@ func TestValidGroup(t *testing.T) {
 	}
 	if sports.ValidGroup("nonexistent") {
 		t.Fatal(`ValidGroup("nonexistent") = true, want false`)
+	}
+}
+
+func TestCircuitsGroupHoldsHIITAndCrossfit(t *testing.T) {
+	for _, st := range []string{"Workout", "Crossfit", "HighIntensityIntervalTraining"} {
+		if g := sports.GroupOf(st, st); g != sports.GroupCircuits {
+			t.Errorf("GroupOf(%q) = %q, want circuits", st, g)
+		}
+	}
+	if g := sports.GroupOf("WeightTraining", "WeightTraining"); g != sports.GroupStrength {
+		t.Errorf("GroupOf(WeightTraining) = %q, want strength", g)
+	}
+	if got := sports.LabelFor(sports.GroupCircuits); got != "HIIT & circuits" {
+		t.Errorf("label = %q, want %q", got, "HIIT & circuits")
 	}
 }

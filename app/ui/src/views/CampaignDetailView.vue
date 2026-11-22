@@ -592,7 +592,7 @@ button.row {
   display: grid;
   place-items: center;
   height: 2rem;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 6px;
   font: 400 0.9375rem var(--font-display);
   font-variant-numeric: tabular-nums;
@@ -707,7 +707,7 @@ h2 {
   gap: var(--space-3);
   margin: var(--space-5) 0 0;
   padding: var(--space-3) var(--space-4);
-  border: 2px dashed var(--ink);
+  border: 2px dashed var(--line);
   border-radius: 10px;
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
@@ -730,7 +730,7 @@ h2 {
   gap: var(--space-4);
   margin-top: var(--space-5);
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
 }

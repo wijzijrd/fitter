@@ -15,6 +15,7 @@ const (
 	GroupWinter   Group = "winter"
 	GroupWater    Group = "water"
 	GroupStrength Group = "strength"
+	GroupCircuits Group = "circuits"
 	GroupOther    Group = "other"
 )
 
@@ -74,8 +75,14 @@ var groups = []GroupDef{
 		Group: GroupStrength,
 		Label: "Strength",
 		SportTypes: []string{
-			"WeightTraining", "Workout", "Crossfit", "HighIntensityIntervalTraining",
-			"Pilates", "Yoga", "Elliptical", "StairStepper",
+			"WeightTraining", "Pilates", "Yoga", "Elliptical", "StairStepper",
+		},
+	},
+	{
+		Group: GroupCircuits,
+		Label: "HIIT & circuits",
+		SportTypes: []string{
+			"Workout", "Crossfit", "HighIntensityIntervalTraining",
 		},
 	},
 	{

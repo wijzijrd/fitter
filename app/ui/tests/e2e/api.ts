@@ -7,22 +7,78 @@ function fixtures() {
     { id: "s1", key: "powerlifting", label: "Powerlifting" },
     { id: "s2", key: "climbing", label: "Climbing" },
   ];
-  let activities = [
-    { id: "-1", sportType: "WeightTraining", name: "Push day", startDate: "2026-11-20T08:00:00Z", movingTimeS: "3600", lifts: [{ exercise: "bench press", weightKg: 80, reps: 5 }] },
-    { id: "-2", sportType: "WeightTraining", name: "Pull day", startDate: "2026-11-19T08:00:00Z", movingTimeS: "3000", lifts: [] },
+  let activities: any[] = [
+    {
+      id: "-1", sportType: "WeightTraining", name: "Push day", startDate: "2026-11-20T08:00:00Z", movingTimeS: "3600",
+      lifts: [{ exercise: "bench press", weightKg: 80, reps: 5 }],
+      blocks: [{ rounds: 3, stations: [{ exerciseId: "ex-bench", exerciseName: "Bench press", weightKg: 80, reps: 5 }] }],
+    },
+    { id: "-2", sportType: "WeightTraining", name: "Pull day", startDate: "2026-11-19T08:00:00Z", movingTimeS: "3000", lifts: [], blocks: [] },
   ];
+  const MEASURE = (m: string) => `EXERCISE_MEASURE_${m}`;
+  const MUSCLE = (m: string) => `MUSCLE_${m}`;
+  let exercises: any[] = [
+    { id: "ex-bench", name: "Bench press", key: "bench press", measure: MEASURE("WEIGHT_REPS"), muscles: [MUSCLE("CHEST"), MUSCLE("TRICEPS"), MUSCLE("SHOULDERS")], useCount: 2 },
+    { id: "ex-front", name: "Front squat", key: "front squat", measure: MEASURE("WEIGHT_REPS"), muscles: [MUSCLE("QUADS"), MUSCLE("CORE")], useCount: 0 },
+    { id: "ex-squat", name: "Squat", key: "squat", measure: MEASURE("WEIGHT_REPS"), muscles: [MUSCLE("QUADS"), MUSCLE("GLUTES")], useCount: 1 },
+    { id: "ex-pullup", name: "Pull-up", key: "pull-up", measure: MEASURE("REPS"), muscles: [MUSCLE("BACK"), MUSCLE("BICEPS")], useCount: 0 },
+    { id: "ex-ski", name: "SkiErg", key: "skierg", measure: MEASURE("DISTANCE"), muscles: [MUSCLE("FULL_BODY"), MUSCLE("CARDIO")], useCount: 0 },
+    { id: "ex-sled", name: "Sled push", key: "sled push", measure: MEASURE("DISTANCE"), loaded: true, muscles: [MUSCLE("QUADS"), MUSCLE("GLUTES")], useCount: 0 },
+    { id: "ex-plank", name: "Plank", key: "plank", measure: MEASURE("TIME"), muscles: [MUSCLE("CORE")], useCount: 0 },
+  ];
+  const byName = () => exercises.sort((a, b) => a.name.localeCompare(b.name));
+  const nameOf = (id: string) => exercises.find((e) => e.id === id)?.name ?? "";
   const handlers: Record<string, (body: any) => unknown> = {
     "UserService/GetCurrentUser": () => ({ user: { id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active" } }),
     "CatalogService/ListSports": () => ({
       groups: [
         { group: "run", label: "Running", sportTypes: ["Run"] },
         { group: "strength", label: "Strength", sportTypes: ["WeightTraining"] },
+        { group: "circuits", label: "HIIT & circuits", sportTypes: ["Crossfit"] },
       ],
     }),
     "CatalogService/ListMetrics": () => ({
       metrics: [{ metric: "ACTIVITY_METRIC_DISTANCE", key: "distance", label: "Distance", unit: "METRIC_UNIT_METERS", aggregation: "METRIC_AGGREGATION_SUM", supportsAggregateScope: true }],
     }),
+    "ExerciseService/ListExercises": () => ({ exercises: byName() }),
+    "ExerciseService/CreateExercise": (b: any) => {
+      const key = String(b.name).trim().toLowerCase().replace(/\s+/g, " ");
+      const have = exercises.find((e) => e.key === key);
+      if (have) return { exercise: have, alreadyExisted: true };
+      const e = { id: `ex-new-${exercises.length}`, name: String(b.name).trim(), key, measure: b.measure, loaded: !!b.loaded, muscles: b.muscles, useCount: 0 };
+      exercises.push(e);
+      return { exercise: e };
+    },
+    "ActivityService/CreateManualActivity": (b: any) => {
+      const a = {
+        ...b.activity, id: "-9", lifts: [],
+        blocks: (b.activity.blocks ?? []).map((bl: any) => ({ ...bl, stations: bl.stations.map((st: any) => ({ ...st, exerciseName: nameOf(st.exerciseId) })) })),
+      };
+      activities = [a, ...activities];
+      return { activity: a };
+    },
     "ActivityService/ListManualActivities": () => ({ activities }),
+    "AdminService/UpdateExercise": (b: any) => {
+      const e = exercises.find((x) => x.id === b.id);
+      Object.assign(e, { name: b.name, key: String(b.name).trim().toLowerCase(), measure: b.measure, loaded: !!b.loaded, muscles: b.muscles });
+      return { exercise: e };
+    },
+    "AdminService/SetExerciseArchived": (b: any) => {
+      const e = exercises.find((x) => x.id === b.id);
+      e.archived = !!b.archived;
+      return { exercise: e };
+    },
+    "AdminService/DeleteExercise": (b: any) => {
+      exercises = exercises.filter((e) => e.id !== b.id);
+      return {};
+    },
+    "AdminService/MergeExercises": (b: any) => {
+      const src = exercises.find((e) => e.id === b.sourceId);
+      const dst = exercises.find((e) => e.id === b.targetId);
+      dst.useCount += src.useCount;
+      exercises = exercises.filter((e) => e.id !== b.sourceId);
+      return { exercise: dst };
+    },
     "ActivityService/DeleteManualActivity": (b: { id: string }) => {
       activities = activities.filter((a) => a.id !== b.id);
       return {};

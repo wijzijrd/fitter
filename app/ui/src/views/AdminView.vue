@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import { adminClient } from "../lib/connect";
+import { adminClient, exerciseClient } from "../lib/connect";
 import { errorMessage } from "../lib/errors";
 import { toDate } from "../lib/timestamp";
 import type { AdminAction, AdminUser, CustomMetric, CustomSport } from "../gen/fitter/v1/admin_pb";
+import { ExerciseMeasure, type Exercise, type Muscle } from "../gen/fitter/v1/exercise_pb";
+import { measureLabels, measureOrder, muscleLabels, muscleOrder } from "../lib/labels";
 import { useAuthStore } from "../stores/auth";
 import { focusNthOr } from "../lib/focus";
 
 const auth = useAuthStore();
-type Tab = "users" | "catalog" | "audit";
+type Tab = "users" | "catalog" | "exercises" | "audit";
 const tabs: { id: Tab; label: string }[] = [
   { id: "users", label: "Users" },
   { id: "catalog", label: "Catalog" },
+  { id: "exercises", label: "Exercises" },
   { id: "audit", label: "Audit" },
 ];
 const tab = ref<Tab>("users");
@@ -32,6 +35,7 @@ const users = ref<AdminUser[]>([]);
 const sports = ref<CustomSport[]>([]);
 const metrics = ref<CustomMetric[]>([]);
 const actions = ref<AdminAction[]>([]);
+const exercises = ref<Exercise[]>([]);
 
 const pending = computed(() => users.value.filter((u) => u.status === "pending"));
 const active = computed(() => users.value.filter((u) => u.status === "active"));
@@ -58,10 +62,13 @@ async function loadCatalog(): Promise<void> {
   sports.value = s.sports;
   metrics.value = m.metrics;
 }
+async function loadExercises(): Promise<void> {
+  exercises.value = (await exerciseClient.listExercises({})).exercises;
+}
 async function loadAudit(): Promise<void> {
   actions.value = (await adminClient.listAdminActions({ limit: 200 })).actions;
 }
-const loaders: Record<Tab, () => Promise<void>> = { users: loadUsers, catalog: loadCatalog, audit: loadAudit };
+const loaders: Record<Tab, () => Promise<void>> = { users: loadUsers, catalog: loadCatalog, exercises: loadExercises, audit: loadAudit };
 
 async function load(): Promise<void> {
   error.value = "";
@@ -134,6 +141,80 @@ async function deleteMetric(m: CustomMetric, i: number): Promise<void> {
   if (!error.value) {
     confirmDelete.value = "";
     focusNthOr("[data-delete-metric]", i, "#admin-metrics");
+  }
+}
+
+// Exercises: edit in place, delete only when unused (two-step like the catalog), or merge a
+// duplicate into the one to keep. One row is in one mode at a time.
+const editing = ref("");
+const merging = ref("");
+const mergeTarget = ref("");
+const mergeAsk = ref(false);
+const editForm = reactive({ name: "", measure: ExerciseMeasure.WEIGHT_REPS, loaded: false, muscles: [] as Muscle[] });
+const toggleEditMuscle = (m: Muscle) => {
+  editForm.muscles = editForm.muscles.includes(m) ? editForm.muscles.filter((x) => x !== m) : [...editForm.muscles, m];
+};
+const optionalWeight = computed(() => editForm.measure === ExerciseMeasure.DISTANCE || editForm.measure === ExerciseMeasure.TIME);
+const exerciseGroups = computed(() =>
+  [
+    { key: "active", title: "Exercise library", rows: exercises.value.filter((e) => !e.archived) },
+    { key: "archived", title: "Archived", rows: exercises.value.filter((e) => e.archived) },
+  ].filter((g) => g.key === "active" || g.rows.length),
+);
+const exerciseMeta = (e: Exercise) =>
+  [measureLabels[e.measure] + (e.loaded ? " (weight optional)" : ""), e.muscles.map((m) => muscleLabels[m]).join(", ") || "no muscles yet", e.useCount ? `used ${e.useCount}×` : "unused"].join(" · ");
+// A merge keeps the target's way of measuring: same measure, and it must take a weight if the source did.
+const mergeTargets = (e: Exercise) => exercises.value.filter((x) => !x.archived && x.id !== e.id && x.measure === e.measure && (!e.loaded || x.loaded));
+
+function startEdit(e: Exercise): void {
+  merging.value = "";
+  editing.value = e.id;
+  Object.assign(editForm, { name: e.name, measure: e.measure, loaded: e.loaded, muscles: [...e.muscles] });
+}
+function cancelEdit(e: Exercise): void {
+  editing.value = "";
+  focusNthOr(`[data-edit="${e.id}"]`, 0, "#admin-exercises");
+}
+async function saveEdit(e: Exercise): Promise<void> {
+  if (!editForm.name.trim() || !editForm.muscles.length) {
+    error.value = !editForm.name.trim() ? "Name the exercise." : "Pick at least one muscle.";
+    return;
+  }
+  await act(() => adminClient.updateExercise({ id: e.id, name: editForm.name, measure: editForm.measure, loaded: optionalWeight.value && editForm.loaded, muscles: editForm.muscles }));
+  if (!error.value) {
+    editing.value = "";
+    focusNthOr(`[data-edit="${e.id}"]`, 0, "#admin-exercises");
+  }
+}
+function startMerge(e: Exercise): void {
+  editing.value = "";
+  merging.value = e.id;
+  mergeTarget.value = "";
+  mergeAsk.value = false;
+}
+function cancelMerge(e: Exercise): void {
+  merging.value = "";
+  focusNthOr(`[data-merge="${e.id}"]`, 0, "#admin-exercises");
+}
+async function confirmMerge(e: Exercise): Promise<void> {
+  await act(() => adminClient.mergeExercises({ sourceId: e.id, targetId: mergeTarget.value }));
+  if (!error.value) {
+    merging.value = "";
+    focusNthOr("[data-edit]", 0, "#admin-exercises");
+  }
+}
+// Archiving is reversible, so it doesn't ask: the row moves between lists and focus follows it.
+async function setArchived(e: Exercise, archived: boolean): Promise<void> {
+  await act(() => adminClient.setExerciseArchived({ id: e.id, archived }));
+  if (!error.value) focusNthOr(`[data-${archived ? "restore" : "archive"}="${e.id}"]`, 0, "#admin-exercises");
+}
+async function deleteExercise(e: Exercise): Promise<void> {
+  // Only unused rows have a Delete button, so focus follows the index among those.
+  const i = exercises.value.filter((x) => !x.useCount).indexOf(e);
+  await act(() => adminClient.deleteExercise({ id: e.id }));
+  if (!error.value) {
+    confirmDelete.value = "";
+    focusNthOr("[data-delete-exercise]", i, "#admin-exercises");
   }
 }
 
@@ -301,6 +382,82 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       </form>
     </section>
 
+    <section v-else-if="tab === 'exercises'">
+      <template v-for="g in exerciseGroups" :key="g.key">
+      <h2 :id="g.key === 'active' ? 'admin-exercises' : 'admin-exercises-archived'" tabindex="-1">{{ g.title }}</h2>
+      <p v-if="g.key === 'active'" class="meta">Anyone can add an exercise from the log form. Merge moves a duplicate's history and goals onto the one to keep. Archive hides one that's in use from new logs; past sessions keep it.</p>
+      <p v-else class="meta">Hidden from new logs and goal suggestions. Past sessions and goals still show them.</p>
+      <ul class="rows">
+        <li v-for="e in g.rows" :key="e.id">
+          <span class="who"><span class="name">{{ e.name }}</span><span class="meta">{{ exerciseMeta(e) }}</span></span>
+
+          <span v-if="confirmDelete === `exercise:${e.id}`" class="confirm">
+            <span>Delete this exercise?</span>
+            <span class="actions">
+              <button v-focus="true" type="button" class="pill" @click="kept = `exercise:${e.id}`; confirmDelete = ''">Keep</button>
+              <button type="button" class="pill pill--primary" v-busy="busy" @click="deleteExercise(e)">Delete<span class="visually-hidden"> {{ e.name }}</span></button>
+            </span>
+          </span>
+          <span v-else class="actions">
+            <button type="button" class="pill pill--quiet" :data-edit="e.id" @click="startEdit(e)">Edit<span class="visually-hidden"> {{ e.name }}</span></button>
+            <button v-if="e.archived" type="button" class="pill pill--quiet" :data-restore="e.id" v-busy="busy" @click="setArchived(e, false)">Restore<span class="visually-hidden"> {{ e.name }}</span></button>
+            <button v-if="e.useCount > 0" type="button" class="pill pill--quiet" :data-merge="e.id" @click="startMerge(e)">Merge<span class="visually-hidden"> {{ e.name }} into another</span></button>
+            <button v-if="e.useCount > 0 && !e.archived" type="button" class="pill pill--quiet" :data-archive="e.id" v-busy="busy" @click="setArchived(e, true)">Archive<span class="visually-hidden"> {{ e.name }}</span></button>
+            <button v-else-if="e.useCount === 0" v-focus="kept === `exercise:${e.id}`" type="button" class="pill pill--quiet" data-delete-exercise @click="confirmDelete = `exercise:${e.id}`">Delete<span class="visually-hidden"> {{ e.name }}</span></button>
+          </span>
+
+          <form v-if="editing === e.id" class="panel" @submit.prevent="saveEdit(e)" @keydown.esc="cancelEdit(e)">
+            <div class="rb-field">
+              <label :for="`ex-name-${e.id}`">Name</label>
+              <input :id="`ex-name-${e.id}`" v-model="editForm.name" v-focus="true" class="input" maxlength="60" autocomplete="off" />
+            </div>
+            <div class="rb-field">
+              <label :for="`ex-measure-${e.id}`">Measured by</label>
+              <select :id="`ex-measure-${e.id}`" v-model="editForm.measure" class="input" :disabled="e.useCount > 0" :aria-describedby="e.useCount > 0 ? `ex-locked-${e.id}` : undefined">
+                <option v-for="m in measureOrder" :key="m" :value="m">{{ measureLabels[m] }}</option>
+              </select>
+              <small v-if="e.useCount > 0" :id="`ex-locked-${e.id}`">Locked while it's in use. Merge into another exercise to change it.</small>
+            </div>
+            <label v-if="optionalWeight" class="choice choice--pill opt">
+              <input v-model="editForm.loaded" type="checkbox" :disabled="e.useCount > 0" />
+              <span>A weight is optional</span>
+            </label>
+            <fieldset class="rb-field">
+              <legend>Muscles</legend>
+              <div class="seg">
+                <label v-for="m in muscleOrder" :key="m" class="choice choice--pill">
+                  <input type="checkbox" :checked="editForm.muscles.includes(m)" @change="toggleEditMuscle(m)" />
+                  <span>{{ muscleLabels[m] }}</span>
+                </label>
+              </div>
+            </fieldset>
+            <div class="actions">
+              <button type="submit" class="pill pill--primary" v-busy="busy">Save</button>
+              <button type="button" class="pill pill--quiet" @click="cancelEdit(e)">Cancel</button>
+            </div>
+          </form>
+
+          <form v-if="merging === e.id" class="panel" @submit.prevent @keydown.esc="cancelMerge(e)">
+            <div class="rb-field">
+              <label :for="`ex-into-${e.id}`">Merge “{{ e.name }}” into</label>
+              <select :id="`ex-into-${e.id}`" v-model="mergeTarget" v-focus="true" class="input" @change="mergeAsk = false">
+                <option value="" disabled>Choose the one to keep…</option>
+                <option v-for="t in mergeTargets(e)" :key="t.id" :value="t.id">{{ t.name }}</option>
+              </select>
+              <small v-if="!mergeTargets(e).length">Nothing else is measured the same way.</small>
+            </div>
+            <p v-if="mergeAsk" class="confirm-line">Move its {{ e.useCount }} uses, and any goals, to the one you chose? This can't be undone.</p>
+            <div class="actions">
+              <button v-if="!mergeAsk" type="button" class="pill" :aria-disabled="!mergeTarget" @click="mergeTarget && (mergeAsk = true)">Merge…</button>
+              <button v-else type="button" class="pill pill--primary" v-busy="busy" @click="confirmMerge(e)">Merge<span class="visually-hidden"> {{ e.name }}</span></button>
+              <button type="button" class="pill pill--quiet" @click="cancelMerge(e)">Cancel</button>
+            </div>
+          </form>
+        </li>
+      </ul>
+      </template>
+    </section>
+
     <section v-else>
       <h2>Audit log</h2>
       <p v-if="!actions.length" class="quiet">Nothing recorded yet.</p>
@@ -363,7 +520,7 @@ h2 {
 }
 .notice {
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;
@@ -444,6 +601,29 @@ h2 {
   height: 1.05rem;
   accent-color: var(--ink);
 }
+.panel {
+  flex: 1 1 100%;
+  padding: var(--row) var(--bib-inset);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+}
+.panel fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.opt {
+  margin-bottom: var(--space-5);
+}
+.confirm-line {
+  margin: 0 0 var(--space-4);
+  font-weight: 700;
+}
 .confirm {
   display: flex;
   flex: 1 1 16rem;
@@ -477,7 +657,7 @@ td {
   vertical-align: top;
 }
 th {
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--line);
 }
 .mono {
   font-family: ui-monospace, monospace;

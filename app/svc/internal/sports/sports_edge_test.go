@@ -177,7 +177,7 @@ func TestLabelForAndValidGroupAgreeForEveryGroup(t *testing.T) {
 func TestKnownUncuratedStravaTypesFallToOther(t *testing.T) {
 	for _, st := range []string{
 		"Badminton", "Golf", "Soccer", "Tennis", "RockClimbing", "InlineSkate", "RollerSki",
-		"Skateboard", "Wheelchair", "Pickleball", "Racquetball", "Squash", "TableTennis", "Velomobile ",
+		"Skateboard", "Wheelchair", "Pickleball", "Racquetball", "Squash", "TableTennis",
 	} {
 		if got := sports.GroupOf(st, st); got != sports.GroupOther {
 			t.Logf("%q is now curated into %q; update this list if that was deliberate", st, got)

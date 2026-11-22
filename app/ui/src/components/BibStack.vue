@@ -4,7 +4,7 @@ import type { LeaderboardEntry, LeaderboardGroup, PooledContribution } from "../
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { useCatalogStore } from "../stores/catalog";
 import { ordinal } from "../lib/labels";
-import { amount, firstName, gap, lead, myEntries, pickGroup, primary, share } from "../lib/standings";
+import { TOGETHER, amount, firstName, gap, lead, myEntries, pickGroup, primary, share } from "../lib/standings";
 import type { Gap } from "../lib/standings";
 import { formatRelative } from "../lib/timestamp";
 
@@ -26,7 +26,6 @@ const props = defineProps<{
 
 const catalog = useCatalogStore();
 const fmt = catalog.format;
-const TOGETHER = "__together__";
 
 const mine = computed(() => myEntries(props.groups, props.meId));
 const myLead = computed(() => lead(mine.value));
@@ -35,8 +34,9 @@ const options = computed(() => [
   ...props.groups.map((g) => ({ key: g.sportGroup, label: g.sportGroupLabel })),
 ]);
 
-// null until a group is chosen: "" is a real key (goals with no sport filter), so it can't stand for "unset".
-const selected = ref<string | null>(null);
+// The group on the bib. The parent owns it (v-model:group) and draws the picker, so it survives
+// the stack re-mounting. null until chosen: "" is a real key (goals with no sport filter).
+const selected = defineModel<string | null>("group", { default: null });
 // Open on your best standing, else the group target, else the first group.
 watch(
   options,
@@ -246,13 +246,6 @@ function tap(to: "ahead" | "behind"): void {
 
 <template>
   <div class="bibs">
-    <div v-if="joined && options.length > 1" class="switch" role="radiogroup" aria-label="Group shown on the bib">
-      <label v-for="o in options" :key="o.key" class="choice choice--pill">
-        <input v-model="selected" type="radio" name="bib-group" :value="o.key" />
-        <span>{{ o.label }}</span>
-      </label>
-    </div>
-
     <!-- The group's progress, once, where it can be read without picking the Together bib. -->
     <p v-if="joined && pooled && !together" class="group-line">
       <b>Together</b>
@@ -566,13 +559,6 @@ button.tab {
 .group-line span {
   font-weight: 700;
   font-size: 0.9375rem;
-}
-
-.switch {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
 }
 
 .steps {

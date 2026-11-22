@@ -37,3 +37,21 @@ test("the timeline chart draws", async ({ page }) => {
   await expect(page.locator(".chart canvas").first()).toBeVisible();
   await expect(page.locator(".chart table").first()).toContainText("Jo");
 });
+
+// The beta report: a neighbouring bib showed "Behind −57%", which read as that person's own
+// shortfall. It is the gap to the bib in front, and now says so.
+test("a neighbouring bib names who its gap is measured against", async ({ page }) => {
+  const bands = await page.locator(".peek:not(.peek--lead) .band").allInnerTexts();
+  expect(bands.length).toBeGreaterThan(0);
+  for (const b of bands) expect(b).toMatch(/vs \S+|Level with \S+|^Top|^2nd/i);
+  expect(await overflowsX(page)).toBe(false);
+});
+
+test("the gap wording still fits at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  for (const peek of await page.locator(".peek").all()) {
+    const box = await peek.boundingBox();
+    if (box) expect(box.x + box.width).toBeLessThanOrEqual(320);
+  }
+  expect(await overflowsX(page)).toBe(false);
+});

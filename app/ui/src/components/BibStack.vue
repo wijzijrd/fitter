@@ -4,7 +4,7 @@ import type { LeaderboardEntry, LeaderboardGroup, PooledContribution } from "../
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { useCatalogStore } from "../stores/catalog";
 import { ordinal } from "../lib/labels";
-import { TOGETHER, amount, firstName, gap, lead, myEntries, pickGroup, primary, share } from "../lib/standings";
+import { TOGETHER, amount, firstName, gap, lead, myEntries, peekBand as peekBandFor, pickGroup, primary, share } from "../lib/standings";
 import type { Gap } from "../lib/standings";
 import { formatRelative } from "../lib/timestamp";
 
@@ -175,10 +175,7 @@ function peekNote(e: LeaderboardEntry): string {
 
 function peekBand(slot: "ahead" | "behind", e: LeaderboardEntry): [string, string] {
   if (!browsable.value) return [slot === "ahead" ? "Top" : "2nd", primary(e, fmt)];
-  const f = front.value!;
-  const d = Math.abs(e.progressRatio - f.progressRatio);
-  const delta = d > 0 ? `${slot === "ahead" ? "+" : "−"}${amount(f, d, fmt, e)}` : "Level";
-  return [slot === "ahead" ? "Ahead" : "Behind", delta];
+  return peekBandFor(slot, front.value!, e, fmt, isMe(front.value));
 }
 
 // What a peek shows, whether it stands for a neighbour in the field or a top contributor.

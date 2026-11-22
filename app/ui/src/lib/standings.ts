@@ -97,6 +97,16 @@ export function gap(group: LeaderboardGroup, e: LeaderboardEntry, fmt: Fmt): Gap
   return e.satisfied ? { kind: "done" } : { kind: "finish", amount: amount(e, 1 - e.progressRatio, fmt) };
 }
 
+// peekBand is the label and difference on a neighbouring bib, measured against the bib in front.
+// It names that bib: "−57%" alone reads as the neighbour's own shortfall on their goal, when it is
+// how far they are from the person at the front.
+export function peekBand(slot: "ahead" | "behind", front: LeaderboardEntry, e: LeaderboardEntry, fmt: Fmt, frontIsMe: boolean): [string, string] {
+  const who = frontIsMe ? "you" : firstName(front);
+  const d = Math.abs(e.progressRatio - front.progressRatio);
+  const delta = d > 0 ? `${slot === "ahead" ? "+" : "−"}${amount(front, d, fmt, e)} vs ${who}` : `Level with ${who}`;
+  return [slot === "ahead" ? "Ahead" : "Behind", delta];
+}
+
 // The bib-group key for the pooled "Together" bib; real group keys are sport groups ("" included).
 export const TOGETHER = "__together__";
 

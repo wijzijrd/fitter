@@ -1825,6 +1825,104 @@ func (x *MergeExercisesResponse) GetExercise() *Exercise {
 	return nil
 }
 
+// SetExerciseArchived retires an exercise (hidden from new logs and goal suggestions, history
+// keeps it) or restores one. Used exercises are archived instead of deleted.
+type SetExerciseArchivedRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Archived      bool                   `protobuf:"varint,2,opt,name=archived,proto3" json:"archived,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetExerciseArchivedRequest) Reset() {
+	*x = SetExerciseArchivedRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetExerciseArchivedRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetExerciseArchivedRequest) ProtoMessage() {}
+
+func (x *SetExerciseArchivedRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetExerciseArchivedRequest.ProtoReflect.Descriptor instead.
+func (*SetExerciseArchivedRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *SetExerciseArchivedRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SetExerciseArchivedRequest) GetArchived() bool {
+	if x != nil {
+		return x.Archived
+	}
+	return false
+}
+
+type SetExerciseArchivedResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Exercise      *Exercise              `protobuf:"bytes,1,opt,name=exercise,proto3" json:"exercise,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetExerciseArchivedResponse) Reset() {
+	*x = SetExerciseArchivedResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetExerciseArchivedResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetExerciseArchivedResponse) ProtoMessage() {}
+
+func (x *SetExerciseArchivedResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetExerciseArchivedResponse.ProtoReflect.Descriptor instead.
+func (*SetExerciseArchivedResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *SetExerciseArchivedResponse) GetExercise() *Exercise {
+	if x != nil {
+		return x.Exercise
+	}
+	return nil
+}
+
 var File_fitter_v1_admin_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_admin_proto_rawDesc = "" +
@@ -1945,8 +2043,12 @@ const file_fitter_v1_admin_proto_rawDesc = "" +
 	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
 	"\ttarget_id\x18\x02 \x01(\tR\btargetId\"I\n" +
 	"\x16MergeExercisesResponse\x12/\n" +
-	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise2\xa1\n" +
-	"\n" +
+	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise\"H\n" +
+	"\x1aSetExerciseArchivedRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\barchived\x18\x02 \x01(\bR\barchived\"N\n" +
+	"\x1bSetExerciseArchivedResponse\x12/\n" +
+	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise2\x87\v\n" +
 	"\fAdminService\x12F\n" +
 	"\tListUsers\x12\x1b.fitter.v1.ListUsersRequest\x1a\x1c.fitter.v1.ListUsersResponse\x12L\n" +
 	"\vApproveUser\x12\x1d.fitter.v1.ApproveUserRequest\x1a\x1e.fitter.v1.ApproveUserResponse\x12@\n" +
@@ -1962,7 +2064,8 @@ const file_fitter_v1_admin_proto_rawDesc = "" +
 	"\x12DeleteCustomMetric\x12$.fitter.v1.DeleteCustomMetricRequest\x1a%.fitter.v1.DeleteCustomMetricResponse\x12U\n" +
 	"\x0eUpdateExercise\x12 .fitter.v1.UpdateExerciseRequest\x1a!.fitter.v1.UpdateExerciseResponse\x12U\n" +
 	"\x0eDeleteExercise\x12 .fitter.v1.DeleteExerciseRequest\x1a!.fitter.v1.DeleteExerciseResponse\x12U\n" +
-	"\x0eMergeExercises\x12 .fitter.v1.MergeExercisesRequest\x1a!.fitter.v1.MergeExercisesResponseB\x8e\x01\n" +
+	"\x0eMergeExercises\x12 .fitter.v1.MergeExercisesRequest\x1a!.fitter.v1.MergeExercisesResponse\x12d\n" +
+	"\x13SetExerciseArchived\x12%.fitter.v1.SetExerciseArchivedRequest\x1a&.fitter.v1.SetExerciseArchivedResponseB\x8e\x01\n" +
 	"\rcom.fitter.v1B\n" +
 	"AdminProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
@@ -1979,98 +2082,103 @@ func file_fitter_v1_admin_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_admin_proto_rawDescData
 }
 
-var file_fitter_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
+var file_fitter_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_fitter_v1_admin_proto_goTypes = []any{
-	(*CustomSport)(nil),                // 0: fitter.v1.CustomSport
-	(*CustomMetric)(nil),               // 1: fitter.v1.CustomMetric
-	(*CreateCustomSportRequest)(nil),   // 2: fitter.v1.CreateCustomSportRequest
-	(*CreateCustomSportResponse)(nil),  // 3: fitter.v1.CreateCustomSportResponse
-	(*ListCustomSportsRequest)(nil),    // 4: fitter.v1.ListCustomSportsRequest
-	(*ListCustomSportsResponse)(nil),   // 5: fitter.v1.ListCustomSportsResponse
-	(*DeleteCustomSportRequest)(nil),   // 6: fitter.v1.DeleteCustomSportRequest
-	(*DeleteCustomSportResponse)(nil),  // 7: fitter.v1.DeleteCustomSportResponse
-	(*CreateCustomMetricRequest)(nil),  // 8: fitter.v1.CreateCustomMetricRequest
-	(*CreateCustomMetricResponse)(nil), // 9: fitter.v1.CreateCustomMetricResponse
-	(*ListCustomMetricsRequest)(nil),   // 10: fitter.v1.ListCustomMetricsRequest
-	(*ListCustomMetricsResponse)(nil),  // 11: fitter.v1.ListCustomMetricsResponse
-	(*DeleteCustomMetricRequest)(nil),  // 12: fitter.v1.DeleteCustomMetricRequest
-	(*DeleteCustomMetricResponse)(nil), // 13: fitter.v1.DeleteCustomMetricResponse
-	(*AdminUser)(nil),                  // 14: fitter.v1.AdminUser
-	(*AdminAction)(nil),                // 15: fitter.v1.AdminAction
-	(*ListUsersRequest)(nil),           // 16: fitter.v1.ListUsersRequest
-	(*ListUsersResponse)(nil),          // 17: fitter.v1.ListUsersResponse
-	(*ApproveUserRequest)(nil),         // 18: fitter.v1.ApproveUserRequest
-	(*ApproveUserResponse)(nil),        // 19: fitter.v1.ApproveUserResponse
-	(*BanUserRequest)(nil),             // 20: fitter.v1.BanUserRequest
-	(*BanUserResponse)(nil),            // 21: fitter.v1.BanUserResponse
-	(*UnbanUserRequest)(nil),           // 22: fitter.v1.UnbanUserRequest
-	(*UnbanUserResponse)(nil),          // 23: fitter.v1.UnbanUserResponse
-	(*SetUserRoleRequest)(nil),         // 24: fitter.v1.SetUserRoleRequest
-	(*SetUserRoleResponse)(nil),        // 25: fitter.v1.SetUserRoleResponse
-	(*ListAdminActionsRequest)(nil),    // 26: fitter.v1.ListAdminActionsRequest
-	(*ListAdminActionsResponse)(nil),   // 27: fitter.v1.ListAdminActionsResponse
-	(*UpdateExerciseRequest)(nil),      // 28: fitter.v1.UpdateExerciseRequest
-	(*UpdateExerciseResponse)(nil),     // 29: fitter.v1.UpdateExerciseResponse
-	(*DeleteExerciseRequest)(nil),      // 30: fitter.v1.DeleteExerciseRequest
-	(*DeleteExerciseResponse)(nil),     // 31: fitter.v1.DeleteExerciseResponse
-	(*MergeExercisesRequest)(nil),      // 32: fitter.v1.MergeExercisesRequest
-	(*MergeExercisesResponse)(nil),     // 33: fitter.v1.MergeExercisesResponse
-	(*timestamppb.Timestamp)(nil),      // 34: google.protobuf.Timestamp
-	(ExerciseMeasure)(0),               // 35: fitter.v1.ExerciseMeasure
-	(Muscle)(0),                        // 36: fitter.v1.Muscle
-	(*Exercise)(nil),                   // 37: fitter.v1.Exercise
+	(*CustomSport)(nil),                 // 0: fitter.v1.CustomSport
+	(*CustomMetric)(nil),                // 1: fitter.v1.CustomMetric
+	(*CreateCustomSportRequest)(nil),    // 2: fitter.v1.CreateCustomSportRequest
+	(*CreateCustomSportResponse)(nil),   // 3: fitter.v1.CreateCustomSportResponse
+	(*ListCustomSportsRequest)(nil),     // 4: fitter.v1.ListCustomSportsRequest
+	(*ListCustomSportsResponse)(nil),    // 5: fitter.v1.ListCustomSportsResponse
+	(*DeleteCustomSportRequest)(nil),    // 6: fitter.v1.DeleteCustomSportRequest
+	(*DeleteCustomSportResponse)(nil),   // 7: fitter.v1.DeleteCustomSportResponse
+	(*CreateCustomMetricRequest)(nil),   // 8: fitter.v1.CreateCustomMetricRequest
+	(*CreateCustomMetricResponse)(nil),  // 9: fitter.v1.CreateCustomMetricResponse
+	(*ListCustomMetricsRequest)(nil),    // 10: fitter.v1.ListCustomMetricsRequest
+	(*ListCustomMetricsResponse)(nil),   // 11: fitter.v1.ListCustomMetricsResponse
+	(*DeleteCustomMetricRequest)(nil),   // 12: fitter.v1.DeleteCustomMetricRequest
+	(*DeleteCustomMetricResponse)(nil),  // 13: fitter.v1.DeleteCustomMetricResponse
+	(*AdminUser)(nil),                   // 14: fitter.v1.AdminUser
+	(*AdminAction)(nil),                 // 15: fitter.v1.AdminAction
+	(*ListUsersRequest)(nil),            // 16: fitter.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),           // 17: fitter.v1.ListUsersResponse
+	(*ApproveUserRequest)(nil),          // 18: fitter.v1.ApproveUserRequest
+	(*ApproveUserResponse)(nil),         // 19: fitter.v1.ApproveUserResponse
+	(*BanUserRequest)(nil),              // 20: fitter.v1.BanUserRequest
+	(*BanUserResponse)(nil),             // 21: fitter.v1.BanUserResponse
+	(*UnbanUserRequest)(nil),            // 22: fitter.v1.UnbanUserRequest
+	(*UnbanUserResponse)(nil),           // 23: fitter.v1.UnbanUserResponse
+	(*SetUserRoleRequest)(nil),          // 24: fitter.v1.SetUserRoleRequest
+	(*SetUserRoleResponse)(nil),         // 25: fitter.v1.SetUserRoleResponse
+	(*ListAdminActionsRequest)(nil),     // 26: fitter.v1.ListAdminActionsRequest
+	(*ListAdminActionsResponse)(nil),    // 27: fitter.v1.ListAdminActionsResponse
+	(*UpdateExerciseRequest)(nil),       // 28: fitter.v1.UpdateExerciseRequest
+	(*UpdateExerciseResponse)(nil),      // 29: fitter.v1.UpdateExerciseResponse
+	(*DeleteExerciseRequest)(nil),       // 30: fitter.v1.DeleteExerciseRequest
+	(*DeleteExerciseResponse)(nil),      // 31: fitter.v1.DeleteExerciseResponse
+	(*MergeExercisesRequest)(nil),       // 32: fitter.v1.MergeExercisesRequest
+	(*MergeExercisesResponse)(nil),      // 33: fitter.v1.MergeExercisesResponse
+	(*SetExerciseArchivedRequest)(nil),  // 34: fitter.v1.SetExerciseArchivedRequest
+	(*SetExerciseArchivedResponse)(nil), // 35: fitter.v1.SetExerciseArchivedResponse
+	(*timestamppb.Timestamp)(nil),       // 36: google.protobuf.Timestamp
+	(ExerciseMeasure)(0),                // 37: fitter.v1.ExerciseMeasure
+	(Muscle)(0),                         // 38: fitter.v1.Muscle
+	(*Exercise)(nil),                    // 39: fitter.v1.Exercise
 }
 var file_fitter_v1_admin_proto_depIdxs = []int32{
-	34, // 0: fitter.v1.CustomSport.created_at:type_name -> google.protobuf.Timestamp
-	34, // 1: fitter.v1.CustomMetric.created_at:type_name -> google.protobuf.Timestamp
+	36, // 0: fitter.v1.CustomSport.created_at:type_name -> google.protobuf.Timestamp
+	36, // 1: fitter.v1.CustomMetric.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: fitter.v1.CreateCustomSportResponse.sport:type_name -> fitter.v1.CustomSport
 	0,  // 3: fitter.v1.ListCustomSportsResponse.sports:type_name -> fitter.v1.CustomSport
 	1,  // 4: fitter.v1.CreateCustomMetricResponse.metric:type_name -> fitter.v1.CustomMetric
 	1,  // 5: fitter.v1.ListCustomMetricsResponse.metrics:type_name -> fitter.v1.CustomMetric
-	34, // 6: fitter.v1.AdminUser.banned_at:type_name -> google.protobuf.Timestamp
-	34, // 7: fitter.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
-	34, // 8: fitter.v1.AdminAction.created_at:type_name -> google.protobuf.Timestamp
+	36, // 6: fitter.v1.AdminUser.banned_at:type_name -> google.protobuf.Timestamp
+	36, // 7: fitter.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
+	36, // 8: fitter.v1.AdminAction.created_at:type_name -> google.protobuf.Timestamp
 	14, // 9: fitter.v1.ListUsersResponse.users:type_name -> fitter.v1.AdminUser
 	15, // 10: fitter.v1.ListAdminActionsResponse.actions:type_name -> fitter.v1.AdminAction
-	35, // 11: fitter.v1.UpdateExerciseRequest.measure:type_name -> fitter.v1.ExerciseMeasure
-	36, // 12: fitter.v1.UpdateExerciseRequest.muscles:type_name -> fitter.v1.Muscle
-	37, // 13: fitter.v1.UpdateExerciseResponse.exercise:type_name -> fitter.v1.Exercise
-	37, // 14: fitter.v1.MergeExercisesResponse.exercise:type_name -> fitter.v1.Exercise
-	16, // 15: fitter.v1.AdminService.ListUsers:input_type -> fitter.v1.ListUsersRequest
-	18, // 16: fitter.v1.AdminService.ApproveUser:input_type -> fitter.v1.ApproveUserRequest
-	20, // 17: fitter.v1.AdminService.BanUser:input_type -> fitter.v1.BanUserRequest
-	22, // 18: fitter.v1.AdminService.UnbanUser:input_type -> fitter.v1.UnbanUserRequest
-	24, // 19: fitter.v1.AdminService.SetUserRole:input_type -> fitter.v1.SetUserRoleRequest
-	26, // 20: fitter.v1.AdminService.ListAdminActions:input_type -> fitter.v1.ListAdminActionsRequest
-	2,  // 21: fitter.v1.AdminService.CreateCustomSport:input_type -> fitter.v1.CreateCustomSportRequest
-	4,  // 22: fitter.v1.AdminService.ListCustomSports:input_type -> fitter.v1.ListCustomSportsRequest
-	6,  // 23: fitter.v1.AdminService.DeleteCustomSport:input_type -> fitter.v1.DeleteCustomSportRequest
-	8,  // 24: fitter.v1.AdminService.CreateCustomMetric:input_type -> fitter.v1.CreateCustomMetricRequest
-	10, // 25: fitter.v1.AdminService.ListCustomMetrics:input_type -> fitter.v1.ListCustomMetricsRequest
-	12, // 26: fitter.v1.AdminService.DeleteCustomMetric:input_type -> fitter.v1.DeleteCustomMetricRequest
-	28, // 27: fitter.v1.AdminService.UpdateExercise:input_type -> fitter.v1.UpdateExerciseRequest
-	30, // 28: fitter.v1.AdminService.DeleteExercise:input_type -> fitter.v1.DeleteExerciseRequest
-	32, // 29: fitter.v1.AdminService.MergeExercises:input_type -> fitter.v1.MergeExercisesRequest
-	17, // 30: fitter.v1.AdminService.ListUsers:output_type -> fitter.v1.ListUsersResponse
-	19, // 31: fitter.v1.AdminService.ApproveUser:output_type -> fitter.v1.ApproveUserResponse
-	21, // 32: fitter.v1.AdminService.BanUser:output_type -> fitter.v1.BanUserResponse
-	23, // 33: fitter.v1.AdminService.UnbanUser:output_type -> fitter.v1.UnbanUserResponse
-	25, // 34: fitter.v1.AdminService.SetUserRole:output_type -> fitter.v1.SetUserRoleResponse
-	27, // 35: fitter.v1.AdminService.ListAdminActions:output_type -> fitter.v1.ListAdminActionsResponse
-	3,  // 36: fitter.v1.AdminService.CreateCustomSport:output_type -> fitter.v1.CreateCustomSportResponse
-	5,  // 37: fitter.v1.AdminService.ListCustomSports:output_type -> fitter.v1.ListCustomSportsResponse
-	7,  // 38: fitter.v1.AdminService.DeleteCustomSport:output_type -> fitter.v1.DeleteCustomSportResponse
-	9,  // 39: fitter.v1.AdminService.CreateCustomMetric:output_type -> fitter.v1.CreateCustomMetricResponse
-	11, // 40: fitter.v1.AdminService.ListCustomMetrics:output_type -> fitter.v1.ListCustomMetricsResponse
-	13, // 41: fitter.v1.AdminService.DeleteCustomMetric:output_type -> fitter.v1.DeleteCustomMetricResponse
-	29, // 42: fitter.v1.AdminService.UpdateExercise:output_type -> fitter.v1.UpdateExerciseResponse
-	31, // 43: fitter.v1.AdminService.DeleteExercise:output_type -> fitter.v1.DeleteExerciseResponse
-	33, // 44: fitter.v1.AdminService.MergeExercises:output_type -> fitter.v1.MergeExercisesResponse
-	30, // [30:45] is the sub-list for method output_type
-	15, // [15:30] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	37, // 11: fitter.v1.UpdateExerciseRequest.measure:type_name -> fitter.v1.ExerciseMeasure
+	38, // 12: fitter.v1.UpdateExerciseRequest.muscles:type_name -> fitter.v1.Muscle
+	39, // 13: fitter.v1.UpdateExerciseResponse.exercise:type_name -> fitter.v1.Exercise
+	39, // 14: fitter.v1.MergeExercisesResponse.exercise:type_name -> fitter.v1.Exercise
+	39, // 15: fitter.v1.SetExerciseArchivedResponse.exercise:type_name -> fitter.v1.Exercise
+	16, // 16: fitter.v1.AdminService.ListUsers:input_type -> fitter.v1.ListUsersRequest
+	18, // 17: fitter.v1.AdminService.ApproveUser:input_type -> fitter.v1.ApproveUserRequest
+	20, // 18: fitter.v1.AdminService.BanUser:input_type -> fitter.v1.BanUserRequest
+	22, // 19: fitter.v1.AdminService.UnbanUser:input_type -> fitter.v1.UnbanUserRequest
+	24, // 20: fitter.v1.AdminService.SetUserRole:input_type -> fitter.v1.SetUserRoleRequest
+	26, // 21: fitter.v1.AdminService.ListAdminActions:input_type -> fitter.v1.ListAdminActionsRequest
+	2,  // 22: fitter.v1.AdminService.CreateCustomSport:input_type -> fitter.v1.CreateCustomSportRequest
+	4,  // 23: fitter.v1.AdminService.ListCustomSports:input_type -> fitter.v1.ListCustomSportsRequest
+	6,  // 24: fitter.v1.AdminService.DeleteCustomSport:input_type -> fitter.v1.DeleteCustomSportRequest
+	8,  // 25: fitter.v1.AdminService.CreateCustomMetric:input_type -> fitter.v1.CreateCustomMetricRequest
+	10, // 26: fitter.v1.AdminService.ListCustomMetrics:input_type -> fitter.v1.ListCustomMetricsRequest
+	12, // 27: fitter.v1.AdminService.DeleteCustomMetric:input_type -> fitter.v1.DeleteCustomMetricRequest
+	28, // 28: fitter.v1.AdminService.UpdateExercise:input_type -> fitter.v1.UpdateExerciseRequest
+	30, // 29: fitter.v1.AdminService.DeleteExercise:input_type -> fitter.v1.DeleteExerciseRequest
+	32, // 30: fitter.v1.AdminService.MergeExercises:input_type -> fitter.v1.MergeExercisesRequest
+	34, // 31: fitter.v1.AdminService.SetExerciseArchived:input_type -> fitter.v1.SetExerciseArchivedRequest
+	17, // 32: fitter.v1.AdminService.ListUsers:output_type -> fitter.v1.ListUsersResponse
+	19, // 33: fitter.v1.AdminService.ApproveUser:output_type -> fitter.v1.ApproveUserResponse
+	21, // 34: fitter.v1.AdminService.BanUser:output_type -> fitter.v1.BanUserResponse
+	23, // 35: fitter.v1.AdminService.UnbanUser:output_type -> fitter.v1.UnbanUserResponse
+	25, // 36: fitter.v1.AdminService.SetUserRole:output_type -> fitter.v1.SetUserRoleResponse
+	27, // 37: fitter.v1.AdminService.ListAdminActions:output_type -> fitter.v1.ListAdminActionsResponse
+	3,  // 38: fitter.v1.AdminService.CreateCustomSport:output_type -> fitter.v1.CreateCustomSportResponse
+	5,  // 39: fitter.v1.AdminService.ListCustomSports:output_type -> fitter.v1.ListCustomSportsResponse
+	7,  // 40: fitter.v1.AdminService.DeleteCustomSport:output_type -> fitter.v1.DeleteCustomSportResponse
+	9,  // 41: fitter.v1.AdminService.CreateCustomMetric:output_type -> fitter.v1.CreateCustomMetricResponse
+	11, // 42: fitter.v1.AdminService.ListCustomMetrics:output_type -> fitter.v1.ListCustomMetricsResponse
+	13, // 43: fitter.v1.AdminService.DeleteCustomMetric:output_type -> fitter.v1.DeleteCustomMetricResponse
+	29, // 44: fitter.v1.AdminService.UpdateExercise:output_type -> fitter.v1.UpdateExerciseResponse
+	31, // 45: fitter.v1.AdminService.DeleteExercise:output_type -> fitter.v1.DeleteExerciseResponse
+	33, // 46: fitter.v1.AdminService.MergeExercises:output_type -> fitter.v1.MergeExercisesResponse
+	35, // 47: fitter.v1.AdminService.SetExerciseArchived:output_type -> fitter.v1.SetExerciseArchivedResponse
+	32, // [32:48] is the sub-list for method output_type
+	16, // [16:32] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_admin_proto_init() }
@@ -2085,7 +2193,7 @@ func file_fitter_v1_admin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_admin_proto_rawDesc), len(file_fitter_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   34,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

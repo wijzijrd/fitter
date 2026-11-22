@@ -63,6 +63,7 @@ func keyToMeasure(k string) fitterv1.ExerciseMeasure {
 func exerciseToProto(e db.Exercise, useCount int32) *fitterv1.Exercise {
 	out := &fitterv1.Exercise{
 		Id: e.ID, Name: e.Name, Key: e.Key, Measure: keyToMeasure(e.Measure), Loaded: e.Loaded, UseCount: useCount,
+		Archived: e.ArchivedAt.Valid,
 	}
 	for _, m := range e.Muscles {
 		out.Muscles = append(out.Muscles, keyToMuscle(m))
@@ -119,7 +120,7 @@ func (s *ExerciseService) ListExercises(ctx context.Context, _ *connect.Request[
 	for i, r := range rows {
 		out[i] = exerciseToProto(db.Exercise{
 			ID: r.ID, Name: r.Name, Key: r.Key, Measure: r.Measure, Loaded: r.Loaded, Muscles: r.Muscles,
-			CreatedBy: r.CreatedBy, CreatedAt: r.CreatedAt,
+			CreatedBy: r.CreatedBy, CreatedAt: r.CreatedAt, ArchivedAt: r.ArchivedAt,
 		}, r.UseCount)
 	}
 	return connect.NewResponse(&fitterv1.ListExercisesResponse{Exercises: out}), nil
@@ -127,7 +128,8 @@ func (s *ExerciseService) ListExercises(ctx context.Context, _ *connect.Request[
 
 // CreateExercise adds to the shared library; it is usable straight away. A name that
 // already exists (same key) returns the stored exercise instead of an error, so the form
-// can just select it.
+// can just select it. If that exercise was archived, adding it again restores it: the key is
+// unique, so there is no second copy to create, and its history is the right one to log against.
 func (s *ExerciseService) CreateExercise(ctx context.Context, req *connect.Request[fitterv1.CreateExerciseRequest]) (*connect.Response[fitterv1.CreateExerciseResponse], error) {
 	userID, ok := auth.UserIDFromContext(ctx)
 	if !ok {
@@ -142,6 +144,14 @@ func (s *ExerciseService) CreateExercise(ctx context.Context, req *connect.Reque
 		e, err := s.Queries.GetExerciseByKey(ctx, f.key)
 		if err != nil {
 			return nil, err
+		}
+		if e.ArchivedAt.Valid {
+			if e, err = s.Queries.SetExerciseArchived(ctx, db.SetExerciseArchivedParams{ID: e.ID}); err != nil {
+				return nil, err
+			}
+			if err := audit(ctx, s.Queries, userID, "restore_exercise", e.ID, e.Key); err != nil {
+				return nil, err
+			}
 		}
 		n, err := s.Queries.CountExerciseUse(ctx, e.ID)
 		if err != nil {

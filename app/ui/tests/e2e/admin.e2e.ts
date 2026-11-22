@@ -42,6 +42,7 @@ test("exercises: used ones merge, unused ones delete after asking", async ({ pag
 
   const bench = page.locator(".rows li", { hasText: "Bench press" });
   await expect(bench.locator("[data-merge]")).toBeVisible();
+  await expect(bench.locator("[data-archive]")).toBeVisible(); // used: archive or merge, never delete
   await expect(bench.locator("[data-delete-exercise]")).toHaveCount(0);
 
   const plank = page.locator(".rows li", { hasText: "Plank" });
@@ -77,4 +78,29 @@ test("exercises: merge asks before moving anything", async ({ page }) => {
   await page.locator(".panel .pill--primary").click();
   await expect(page.locator(".rows .name", { hasText: /^Squat$/ })).toBeHidden();
   await expect(page.locator(".rows li", { hasText: "Front squat" })).toContainText("used 1×");
+});
+
+test("exercises: archiving a used exercise hides it from new logs, and Restore brings it back", async ({ page }) => {
+  await page.locator("#admin-tab-exercises").click();
+  await page.locator('[data-archive="ex-squat"]').click();
+  await expect(page.getByRole("heading", { name: "Archived" })).toBeVisible();
+  await expect(page.locator(".rows li", { hasText: "Squat" }).filter({ hasText: "used 1×" }).locator("[data-restore]")).toBeVisible();
+  expect((await focused(page)).text).toContain("Restore");
+  expect(await overflowsX(page)).toBe(false);
+
+  const offered = async () => {
+    await page.goto("/activities/new");
+    await page.selectOption("#al-sport", "WeightTraining");
+    const c = page.locator('input[role="combobox"]').first();
+    await c.click();
+    await c.fill("squat");
+    return page.getByRole("option", { name: /^Squat/ }).count();
+  };
+  expect(await offered()).toBe(0);
+
+  await page.goto("/admin");
+  await page.locator("#admin-tab-exercises").click();
+  await page.locator('[data-restore="ex-squat"]').click();
+  await expect(page.getByRole("heading", { name: "Archived" })).toBeHidden();
+  expect(await offered()).toBe(1);
 });

@@ -16,7 +16,10 @@ CREATE TABLE exercises (
     -- names backfilled from before the library existed; the service requires one on create.
     muscles    TEXT[] NOT NULL DEFAULT '{}' CHECK (muscles <@ ARRAY['chest','back','shoulders','biceps','triceps','forearms','core','glutes','quads','hamstrings','calves','full_body','cardio']::TEXT[]),
     created_by TEXT REFERENCES users(id) ON DELETE SET NULL,  -- NULL = seeded
-    created_at BIGINT NOT NULL
+    created_at BIGINT NOT NULL,
+    -- NULL = offered when logging and in goal suggestions. Set = retired: hidden from both, but
+    -- past sessions and goals keep it. Used exercises are archived rather than deleted.
+    archived_at BIGINT
 );
 
 -- A manual session is an ordered list of blocks; a block repeats its stations for `rounds`.

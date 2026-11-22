@@ -13,7 +13,7 @@ SELECT * FROM exercises WHERE key = $1;
 SELECT * FROM exercises WHERE id = ANY(sqlc.arg(ids)::text[]);
 
 -- name: ListExercises :many
-SELECT e.id, e.name, e.key, e.measure, e.loaded, e.muscles, e.created_by, e.created_at,
+SELECT e.id, e.name, e.key, e.measure, e.loaded, e.muscles, e.created_by, e.created_at, e.archived_at,
        (SELECT count(*) FROM activity_stations s WHERE s.exercise_id = e.id)::int AS use_count
 FROM exercises e
 ORDER BY e.name;
@@ -25,6 +25,9 @@ SELECT count(*)::int FROM activity_stations WHERE exercise_id = $1;
 UPDATE exercises SET name = $2, key = $3, measure = $4, loaded = $5, muscles = $6
 WHERE id = $1
 RETURNING *;
+
+-- name: SetExerciseArchived :one
+UPDATE exercises SET archived_at = $2 WHERE id = $1 RETURNING *;
 
 -- name: DeleteExercise :exec
 DELETE FROM exercises WHERE id = $1;

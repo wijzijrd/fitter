@@ -11,8 +11,10 @@ export const useExerciseStore = defineStore("exercises", () => {
   let inFlight: Promise<void> | null = null;
 
   const byId = computed(() => new Map(exercises.value.map((e) => [e.id, e])));
+  // What new logs and goals may use. Archived ones stay in byId so history still resolves them.
+  const available = computed(() => exercises.value.filter((e) => !e.archived));
   // Exercises a max-weight goal can track: they record a weight.
-  const weightBearing = computed(() => exercises.value.filter((e) => e.measure === ExerciseMeasure.WEIGHT_REPS || e.loaded));
+  const weightBearing = computed(() => available.value.filter((e) => e.measure === ExerciseMeasure.WEIGHT_REPS || e.loaded));
 
   async function ensureLoaded(): Promise<void> {
     if (loaded.value) return;
@@ -34,12 +36,13 @@ export const useExerciseStore = defineStore("exercises", () => {
     exercises.value = [...rest, e].sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  // The server returns the stored exercise when the name already exists; callers just select it.
+  // The server returns the stored exercise when the name already exists (restoring it if it was
+  // archived); callers just select it.
   async function create(input: { name: string; measure: ExerciseMeasure; loaded: boolean; muscles: Muscle[] }): Promise<Exercise> {
     const resp = await exerciseClient.createExercise(input);
     upsert(resp.exercise!);
     return resp.exercise!;
   }
 
-  return { exercises, loaded, byId, weightBearing, ensureLoaded, upsert, create };
+  return { exercises, loaded, byId, available, weightBearing, ensureLoaded, upsert, create };
 });

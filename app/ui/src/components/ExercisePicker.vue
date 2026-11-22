@@ -26,13 +26,14 @@ const adding = ref(false);
 const filterText = computed(() => (selected.value && query.value === selected.value.name ? "" : normalizeExercise(query.value)));
 const matches = computed(() => {
   const words = filterText.value.split(" ").filter(Boolean);
-  if (!words.length) return store.exercises;
-  return store.exercises.filter((e) => {
+  if (!words.length) return store.available;
+  return store.available.filter((e) => {
     const hay = `${e.key} ${e.muscles.map((m) => muscleLabels[m].toLowerCase()).join(" ")}`;
     return words.every((w) => hay.includes(w));
   });
 });
-const canAdd = computed(() => !!filterText.value && !store.exercises.some((e) => e.key === filterText.value));
+// Typing an archived name offers "Add", which the server answers by restoring it.
+const canAdd = computed(() => !!filterText.value && !store.available.some((e) => e.key === filterText.value));
 const optionCount = computed(() => matches.value.length + (canAdd.value ? 1 : 0));
 
 const listId = computed(() => `${props.inputId}-list`);
@@ -96,7 +97,7 @@ function onFocusOut(ev: FocusEvent): void {
   if (ev.relatedTarget instanceof Node && wrap.value?.contains(ev.relatedTarget)) return;
   close();
   if (!model.value) {
-    const exact = store.exercises.find((e) => e.key === normalizeExercise(query.value));
+    const exact = store.available.find((e) => e.key === normalizeExercise(query.value));
     if (exact) pick(exact);
   } else if (selected.value) {
     query.value = selected.value.name;

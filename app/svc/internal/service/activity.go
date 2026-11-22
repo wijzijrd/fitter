@@ -135,6 +135,9 @@ func planFromBlocks(ctx context.Context, q *db.Queries, blocks []*fitterv1.Block
 			if !ok {
 				return nil, invalid("unknown exercise")
 			}
+			if ex.ArchivedAt.Valid {
+				return nil, invalid(ex.Name + " has been retired; pick another exercise")
+			}
 			ps, err := planStation(ex, st)
 			if err != nil {
 				return nil, err
@@ -223,6 +226,9 @@ func planFromLifts(ctx context.Context, q *db.Queries, userID string, lifts []*f
 		}
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if ex.ArchivedAt.Valid {
+			return nil, invalid(ex.Name + " has been retired; pick another exercise")
 		}
 		ps, err := planStation(ex, &fitterv1.Station{WeightKg: &w, Reps: &l.Reps})
 		if err != nil {

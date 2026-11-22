@@ -63,6 +63,11 @@ function fixtures() {
       Object.assign(e, { name: b.name, key: String(b.name).trim().toLowerCase(), measure: b.measure, loaded: !!b.loaded, muscles: b.muscles });
       return { exercise: e };
     },
+    "AdminService/SetExerciseArchived": (b: any) => {
+      const e = exercises.find((x) => x.id === b.id);
+      e.archived = !!b.archived;
+      return { exercise: e };
+    },
     "AdminService/DeleteExercise": (b: any) => {
       exercises = exercises.filter((e) => e.id !== b.id);
       return {};

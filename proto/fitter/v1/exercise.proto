@@ -36,7 +36,10 @@ message Exercise {
   ExerciseMeasure measure = 4;
   bool loaded = 5; // a weight is optional (distance and time only)
   repeated Muscle muscles = 6;
-  int32 use_count = 7; // stations that use it; lets the admin tab block deletes
+  int32 use_count = 7; // stations that use it; lets the admin tab choose Archive over Delete
+  // Retired: hidden from new logs and goal suggestions; past sessions keep it. Pickers drop
+  // archived exercises, the admin tab lists them under "Archived".
+  bool archived = 8;
 }
 
 message ListExercisesRequest {}
@@ -53,7 +56,8 @@ message CreateExerciseRequest {
 message CreateExerciseResponse {
   Exercise exercise = 1;
   // True when the name already existed: exercise is the stored one and the
-  // request's measure and muscles were ignored.
+  // request's measure and muscles were ignored. An archived exercise of that
+  // name is restored.
   bool already_existed = 2;
 }
 

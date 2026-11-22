@@ -164,6 +164,16 @@ message MergeExercisesResponse {
   Exercise exercise = 1; // the target
 }
 
+// SetExerciseArchived retires an exercise (hidden from new logs and goal suggestions, history
+// keeps it) or restores one. Used exercises are archived instead of deleted.
+message SetExerciseArchivedRequest {
+  string id = 1;
+  bool archived = 2;
+}
+message SetExerciseArchivedResponse {
+  Exercise exercise = 1;
+}
+
 service AdminService {
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
   rpc ApproveUser(ApproveUserRequest) returns (ApproveUserResponse);
@@ -180,4 +190,5 @@ service AdminService {
   rpc UpdateExercise(UpdateExerciseRequest) returns (UpdateExerciseResponse);
   rpc DeleteExercise(DeleteExerciseRequest) returns (DeleteExerciseResponse);
   rpc MergeExercises(MergeExercisesRequest) returns (MergeExercisesResponse);
+  rpc SetExerciseArchived(SetExerciseArchivedRequest) returns (SetExerciseArchivedResponse);
 }

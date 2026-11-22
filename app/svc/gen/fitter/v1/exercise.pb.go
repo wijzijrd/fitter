@@ -161,14 +161,17 @@ func (ExerciseMeasure) EnumDescriptor() ([]byte, []int) {
 }
 
 type Exercise struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // as entered
-	Key           string                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`   // normalised name; what goal clauses and legacy lifts refer to
-	Measure       ExerciseMeasure        `protobuf:"varint,4,opt,name=measure,proto3,enum=fitter.v1.ExerciseMeasure" json:"measure,omitempty"`
-	Loaded        bool                   `protobuf:"varint,5,opt,name=loaded,proto3" json:"loaded,omitempty"` // a weight is optional (distance and time only)
-	Muscles       []Muscle               `protobuf:"varint,6,rep,packed,name=muscles,proto3,enum=fitter.v1.Muscle" json:"muscles,omitempty"`
-	UseCount      int32                  `protobuf:"varint,7,opt,name=use_count,json=useCount,proto3" json:"use_count,omitempty"` // stations that use it; lets the admin tab block deletes
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name     string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // as entered
+	Key      string                 `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`   // normalised name; what goal clauses and legacy lifts refer to
+	Measure  ExerciseMeasure        `protobuf:"varint,4,opt,name=measure,proto3,enum=fitter.v1.ExerciseMeasure" json:"measure,omitempty"`
+	Loaded   bool                   `protobuf:"varint,5,opt,name=loaded,proto3" json:"loaded,omitempty"` // a weight is optional (distance and time only)
+	Muscles  []Muscle               `protobuf:"varint,6,rep,packed,name=muscles,proto3,enum=fitter.v1.Muscle" json:"muscles,omitempty"`
+	UseCount int32                  `protobuf:"varint,7,opt,name=use_count,json=useCount,proto3" json:"use_count,omitempty"` // stations that use it; lets the admin tab choose Archive over Delete
+	// Retired: hidden from new logs and goal suggestions; past sessions keep it. Pickers drop
+	// archived exercises, the admin tab lists them under "Archived".
+	Archived      bool `protobuf:"varint,8,opt,name=archived,proto3" json:"archived,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -250,6 +253,13 @@ func (x *Exercise) GetUseCount() int32 {
 		return x.UseCount
 	}
 	return 0
+}
+
+func (x *Exercise) GetArchived() bool {
+	if x != nil {
+		return x.Archived
+	}
+	return false
 }
 
 type ListExercisesRequest struct {
@@ -404,7 +414,8 @@ type CreateExerciseResponse struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Exercise *Exercise              `protobuf:"bytes,1,opt,name=exercise,proto3" json:"exercise,omitempty"`
 	// True when the name already existed: exercise is the stored one and the
-	// request's measure and muscles were ignored.
+	// request's measure and muscles were ignored. An archived exercise of that
+	// name is restored.
 	AlreadyExisted bool `protobuf:"varint,2,opt,name=already_existed,json=alreadyExisted,proto3" json:"already_existed,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
@@ -458,7 +469,7 @@ var File_fitter_v1_exercise_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_exercise_proto_rawDesc = "" +
 	"\n" +
-	"\x18fitter/v1/exercise.proto\x12\tfitter.v1\"\xd8\x01\n" +
+	"\x18fitter/v1/exercise.proto\x12\tfitter.v1\"\xf4\x01\n" +
 	"\bExercise\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x10\n" +
@@ -466,7 +477,8 @@ const file_fitter_v1_exercise_proto_rawDesc = "" +
 	"\ameasure\x18\x04 \x01(\x0e2\x1a.fitter.v1.ExerciseMeasureR\ameasure\x12\x16\n" +
 	"\x06loaded\x18\x05 \x01(\bR\x06loaded\x12+\n" +
 	"\amuscles\x18\x06 \x03(\x0e2\x11.fitter.v1.MuscleR\amuscles\x12\x1b\n" +
-	"\tuse_count\x18\a \x01(\x05R\buseCount\"\x16\n" +
+	"\tuse_count\x18\a \x01(\x05R\buseCount\x12\x1a\n" +
+	"\barchived\x18\b \x01(\bR\barchived\"\x16\n" +
 	"\x14ListExercisesRequest\"J\n" +
 	"\x15ListExercisesResponse\x121\n" +
 	"\texercises\x18\x01 \x03(\v2\x13.fitter.v1.ExerciseR\texercises\"\xa6\x01\n" +

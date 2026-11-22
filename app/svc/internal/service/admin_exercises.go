@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"connectrpc.com/connect"
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -118,6 +119,53 @@ func (s *AdminService) DeleteExercise(ctx context.Context, req *connect.Request[
 	return connect.NewResponse(&fitterv1.DeleteExerciseResponse{}), nil
 }
 
+// SetExerciseArchived retires an exercise or brings it back. Archiving only hides it from new
+// logs and goal suggestions; nothing already logged changes.
+func (s *AdminService) SetExerciseArchived(ctx context.Context, req *connect.Request[fitterv1.SetExerciseArchivedRequest]) (*connect.Response[fitterv1.SetExerciseArchivedResponse], error) {
+	if err := requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+	actor, _ := auth.UserIDFromContext(ctx)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, internalErr(err)
+	}
+	defer tx.Rollback()
+	q := s.Queries.WithTx(tx)
+	e, err := q.GetExercise(ctx, req.Msg.GetId())
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, exerciseNotFound()
+	} else if err != nil {
+		return nil, internalErr(err)
+	}
+	at, action := sql.NullInt64{}, "restore_exercise"
+	if req.Msg.GetArchived() {
+		at, action = sql.NullInt64{Int64: time.Now().Unix(), Valid: true}, "archive_exercise"
+	}
+	if e.ArchivedAt.Valid == at.Valid { // already in that state; keep the original time
+		use, err := q.CountExerciseUse(ctx, e.ID)
+		if err != nil {
+			return nil, internalErr(err)
+		}
+		return connect.NewResponse(&fitterv1.SetExerciseArchivedResponse{Exercise: exerciseToProto(e, use)}), nil
+	}
+	row, err := q.SetExerciseArchived(ctx, db.SetExerciseArchivedParams{ID: e.ID, ArchivedAt: at})
+	if err != nil {
+		return nil, internalErr(err)
+	}
+	if err := audit(ctx, q, actor, action, row.ID, row.Key); err != nil {
+		return nil, internalErr(err)
+	}
+	use, err := q.CountExerciseUse(ctx, row.ID)
+	if err != nil {
+		return nil, internalErr(err)
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, internalErr(err)
+	}
+	return connect.NewResponse(&fitterv1.SetExerciseArchivedResponse{Exercise: exerciseToProto(row, use)}), nil
+}
+
 // MergeExercises moves a duplicate's history and goal clauses onto the exercise to keep.
 // The two must be measured the same way, and the target must take a weight if the source did.
 func (s *AdminService) MergeExercises(ctx context.Context, req *connect.Request[fitterv1.MergeExercisesRequest]) (*connect.Response[fitterv1.MergeExercisesResponse], error) {
@@ -146,6 +194,9 @@ func (s *AdminService) MergeExercises(ctx context.Context, req *connect.Request[
 		return nil, exerciseNotFound()
 	} else if err != nil {
 		return nil, internalErr(err)
+	}
+	if dst.ArchivedAt.Valid {
+		return nil, invalid("can't merge into an archived exercise; restore it first")
 	}
 	if src.Measure != dst.Measure || (src.Loaded && !dst.Loaded) {
 		return nil, invalid("those exercises are measured differently, so they can't be merged")

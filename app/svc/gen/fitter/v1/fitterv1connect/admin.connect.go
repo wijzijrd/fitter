@@ -75,6 +75,9 @@ const (
 	// AdminServiceMergeExercisesProcedure is the fully-qualified name of the AdminService's
 	// MergeExercises RPC.
 	AdminServiceMergeExercisesProcedure = "/fitter.v1.AdminService/MergeExercises"
+	// AdminServiceSetExerciseArchivedProcedure is the fully-qualified name of the AdminService's
+	// SetExerciseArchived RPC.
+	AdminServiceSetExerciseArchivedProcedure = "/fitter.v1.AdminService/SetExerciseArchived"
 )
 
 // AdminServiceClient is a client for the fitter.v1.AdminService service.
@@ -94,6 +97,7 @@ type AdminServiceClient interface {
 	UpdateExercise(context.Context, *connect.Request[v1.UpdateExerciseRequest]) (*connect.Response[v1.UpdateExerciseResponse], error)
 	DeleteExercise(context.Context, *connect.Request[v1.DeleteExerciseRequest]) (*connect.Response[v1.DeleteExerciseResponse], error)
 	MergeExercises(context.Context, *connect.Request[v1.MergeExercisesRequest]) (*connect.Response[v1.MergeExercisesResponse], error)
+	SetExerciseArchived(context.Context, *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error)
 }
 
 // NewAdminServiceClient constructs a client for the fitter.v1.AdminService service. By default, it
@@ -197,26 +201,33 @@ func NewAdminServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(adminServiceMethods.ByName("MergeExercises")),
 			connect.WithClientOptions(opts...),
 		),
+		setExerciseArchived: connect.NewClient[v1.SetExerciseArchivedRequest, v1.SetExerciseArchivedResponse](
+			httpClient,
+			baseURL+AdminServiceSetExerciseArchivedProcedure,
+			connect.WithSchema(adminServiceMethods.ByName("SetExerciseArchived")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // adminServiceClient implements AdminServiceClient.
 type adminServiceClient struct {
-	listUsers          *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
-	approveUser        *connect.Client[v1.ApproveUserRequest, v1.ApproveUserResponse]
-	banUser            *connect.Client[v1.BanUserRequest, v1.BanUserResponse]
-	unbanUser          *connect.Client[v1.UnbanUserRequest, v1.UnbanUserResponse]
-	setUserRole        *connect.Client[v1.SetUserRoleRequest, v1.SetUserRoleResponse]
-	listAdminActions   *connect.Client[v1.ListAdminActionsRequest, v1.ListAdminActionsResponse]
-	createCustomSport  *connect.Client[v1.CreateCustomSportRequest, v1.CreateCustomSportResponse]
-	listCustomSports   *connect.Client[v1.ListCustomSportsRequest, v1.ListCustomSportsResponse]
-	deleteCustomSport  *connect.Client[v1.DeleteCustomSportRequest, v1.DeleteCustomSportResponse]
-	createCustomMetric *connect.Client[v1.CreateCustomMetricRequest, v1.CreateCustomMetricResponse]
-	listCustomMetrics  *connect.Client[v1.ListCustomMetricsRequest, v1.ListCustomMetricsResponse]
-	deleteCustomMetric *connect.Client[v1.DeleteCustomMetricRequest, v1.DeleteCustomMetricResponse]
-	updateExercise     *connect.Client[v1.UpdateExerciseRequest, v1.UpdateExerciseResponse]
-	deleteExercise     *connect.Client[v1.DeleteExerciseRequest, v1.DeleteExerciseResponse]
-	mergeExercises     *connect.Client[v1.MergeExercisesRequest, v1.MergeExercisesResponse]
+	listUsers           *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
+	approveUser         *connect.Client[v1.ApproveUserRequest, v1.ApproveUserResponse]
+	banUser             *connect.Client[v1.BanUserRequest, v1.BanUserResponse]
+	unbanUser           *connect.Client[v1.UnbanUserRequest, v1.UnbanUserResponse]
+	setUserRole         *connect.Client[v1.SetUserRoleRequest, v1.SetUserRoleResponse]
+	listAdminActions    *connect.Client[v1.ListAdminActionsRequest, v1.ListAdminActionsResponse]
+	createCustomSport   *connect.Client[v1.CreateCustomSportRequest, v1.CreateCustomSportResponse]
+	listCustomSports    *connect.Client[v1.ListCustomSportsRequest, v1.ListCustomSportsResponse]
+	deleteCustomSport   *connect.Client[v1.DeleteCustomSportRequest, v1.DeleteCustomSportResponse]
+	createCustomMetric  *connect.Client[v1.CreateCustomMetricRequest, v1.CreateCustomMetricResponse]
+	listCustomMetrics   *connect.Client[v1.ListCustomMetricsRequest, v1.ListCustomMetricsResponse]
+	deleteCustomMetric  *connect.Client[v1.DeleteCustomMetricRequest, v1.DeleteCustomMetricResponse]
+	updateExercise      *connect.Client[v1.UpdateExerciseRequest, v1.UpdateExerciseResponse]
+	deleteExercise      *connect.Client[v1.DeleteExerciseRequest, v1.DeleteExerciseResponse]
+	mergeExercises      *connect.Client[v1.MergeExercisesRequest, v1.MergeExercisesResponse]
+	setExerciseArchived *connect.Client[v1.SetExerciseArchivedRequest, v1.SetExerciseArchivedResponse]
 }
 
 // ListUsers calls fitter.v1.AdminService.ListUsers.
@@ -294,6 +305,11 @@ func (c *adminServiceClient) MergeExercises(ctx context.Context, req *connect.Re
 	return c.mergeExercises.CallUnary(ctx, req)
 }
 
+// SetExerciseArchived calls fitter.v1.AdminService.SetExerciseArchived.
+func (c *adminServiceClient) SetExerciseArchived(ctx context.Context, req *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error) {
+	return c.setExerciseArchived.CallUnary(ctx, req)
+}
+
 // AdminServiceHandler is an implementation of the fitter.v1.AdminService service.
 type AdminServiceHandler interface {
 	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
@@ -311,6 +327,7 @@ type AdminServiceHandler interface {
 	UpdateExercise(context.Context, *connect.Request[v1.UpdateExerciseRequest]) (*connect.Response[v1.UpdateExerciseResponse], error)
 	DeleteExercise(context.Context, *connect.Request[v1.DeleteExerciseRequest]) (*connect.Response[v1.DeleteExerciseResponse], error)
 	MergeExercises(context.Context, *connect.Request[v1.MergeExercisesRequest]) (*connect.Response[v1.MergeExercisesResponse], error)
+	SetExerciseArchived(context.Context, *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error)
 }
 
 // NewAdminServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -410,6 +427,12 @@ func NewAdminServiceHandler(svc AdminServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(adminServiceMethods.ByName("MergeExercises")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminServiceSetExerciseArchivedHandler := connect.NewUnaryHandler(
+		AdminServiceSetExerciseArchivedProcedure,
+		svc.SetExerciseArchived,
+		connect.WithSchema(adminServiceMethods.ByName("SetExerciseArchived")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/fitter.v1.AdminService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AdminServiceListUsersProcedure:
@@ -442,6 +465,8 @@ func NewAdminServiceHandler(svc AdminServiceHandler, opts ...connect.HandlerOpti
 			adminServiceDeleteExerciseHandler.ServeHTTP(w, r)
 		case AdminServiceMergeExercisesProcedure:
 			adminServiceMergeExercisesHandler.ServeHTTP(w, r)
+		case AdminServiceSetExerciseArchivedProcedure:
+			adminServiceSetExerciseArchivedHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -509,4 +534,8 @@ func (UnimplementedAdminServiceHandler) DeleteExercise(context.Context, *connect
 
 func (UnimplementedAdminServiceHandler) MergeExercises(context.Context, *connect.Request[v1.MergeExercisesRequest]) (*connect.Response[v1.MergeExercisesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.MergeExercises is not implemented"))
+}
+
+func (UnimplementedAdminServiceHandler) SetExerciseArchived(context.Context, *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.SetExerciseArchived is not implemented"))
 }

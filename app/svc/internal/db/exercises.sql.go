@@ -48,7 +48,7 @@ func (q *Queries) CountExerciseUse(ctx context.Context, exerciseID string) (int3
 const createExercise = `-- name: CreateExercise :one
 INSERT INTO exercises (id, name, key, measure, loaded, muscles, created_by, created_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, name, key, measure, loaded, muscles, created_by, created_at
+RETURNING id, name, key, measure, loaded, muscles, created_by, created_at, archived_at
 `
 
 type CreateExerciseParams struct {
@@ -83,6 +83,7 @@ func (q *Queries) CreateExercise(ctx context.Context, arg CreateExerciseParams) 
 		pq.Array(&i.Muscles),
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.ArchivedAt,
 	)
 	return i, err
 }
@@ -97,7 +98,7 @@ func (q *Queries) DeleteExercise(ctx context.Context, id string) error {
 }
 
 const getExercise = `-- name: GetExercise :one
-SELECT id, name, key, measure, loaded, muscles, created_by, created_at FROM exercises WHERE id = $1
+SELECT id, name, key, measure, loaded, muscles, created_by, created_at, archived_at FROM exercises WHERE id = $1
 `
 
 func (q *Queries) GetExercise(ctx context.Context, id string) (Exercise, error) {
@@ -112,12 +113,13 @@ func (q *Queries) GetExercise(ctx context.Context, id string) (Exercise, error) 
 		pq.Array(&i.Muscles),
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.ArchivedAt,
 	)
 	return i, err
 }
 
 const getExerciseByKey = `-- name: GetExerciseByKey :one
-SELECT id, name, key, measure, loaded, muscles, created_by, created_at FROM exercises WHERE key = $1
+SELECT id, name, key, measure, loaded, muscles, created_by, created_at, archived_at FROM exercises WHERE key = $1
 `
 
 func (q *Queries) GetExerciseByKey(ctx context.Context, key string) (Exercise, error) {
@@ -132,12 +134,13 @@ func (q *Queries) GetExerciseByKey(ctx context.Context, key string) (Exercise, e
 		pq.Array(&i.Muscles),
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.ArchivedAt,
 	)
 	return i, err
 }
 
 const getExercisesByIDs = `-- name: GetExercisesByIDs :many
-SELECT id, name, key, measure, loaded, muscles, created_by, created_at FROM exercises WHERE id = ANY($1::text[])
+SELECT id, name, key, measure, loaded, muscles, created_by, created_at, archived_at FROM exercises WHERE id = ANY($1::text[])
 `
 
 func (q *Queries) GetExercisesByIDs(ctx context.Context, ids []string) ([]Exercise, error) {
@@ -158,6 +161,7 @@ func (q *Queries) GetExercisesByIDs(ctx context.Context, ids []string) ([]Exerci
 			pq.Array(&i.Muscles),
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.ArchivedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -173,22 +177,23 @@ func (q *Queries) GetExercisesByIDs(ctx context.Context, ids []string) ([]Exerci
 }
 
 const listExercises = `-- name: ListExercises :many
-SELECT e.id, e.name, e.key, e.measure, e.loaded, e.muscles, e.created_by, e.created_at,
+SELECT e.id, e.name, e.key, e.measure, e.loaded, e.muscles, e.created_by, e.created_at, e.archived_at,
        (SELECT count(*) FROM activity_stations s WHERE s.exercise_id = e.id)::int AS use_count
 FROM exercises e
 ORDER BY e.name
 `
 
 type ListExercisesRow struct {
-	ID        string         `json:"id"`
-	Name      string         `json:"name"`
-	Key       string         `json:"key"`
-	Measure   string         `json:"measure"`
-	Loaded    bool           `json:"loaded"`
-	Muscles   []string       `json:"muscles"`
-	CreatedBy sql.NullString `json:"created_by"`
-	CreatedAt int64          `json:"created_at"`
-	UseCount  int32          `json:"use_count"`
+	ID         string         `json:"id"`
+	Name       string         `json:"name"`
+	Key        string         `json:"key"`
+	Measure    string         `json:"measure"`
+	Loaded     bool           `json:"loaded"`
+	Muscles    []string       `json:"muscles"`
+	CreatedBy  sql.NullString `json:"created_by"`
+	CreatedAt  int64          `json:"created_at"`
+	ArchivedAt sql.NullInt64  `json:"archived_at"`
+	UseCount   int32          `json:"use_count"`
 }
 
 func (q *Queries) ListExercises(ctx context.Context) ([]ListExercisesRow, error) {
@@ -209,6 +214,7 @@ func (q *Queries) ListExercises(ctx context.Context) ([]ListExercisesRow, error)
 			pq.Array(&i.Muscles),
 			&i.CreatedBy,
 			&i.CreatedAt,
+			&i.ArchivedAt,
 			&i.UseCount,
 		); err != nil {
 			return nil, err
@@ -269,10 +275,36 @@ func (q *Queries) RepointStations(ctx context.Context, arg RepointStationsParams
 	return err
 }
 
+const setExerciseArchived = `-- name: SetExerciseArchived :one
+UPDATE exercises SET archived_at = $2 WHERE id = $1 RETURNING id, name, key, measure, loaded, muscles, created_by, created_at, archived_at
+`
+
+type SetExerciseArchivedParams struct {
+	ID         string        `json:"id"`
+	ArchivedAt sql.NullInt64 `json:"archived_at"`
+}
+
+func (q *Queries) SetExerciseArchived(ctx context.Context, arg SetExerciseArchivedParams) (Exercise, error) {
+	row := q.db.QueryRowContext(ctx, setExerciseArchived, arg.ID, arg.ArchivedAt)
+	var i Exercise
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Key,
+		&i.Measure,
+		&i.Loaded,
+		pq.Array(&i.Muscles),
+		&i.CreatedBy,
+		&i.CreatedAt,
+		&i.ArchivedAt,
+	)
+	return i, err
+}
+
 const updateExercise = `-- name: UpdateExercise :one
 UPDATE exercises SET name = $2, key = $3, measure = $4, loaded = $5, muscles = $6
 WHERE id = $1
-RETURNING id, name, key, measure, loaded, muscles, created_by, created_at
+RETURNING id, name, key, measure, loaded, muscles, created_by, created_at, archived_at
 `
 
 type UpdateExerciseParams struct {
@@ -303,6 +335,7 @@ func (q *Queries) UpdateExercise(ctx context.Context, arg UpdateExerciseParams) 
 		pq.Array(&i.Muscles),
 		&i.CreatedBy,
 		&i.CreatedAt,
+		&i.ArchivedAt,
 	)
 	return i, err
 }

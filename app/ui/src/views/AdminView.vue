@@ -155,10 +155,16 @@ const toggleEditMuscle = (m: Muscle) => {
   editForm.muscles = editForm.muscles.includes(m) ? editForm.muscles.filter((x) => x !== m) : [...editForm.muscles, m];
 };
 const optionalWeight = computed(() => editForm.measure === ExerciseMeasure.DISTANCE || editForm.measure === ExerciseMeasure.TIME);
+const exerciseGroups = computed(() =>
+  [
+    { key: "active", title: "Exercise library", rows: exercises.value.filter((e) => !e.archived) },
+    { key: "archived", title: "Archived", rows: exercises.value.filter((e) => e.archived) },
+  ].filter((g) => g.key === "active" || g.rows.length),
+);
 const exerciseMeta = (e: Exercise) =>
   [measureLabels[e.measure] + (e.loaded ? " (weight optional)" : ""), e.muscles.map((m) => muscleLabels[m]).join(", ") || "no muscles yet", e.useCount ? `used ${e.useCount}×` : "unused"].join(" · ");
 // A merge keeps the target's way of measuring: same measure, and it must take a weight if the source did.
-const mergeTargets = (e: Exercise) => exercises.value.filter((x) => x.id !== e.id && x.measure === e.measure && (!e.loaded || x.loaded));
+const mergeTargets = (e: Exercise) => exercises.value.filter((x) => !x.archived && x.id !== e.id && x.measure === e.measure && (!e.loaded || x.loaded));
 
 function startEdit(e: Exercise): void {
   merging.value = "";
@@ -196,6 +202,11 @@ async function confirmMerge(e: Exercise): Promise<void> {
     merging.value = "";
     focusNthOr("[data-edit]", 0, "#admin-exercises");
   }
+}
+// Archiving is reversible, so it doesn't ask: the row moves between lists and focus follows it.
+async function setArchived(e: Exercise, archived: boolean): Promise<void> {
+  await act(() => adminClient.setExerciseArchived({ id: e.id, archived }));
+  if (!error.value) focusNthOr(`[data-${archived ? "restore" : "archive"}="${e.id}"]`, 0, "#admin-exercises");
 }
 async function deleteExercise(e: Exercise): Promise<void> {
   // Only unused rows have a Delete button, so focus follows the index among those.
@@ -372,10 +383,12 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
     </section>
 
     <section v-else-if="tab === 'exercises'">
-      <h2 id="admin-exercises" tabindex="-1">Exercise library</h2>
-      <p class="meta">Anyone can add an exercise from the log form. Fix names and muscles here, and merge duplicates.</p>
+      <template v-for="g in exerciseGroups" :key="g.key">
+      <h2 :id="g.key === 'active' ? 'admin-exercises' : 'admin-exercises-archived'" tabindex="-1">{{ g.title }}</h2>
+      <p v-if="g.key === 'active'" class="meta">Anyone can add an exercise from the log form. Merge moves a duplicate's history and goals onto the one to keep. Archive hides one that's in use from new logs; past sessions keep it.</p>
+      <p v-else class="meta">Hidden from new logs and goal suggestions. Past sessions and goals still show them.</p>
       <ul class="rows">
-        <li v-for="e in exercises" :key="e.id">
+        <li v-for="e in g.rows" :key="e.id">
           <span class="who"><span class="name">{{ e.name }}</span><span class="meta">{{ exerciseMeta(e) }}</span></span>
 
           <span v-if="confirmDelete === `exercise:${e.id}`" class="confirm">
@@ -387,8 +400,10 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
           </span>
           <span v-else class="actions">
             <button type="button" class="pill pill--quiet" :data-edit="e.id" @click="startEdit(e)">Edit<span class="visually-hidden"> {{ e.name }}</span></button>
+            <button v-if="e.archived" type="button" class="pill pill--quiet" :data-restore="e.id" v-busy="busy" @click="setArchived(e, false)">Restore<span class="visually-hidden"> {{ e.name }}</span></button>
             <button v-if="e.useCount > 0" type="button" class="pill pill--quiet" :data-merge="e.id" @click="startMerge(e)">Merge<span class="visually-hidden"> {{ e.name }} into another</span></button>
-            <button v-else v-focus="kept === `exercise:${e.id}`" type="button" class="pill pill--quiet" data-delete-exercise @click="confirmDelete = `exercise:${e.id}`">Delete<span class="visually-hidden"> {{ e.name }}</span></button>
+            <button v-if="e.useCount > 0 && !e.archived" type="button" class="pill pill--quiet" :data-archive="e.id" v-busy="busy" @click="setArchived(e, true)">Archive<span class="visually-hidden"> {{ e.name }}</span></button>
+            <button v-else-if="e.useCount === 0" v-focus="kept === `exercise:${e.id}`" type="button" class="pill pill--quiet" data-delete-exercise @click="confirmDelete = `exercise:${e.id}`">Delete<span class="visually-hidden"> {{ e.name }}</span></button>
           </span>
 
           <form v-if="editing === e.id" class="panel" @submit.prevent="saveEdit(e)" @keydown.esc="cancelEdit(e)">
@@ -440,6 +455,7 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
           </form>
         </li>
       </ul>
+      </template>
     </section>
 
     <section v-else>

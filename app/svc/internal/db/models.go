@@ -118,14 +118,15 @@ type CustomSport struct {
 }
 
 type Exercise struct {
-	ID        string         `json:"id"`
-	Name      string         `json:"name"`
-	Key       string         `json:"key"`
-	Measure   string         `json:"measure"`
-	Loaded    bool           `json:"loaded"`
-	Muscles   []string       `json:"muscles"`
-	CreatedBy sql.NullString `json:"created_by"`
-	CreatedAt int64          `json:"created_at"`
+	ID         string         `json:"id"`
+	Name       string         `json:"name"`
+	Key        string         `json:"key"`
+	Measure    string         `json:"measure"`
+	Loaded     bool           `json:"loaded"`
+	Muscles    []string       `json:"muscles"`
+	CreatedBy  sql.NullString `json:"created_by"`
+	CreatedAt  int64          `json:"created_at"`
+	ArchivedAt sql.NullInt64  `json:"archived_at"`
 }
 
 type Goal struct {

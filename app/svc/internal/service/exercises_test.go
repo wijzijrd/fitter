@@ -322,3 +322,91 @@ func TestAdminExercises_UpdateDeleteMerge(t *testing.T) {
 		t.Fatalf("audited actions = %d err=%v, want 3 (rename, merge, delete)", actions, err)
 	}
 }
+
+// Archiving hides an exercise from new logs and keeps what is already logged, including goals.
+func TestExercises_ArchiveHidesFromNewLogsAndKeepsHistory(t *testing.T) {
+	deps := newDeps(t)
+	alice := seedUser(t, deps.Queries, "alice")
+	admin := seedUser(t, deps.Queries, "admin")
+	acts := service.NewActivityService(deps)
+	goals := service.NewGoalService(deps)
+	lib := service.NewExerciseService(deps)
+	svc := service.NewAdminService(deps)
+	mctx, actx := ctxAs(alice.ID), ctxAsAdmin(admin.ID)
+
+	bench := exerciseID(t, deps, "bench press")
+	logBench := func() error {
+		_, err := acts.CreateManualActivity(mctx, connect.NewRequest(&fitterv1.CreateManualActivityRequest{
+			Activity: circuit(&fitterv1.Block{Rounds: 1, Stations: []*fitterv1.Station{{ExerciseId: bench, WeightKg: f64(100), Reps: i32(5)}}}),
+		}))
+		return err
+	}
+	if err := logBench(); err != nil {
+		t.Fatalf("log before archive: %v", err)
+	}
+
+	if _, err := svc.SetExerciseArchived(mctx, connect.NewRequest(&fitterv1.SetExerciseArchivedRequest{Id: bench, Archived: true})); connect.CodeOf(err) != connect.CodePermissionDenied {
+		t.Fatalf("member archive: got %v, want PermissionDenied", err)
+	}
+	resp, err := svc.SetExerciseArchived(actx, connect.NewRequest(&fitterv1.SetExerciseArchivedRequest{Id: bench, Archived: true}))
+	if err != nil || !resp.Msg.GetExercise().GetArchived() || resp.Msg.GetExercise().GetUseCount() != 1 {
+		t.Fatalf("archive: %+v err=%v", resp.Msg, err)
+	}
+	if _, err := svc.SetExerciseArchived(actx, connect.NewRequest(&fitterv1.SetExerciseArchivedRequest{Id: bench, Archived: true})); err != nil {
+		t.Fatalf("archiving twice: %v", err)
+	}
+
+	// New logs are refused, whether they name the exercise by id or (older clients) by name.
+	if err := logBench(); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("log archived by id: got %v, want InvalidArgument", err)
+	}
+	if _, err := acts.CreateManualActivity(mctx, connect.NewRequest(&fitterv1.CreateManualActivityRequest{
+		Activity: manual(&fitterv1.Lift{Exercise: "bench press", WeightKg: 80, Reps: 5}),
+	})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("log archived by name: got %v, want InvalidArgument", err)
+	}
+
+	// History and goals keep working: the earlier 100 kg still counts for a goal on it.
+	name := "bench press"
+	start, end := time.Now().Add(-24*time.Hour).Unix(), time.Now().Add(24*time.Hour).Unix()
+	g, err := goals.CreateGoal(mctx, connect.NewRequest(&fitterv1.CreateGoalRequest{
+		Name: "Bench 120", PeriodStart: ts(start), PeriodEnd: ts(end),
+		Clauses: []*fitterv1.GoalClause{{
+			Metric: fitterv1.ActivityMetric_ACTIVITY_METRIC_MAX_WEIGHT_KG, Scope: fitterv1.ClauseScope_CLAUSE_SCOPE_AGGREGATE,
+			Comparator: fitterv1.Comparator_COMPARATOR_GTE, Value: 120, Exercise: &name,
+		}},
+	}))
+	if err != nil || g.Msg.GetGoal().GetProgress().GetClauses()[0].GetCurrentValue() != 100 {
+		t.Fatalf("goal on archived exercise: %v err=%v, want current 100", g, err)
+	}
+	list, _ := acts.ListManualActivities(mctx, connect.NewRequest(&fitterv1.ListManualActivitiesRequest{}))
+	if b := list.Msg.GetActivities()[0].GetBlocks(); len(b) != 1 || b[0].GetStations()[0].GetExerciseName() != "Bench press" {
+		t.Fatalf("history lost the exercise: %v", b)
+	}
+
+	// An archived exercise can be merged away, but not merged into.
+	front := exerciseID(t, deps, "front squat")
+	if _, err := svc.MergeExercises(actx, connect.NewRequest(&fitterv1.MergeExercisesRequest{SourceId: front, TargetId: bench})); connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Fatalf("merge into archived: got %v, want InvalidArgument", err)
+	}
+
+	// Anyone re-adding the name restores it, with its original measure and muscles.
+	again, err := lib.CreateExercise(mctx, connect.NewRequest(&fitterv1.CreateExerciseRequest{
+		Name: "Bench Press", Measure: fitterv1.ExerciseMeasure_EXERCISE_MEASURE_REPS, Muscles: []fitterv1.Muscle{fitterv1.Muscle_MUSCLE_BACK},
+	}))
+	if err != nil || !again.Msg.GetAlreadyExisted() || again.Msg.GetExercise().GetArchived() || again.Msg.GetExercise().GetMeasure() != fitterv1.ExerciseMeasure_EXERCISE_MEASURE_WEIGHT_REPS {
+		t.Fatalf("re-add: %+v err=%v, want the restored weight × reps exercise", again.Msg, err)
+	}
+	if err := logBench(); err != nil {
+		t.Fatalf("log after restore: %v", err)
+	}
+
+	// An admin can restore directly too.
+	if _, err := svc.SetExerciseArchived(actx, connect.NewRequest(&fitterv1.SetExerciseArchivedRequest{Id: bench, Archived: true})); err != nil {
+		t.Fatal(err)
+	}
+	back, err := svc.SetExerciseArchived(actx, connect.NewRequest(&fitterv1.SetExerciseArchivedRequest{Id: bench, Archived: false}))
+	if err != nil || back.Msg.GetExercise().GetArchived() {
+		t.Fatalf("restore: %+v err=%v", back.Msg, err)
+	}
+}

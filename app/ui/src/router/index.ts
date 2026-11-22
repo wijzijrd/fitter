@@ -28,6 +28,7 @@ const router = createRouter({
       props: true,
     },
     { path: "/activities/new", name: "activity-new", component: () => import("../views/ActivityLogView.vue"), meta: { requiresAuth: true, title: "Log activity" } },
+    { path: "/settings", name: "settings", component: () => import("../views/SettingsView.vue"), meta: { requiresAuth: true, title: "Settings" } },
     { path: "/pending", name: "pending", component: () => import("../views/PendingView.vue"), meta: { requiresAuth: true, title: "Waiting for approval" } },
     { path: "/admin", name: "admin", component: () => import("../views/AdminView.vue"), meta: { requiresAuth: true, requiresAdmin: true, title: "Admin" } },
     { path: "/goals/new", name: "goal-new", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "New goal" } },

@@ -127,12 +127,10 @@ function stationText(s: StationLike): string {
 }
 
 // One line for a saved session, e.g. "3 × (Bench press 80 kg × 5 + Pull-up × 8); SkiErg 1 km".
-export function describeBlocks(blocks: Block[]): string {
-  return blocks
-    .map((b) => {
-      const text = b.stations.map(stationText).join(" + ");
-      if (b.rounds <= 1) return text;
-      return b.stations.length > 1 ? `${b.rounds} × (${text})` : `${text} · ${b.rounds} rounds`;
-    })
-    .join("; ");
+export function describeBlock(b: Block): string {
+  const text = b.stations.map(stationText).join(" + ");
+  if (b.rounds <= 1) return text;
+  return b.stations.length > 1 ? `${b.rounds} × (${text})` : `${text} · ${b.rounds} rounds`;
 }
+
+export const describeBlocks = (blocks: Block[]): string => blocks.map(describeBlock).join("; ");

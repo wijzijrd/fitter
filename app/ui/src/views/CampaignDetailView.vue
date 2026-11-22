@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useCampaignsStore } from "../stores/campaigns";
@@ -11,6 +11,7 @@ import { activityMetricValue } from "../lib/labels";
 import { TOGETHER, lead, myEntries, primary, share, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
 import { plural } from "../lib/schedule";
+import { detailParts, groupByDay, isNew, liftLines, pulse, recent } from "../lib/feed";
 import BibStack from "../components/BibStack.vue";
 import { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { create } from "@bufbuild/protobuf";
@@ -38,6 +39,25 @@ const tabs: { id: Tab; label: string }[] = [
   { id: "timeline", label: "Timeline" },
 ];
 const tab = ref<Tab>("standings");
+
+// Feed tab: last week's rows by day, what is new since the caller last looked, and the detail
+// line they chose in Settings. The looked-at time moves on when they leave the tab.
+const now = ref(new Date());
+const recentRows = computed(() => recent(feed.value.activities, now.value.getTime()));
+const newRows = computed(() => recentRows.value.filter((a) => isNew(a, feed.value.seenAt, meId.value)));
+const feedDays = computed(() => groupByDay(recentRows.value, now.value));
+const pulseText = computed(() => pulse(newRows.value));
+const lastNew = computed(() => newRows.value.at(-1));
+const details = (a: FeedActivity) => detailParts(a, auth.feedSettings).join(" · ");
+const lifts = (a: FeedActivity) => (auth.feedSettings.showLifts ? liftLines(a.blocks) : []);
+let feedViewed = false;
+watch(tab, (now, was) => {
+  if (now === "feed") feedViewed = true;
+  else if (was === "feed") void feedStore.markSeen(props.id);
+});
+onBeforeUnmount(() => {
+  if (tab.value === "feed" && feedViewed) void feedStore.markSeen(props.id);
+});
 const loadError = ref("");
 const leaving = ref(false);
 const confirmLeave = ref(false);
@@ -160,7 +180,8 @@ const feedMetric = computed(
 );
 function activityValue(a: FeedActivity): string {
   const v = activityMetricValue(a, feedMetric.value);
-  return v === undefined ? fmt(ActivityMetric.MOVING_TIME, Number(a.movingTimeS)) : fmt(feedMetric.value, v);
+  // A session with none of the measure (a gym session against a distance goal) shows its time instead of "0 km".
+  return !v ? fmt(ActivityMetric.MOVING_TIME, Number(a.movingTimeS)) : fmt(feedMetric.value, v);
 }
 
 const goalNames = computed(() => {
@@ -400,19 +421,32 @@ onMounted(() => {
             </template>
 
             <template v-else-if="tab === 'feed'">
-              <p v-if="!feed.activities.length" class="quiet">
-                No activities yet. Members' Strava uploads appear here as they sync.
+              <p v-if="!recentRows.length" class="quiet">
+                {{ feed.activities.length ? "Nothing in the last 7 days." : "No activities yet. Members' Strava uploads appear here as they sync." }}
               </p>
-              <ol v-else class="rows">
-                <li v-for="a in feed.activities" :key="String(a.stravaActivityId)" class="activity">
-                  <span class="who">
-                    <b>{{ a.userId === meId ? "You" : a.userName }}</b>
-                    <span class="act-name">{{ a.name }}</span>
-                    <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}<template v-if="a.source === 'manual'"> · logged manually</template></small>
-                  </span>
-                  <span class="val">{{ activityValue(a) }}</span>
-                </li>
-              </ol>
+              <template v-else>
+                <p v-if="pulseText" class="pulse">{{ pulseText }}</p>
+                <p v-else-if="feed.seenAt" class="pulse">You're caught up.</p>
+                <section v-for="g in feedDays" :key="g.label" class="day">
+                  <h2>{{ g.label }}</h2>
+                  <ol class="rows">
+                    <template v-for="a in g.rows" :key="String(a.stravaActivityId)">
+                      <li class="activity" :class="{ mine: a.userId === meId }">
+                        <span class="who">
+                          <b>{{ a.userId === meId ? "You" : a.userName }}</b>
+                          <span class="act-name">{{ a.name }}</span>
+                          <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}<template v-if="a.source === 'manual'"> · logged manually</template></small>
+                          <small v-if="details(a)">{{ details(a) }}</small>
+                          <small v-for="line in lifts(a)" :key="line" class="lift-line">{{ line }}</small>
+                        </span>
+                        <span class="val">{{ activityValue(a) }}</span>
+                      </li>
+                      <li v-if="lastNew === a" class="tear" aria-hidden="true"><span>{{ newRows.length }} new since you looked</span></li>
+                    </template>
+                  </ol>
+                </section>
+                <p class="feed-foot"><router-link to="/settings">Choose which details show</router-link></p>
+              </template>
             </template>
 
             <template v-else>
@@ -682,7 +716,58 @@ button.row {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--row) 0;
+  padding: var(--row) 0 var(--row) var(--space-4);
+  border-left: 4px solid transparent;
+}
+/* Yours, as everywhere: a Tangerine stroke, never text. */
+.activity.mine {
+  border-left-color: var(--tangerine);
+}
+.who small.lift-line {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.pulse {
+  margin: 0 0 var(--space-4);
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+.day + .day {
+  margin-top: var(--group-gap);
+}
+/* The tear-off motif again: a dashed rule with a Cool Blue tab, under the rows that are new. */
+.rows li.tear {
+  display: block;
+  padding: 0;
+  border-bottom: 0;
+  border-top: 2px dashed var(--line);
+  margin: var(--space-2) 0;
+}
+.tear span {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 0 0 6px 6px;
+  background: var(--cool-blue);
+  font: 400 0.75rem/1.3 var(--font-display);
+  text-transform: uppercase;
+}
+.feed-foot {
+  margin: var(--space-6) 0 0;
+  font-size: 0.875rem;
+}
+.feed-foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  color: var(--ink-muted);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (pointer: coarse) {
+  .feed-foot a {
+    min-height: 2.75rem;
+  }
 }
 
 .add-goal {

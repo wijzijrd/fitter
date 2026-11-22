@@ -85,9 +85,10 @@ type Campaign struct {
 }
 
 type CampaignMember struct {
-	CampaignID string `json:"campaign_id"`
-	UserID     string `json:"user_id"`
-	JoinedAt   int64  `json:"joined_at"`
+	CampaignID string        `json:"campaign_id"`
+	UserID     string        `json:"user_id"`
+	JoinedAt   int64         `json:"joined_at"`
+	FeedSeenAt sql.NullInt64 `json:"feed_seen_at"`
 }
 
 type CustomMetric struct {
@@ -167,4 +168,8 @@ type User struct {
 	BanReason       string         `json:"ban_reason"`
 	BannedBy        sql.NullString `json:"banned_by"`
 	BannedAt        sql.NullInt64  `json:"banned_at"`
+	FeedShowPace    bool           `json:"feed_show_pace"`
+	FeedShowPower   bool           `json:"feed_show_power"`
+	FeedShowEffort  bool           `json:"feed_show_effort"`
+	FeedShowLifts   bool           `json:"feed_show_lifts"`
 }

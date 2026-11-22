@@ -54,15 +54,29 @@ func (s *FeedService) requireMember(ctx context.Context, campaignID string) (db.
 }
 
 func (s *FeedService) GetCampaignFeed(ctx context.Context, req *connect.Request[fitterv1.GetCampaignFeedRequest]) (*connect.Response[fitterv1.GetCampaignFeedResponse], error) {
-	c, _, err := s.requireMember(ctx, req.Msg.GetCampaignId())
+	c, userID, err := s.requireMember(ctx, req.Msg.GetCampaignId())
 	if err != nil {
 		return nil, err
+	}
+	member, err := s.Queries.GetCampaignMember(ctx, db.GetCampaignMemberParams{CampaignID: c.ID, UserID: userID})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	rows, err := s.Queries.ListCampaignFeedActivities(ctx, db.ListCampaignFeedActivitiesParams{
 		CampaignID:  c.ID,
 		StartDate:   c.StartDate,
 		StartDate_2: c.EndDate,
 	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	var manualIDs []int64
+	for _, r := range rows {
+		if r.StravaActivityID < 0 {
+			manualIDs = append(manualIDs, r.StravaActivityID)
+		}
+	}
+	blocks, _, err := loadBlocks(ctx, s.Queries, manualIDs)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -81,13 +95,30 @@ func (s *FeedService) GetCampaignFeed(ctx context.Context, req *connect.Request[
 			StravaActivityId: r.StravaActivityID,
 			SportType:        r.SportType,
 			SportGroup:       string(sports.GroupOf(r.SportType, r.Type)),
-			AverageHeartrate: nullFloatPtr(r.AverageHeartrate),
 			AverageWatts:     nullFloatPtr(r.AverageWatts),
 			SufferScore:      nullFloatPtr(r.SufferScore),
 			Source:           r.Source,
+			Blocks:           blocks[r.StravaActivityID],
 		})
 	}
-	return connect.NewResponse(&fitterv1.GetCampaignFeedResponse{Activities: out}), nil
+	resp := &fitterv1.GetCampaignFeedResponse{Activities: out}
+	if member.FeedSeenAt.Valid {
+		resp.SeenAt = unixToTimestamp(member.FeedSeenAt.Int64)
+	}
+	return connect.NewResponse(resp), nil
+}
+
+// MarkFeedSeen records that the caller has now looked at the campaign's feed, so the next view
+// can tell what is new since.
+func (s *FeedService) MarkFeedSeen(ctx context.Context, req *connect.Request[fitterv1.MarkFeedSeenRequest]) (*connect.Response[fitterv1.MarkFeedSeenResponse], error) {
+	c, userID, err := s.requireMember(ctx, req.Msg.GetCampaignId())
+	if err != nil {
+		return nil, err
+	}
+	if err := s.Queries.MarkFeedSeen(ctx, db.MarkFeedSeenParams{CampaignID: c.ID, UserID: userID, FeedSeenAt: sql.NullInt64{Int64: time.Now().Unix(), Valid: true}}); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&fitterv1.MarkFeedSeenResponse{}), nil
 }
 
 // pooledActivities returns every campaign member's activities across the

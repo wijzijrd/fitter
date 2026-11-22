@@ -67,3 +67,8 @@ UPDATE users SET role = $2 WHERE id = $1;
 
 -- name: CountActiveAdmins :one
 SELECT COUNT(*) FROM users WHERE role = 'admin' AND status = 'active';
+
+-- name: SetUserFeedSettings :one
+UPDATE users SET feed_show_pace = $2, feed_show_power = $3, feed_show_effort = $4, feed_show_lifts = $5
+WHERE id = $1
+RETURNING *;

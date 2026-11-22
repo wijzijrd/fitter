@@ -26,7 +26,7 @@ Strava Clubs and Challenges can't offer three things Fitter does:
 
 - Sign-in is Strava OAuth only; there are no Fitter-specific accounts.
 - Activity data flows in passively from Strava webhooks. "Log activity" exists only for what Strava doesn't record (such as a gym session with lifts); it never asks for anything Strava already has.
-- Core surfaces: campaigns list, campaign detail (feed, leaderboard, timeline), campaign create and join, personal goals, log activity, login. New accounts wait on a pending-approval screen until an admin approves them; admins also get an admin view.
+- Core surfaces: campaigns list, campaign detail (feed, leaderboard, timeline), campaign create and join, personal goals, log activity, login, settings. New accounts wait on a pending-approval screen until an admin approves them; admins also get an admin view.
 - Users check progress on a phone during the day or after a workout, and set up campaigns and goals on whichever device is at hand.
 
 ## Capabilities and Constraints

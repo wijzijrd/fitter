@@ -10,7 +10,50 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/user.proto.
  */
 export const file_fitter_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChRmaXR0ZXIvdjEvdXNlci5wcm90bxIJZml0dGVyLnYxIlIKBFVzZXISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRISCgphdmF0YXJfdXJsGAMgASgJEgwKBHJvbGUYBCABKAkSDgoGc3RhdHVzGAUgASgJIhcKFUdldEN1cnJlbnRVc2VyUmVxdWVzdCI3ChZHZXRDdXJyZW50VXNlclJlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlcjJkCgtVc2VyU2VydmljZRJVCg5HZXRDdXJyZW50VXNlchIgLmZpdHRlci52MS5HZXRDdXJyZW50VXNlclJlcXVlc3QaIS5maXR0ZXIudjEuR2V0Q3VycmVudFVzZXJSZXNwb25zZUKNAQoNY29tLmZpdHRlci52MUIJVXNlclByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z");
+  fileDesc("ChRmaXR0ZXIvdjEvdXNlci5wcm90bxIJZml0dGVyLnYxIl4KDEZlZWRTZXR0aW5ncxIRCglzaG93X3BhY2UYASABKAgSEgoKc2hvd19wb3dlchgCIAEoCBITCgtzaG93X2VmZm9ydBgDIAEoCBISCgpzaG93X2xpZnRzGAQgASgIIoIBCgRVc2VyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKYXZhdGFyX3VybBgDIAEoCRIMCgRyb2xlGAQgASgJEg4KBnN0YXR1cxgFIAEoCRIuCg1mZWVkX3NldHRpbmdzGAYgASgLMhcuZml0dGVyLnYxLkZlZWRTZXR0aW5ncyJLChlVcGRhdGVGZWVkU2V0dGluZ3NSZXF1ZXN0Ei4KDWZlZWRfc2V0dGluZ3MYASABKAsyFy5maXR0ZXIudjEuRmVlZFNldHRpbmdzIjsKGlVwZGF0ZUZlZWRTZXR0aW5nc1Jlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlciIXChVHZXRDdXJyZW50VXNlclJlcXVlc3QiNwoWR2V0Q3VycmVudFVzZXJSZXNwb25zZRIdCgR1c2VyGAEgASgLMg8uZml0dGVyLnYxLlVzZXIyxwEKC1VzZXJTZXJ2aWNlElUKDkdldEN1cnJlbnRVc2VyEiAuZml0dGVyLnYxLkdldEN1cnJlbnRVc2VyUmVxdWVzdBohLmZpdHRlci52MS5HZXRDdXJyZW50VXNlclJlc3BvbnNlEmEKElVwZGF0ZUZlZWRTZXR0aW5ncxIkLmZpdHRlci52MS5VcGRhdGVGZWVkU2V0dGluZ3NSZXF1ZXN0GiUuZml0dGVyLnYxLlVwZGF0ZUZlZWRTZXR0aW5nc1Jlc3BvbnNlQo0BCg1jb20uZml0dGVyLnYxQglVc2VyUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM");
+
+/**
+ * FeedSettings is what a member chooses to see under each activity in a campaign feed.
+ * A viewer preference only: it doesn't change what anyone else sees of them.
+ *
+ * @generated from message fitter.v1.FeedSettings
+ */
+export type FeedSettings = Message<"fitter.v1.FeedSettings"> & {
+  /**
+   * pace for runs and walks, speed for rides
+   *
+   * @generated from field: bool show_pace = 1;
+   */
+  showPace: boolean;
+
+  /**
+   * average watts
+   *
+   * @generated from field: bool show_power = 2;
+   */
+  showPower: boolean;
+
+  /**
+   * Strava's suffer score
+   *
+   * @generated from field: bool show_effort = 3;
+   */
+  showEffort: boolean;
+
+  /**
+   * the exercises of a manual session
+   *
+   * @generated from field: bool show_lifts = 4;
+   */
+  showLifts: boolean;
+};
+
+/**
+ * Describes the message fitter.v1.FeedSettings.
+ * Use `create(FeedSettingsSchema)` to create a new message.
+ */
+export const FeedSettingsSchema: GenMessage<FeedSettings> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 0);
 
 /**
  * @generated from message fitter.v1.User
@@ -44,6 +87,11 @@ export type User = Message<"fitter.v1.User"> & {
    * @generated from field: string status = 5;
    */
   status: string;
+
+  /**
+   * @generated from field: fitter.v1.FeedSettings feed_settings = 6;
+   */
+  feedSettings?: FeedSettings | undefined;
 };
 
 /**
@@ -51,7 +99,43 @@ export type User = Message<"fitter.v1.User"> & {
  * Use `create(UserSchema)` to create a new message.
  */
 export const UserSchema: GenMessage<User> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 0);
+  messageDesc(file_fitter_v1_user, 1);
+
+/**
+ * @generated from message fitter.v1.UpdateFeedSettingsRequest
+ */
+export type UpdateFeedSettingsRequest = Message<"fitter.v1.UpdateFeedSettingsRequest"> & {
+  /**
+   * all four are replaced
+   *
+   * @generated from field: fitter.v1.FeedSettings feed_settings = 1;
+   */
+  feedSettings?: FeedSettings | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.UpdateFeedSettingsRequest.
+ * Use `create(UpdateFeedSettingsRequestSchema)` to create a new message.
+ */
+export const UpdateFeedSettingsRequestSchema: GenMessage<UpdateFeedSettingsRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 2);
+
+/**
+ * @generated from message fitter.v1.UpdateFeedSettingsResponse
+ */
+export type UpdateFeedSettingsResponse = Message<"fitter.v1.UpdateFeedSettingsResponse"> & {
+  /**
+   * @generated from field: fitter.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.UpdateFeedSettingsResponse.
+ * Use `create(UpdateFeedSettingsResponseSchema)` to create a new message.
+ */
+export const UpdateFeedSettingsResponseSchema: GenMessage<UpdateFeedSettingsResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 3);
 
 /**
  * @generated from message fitter.v1.GetCurrentUserRequest
@@ -64,7 +148,7 @@ export type GetCurrentUserRequest = Message<"fitter.v1.GetCurrentUserRequest"> &
  * Use `create(GetCurrentUserRequestSchema)` to create a new message.
  */
 export const GetCurrentUserRequestSchema: GenMessage<GetCurrentUserRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 1);
+  messageDesc(file_fitter_v1_user, 4);
 
 /**
  * @generated from message fitter.v1.GetCurrentUserResponse
@@ -81,7 +165,7 @@ export type GetCurrentUserResponse = Message<"fitter.v1.GetCurrentUserResponse">
  * Use `create(GetCurrentUserResponseSchema)` to create a new message.
  */
 export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 2);
+  messageDesc(file_fitter_v1_user, 5);
 
 /**
  * @generated from service fitter.v1.UserService
@@ -94,6 +178,14 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof GetCurrentUserRequestSchema;
     output: typeof GetCurrentUserResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.UpdateFeedSettings
+   */
+  updateFeedSettings: {
+    methodKind: "unary";
+    input: typeof UpdateFeedSettingsRequestSchema;
+    output: typeof UpdateFeedSettingsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_fitter_v1_user, 0);

@@ -60,7 +60,7 @@ async function removeStation(i: number): Promise<void> {
           :model-value="s.exerciseId"
           :input-id="id(`ex-${s.key}`)"
           :label="`${where(i)}`"
-          :invalid="showErrors && errors.has(s.key)"
+                    :invalid="showErrors && errors.has(s.key) && !s.exerciseId"
           :describedby="id(`st-${s.key}-error`)"
           @update:model-value="onExercise(s, $event)"
         />

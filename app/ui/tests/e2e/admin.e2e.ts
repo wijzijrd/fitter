@@ -34,3 +34,47 @@ test("ban form takes focus and gives it back on Cancel", async ({ page }) => {
   await page.getByRole("button", { name: "Cancel" }).click();
   expect((await focused(page)).text).toBe("Ban…");
 });
+
+test("exercises: used ones merge, unused ones delete after asking", async ({ page }) => {
+  await page.locator("#admin-tab-exercises").click();
+  await expect(page.locator(".rows .name", { hasText: "Bench press" })).toBeVisible();
+  expect(await overflowsX(page)).toBe(false);
+
+  const bench = page.locator(".rows li", { hasText: "Bench press" });
+  await expect(bench.locator("[data-merge]")).toBeVisible();
+  await expect(bench.locator("[data-delete-exercise]")).toHaveCount(0);
+
+  const plank = page.locator(".rows li", { hasText: "Plank" });
+  await plank.locator("[data-delete-exercise]").click();
+  expect((await focused(page)).text).toBe("Keep");
+  await page.locator(".confirm .pill--primary").click();
+  await expect(page.locator(".rows .name", { hasText: "Plank" })).toBeHidden();
+  expect((await focused(page)).text).toContain("Delete"); // the next unused row's Delete
+});
+
+test("exercises: edit takes focus, locks the measure while used, and Escape gives focus back", async ({ page }) => {
+  await page.locator("#admin-tab-exercises").click();
+  await page.locator('[data-edit="ex-bench"]').click();
+  expect((await focused(page)).id).toBe("ex-name-ex-bench");
+  await expect(page.locator("#ex-measure-ex-bench")).toBeDisabled();
+  expect(await overflowsX(page)).toBe(false);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#ex-name-ex-bench")).toBeHidden();
+  expect((await focused(page)).text).toContain("Edit");
+});
+
+test("exercises: merge asks before moving anything", async ({ page }) => {
+  await page.locator("#admin-tab-exercises").click();
+  await page.locator('[data-merge="ex-squat"]').click();
+  const into = page.locator("#ex-into-ex-squat");
+  await expect(into).toBeFocused();
+  // Only exercises measured the same way are offered.
+  await expect(into.locator("option", { hasText: "SkiErg" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Merge…" })).toHaveAttribute("aria-disabled", "true");
+  await into.selectOption({ label: "Front squat" });
+  await page.getByRole("button", { name: "Merge…" }).click();
+  await expect(page.getByText("Move its 1 uses")).toBeVisible();
+  await page.locator(".panel .pill--primary").click();
+  await expect(page.locator(".rows .name", { hasText: /^Squat$/ })).toBeHidden();
+  await expect(page.locator(".rows li", { hasText: "Front squat" })).toContainText("used 1×");
+});

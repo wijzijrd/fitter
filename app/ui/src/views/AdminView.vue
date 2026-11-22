@@ -197,7 +197,9 @@ async function confirmMerge(e: Exercise): Promise<void> {
     focusNthOr("[data-edit]", 0, "#admin-exercises");
   }
 }
-async function deleteExercise(e: Exercise, i: number): Promise<void> {
+async function deleteExercise(e: Exercise): Promise<void> {
+  // Only unused rows have a Delete button, so focus follows the index among those.
+  const i = exercises.value.filter((x) => !x.useCount).indexOf(e);
   await act(() => adminClient.deleteExercise({ id: e.id }));
   if (!error.value) {
     confirmDelete.value = "";
@@ -373,14 +375,14 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
       <h2 id="admin-exercises" tabindex="-1">Exercise library</h2>
       <p class="meta">Anyone can add an exercise from the log form. Fix names and muscles here, and merge duplicates.</p>
       <ul class="rows">
-        <li v-for="(e, i) in exercises" :key="e.id">
+        <li v-for="e in exercises" :key="e.id">
           <span class="who"><span class="name">{{ e.name }}</span><span class="meta">{{ exerciseMeta(e) }}</span></span>
 
           <span v-if="confirmDelete === `exercise:${e.id}`" class="confirm">
             <span>Delete this exercise?</span>
             <span class="actions">
               <button v-focus="true" type="button" class="pill" @click="kept = `exercise:${e.id}`; confirmDelete = ''">Keep</button>
-              <button type="button" class="pill pill--primary" v-busy="busy" @click="deleteExercise(e, i)">Delete<span class="visually-hidden"> {{ e.name }}</span></button>
+              <button type="button" class="pill pill--primary" v-busy="busy" @click="deleteExercise(e)">Delete<span class="visually-hidden"> {{ e.name }}</span></button>
             </span>
           </span>
           <span v-else class="actions">

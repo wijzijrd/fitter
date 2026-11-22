@@ -115,7 +115,7 @@ func (q *Queries) GetCampaign(ctx context.Context, id string) (Campaign, error) 
 }
 
 const getCampaignMember = `-- name: GetCampaignMember :one
-SELECT campaign_id, user_id, joined_at FROM campaign_members WHERE campaign_id = $1 AND user_id = $2
+SELECT campaign_id, user_id, joined_at, feed_seen_at FROM campaign_members WHERE campaign_id = $1 AND user_id = $2
 `
 
 type GetCampaignMemberParams struct {
@@ -126,7 +126,12 @@ type GetCampaignMemberParams struct {
 func (q *Queries) GetCampaignMember(ctx context.Context, arg GetCampaignMemberParams) (CampaignMember, error) {
 	row := q.db.QueryRowContext(ctx, getCampaignMember, arg.CampaignID, arg.UserID)
 	var i CampaignMember
-	err := row.Scan(&i.CampaignID, &i.UserID, &i.JoinedAt)
+	err := row.Scan(
+		&i.CampaignID,
+		&i.UserID,
+		&i.JoinedAt,
+		&i.FeedSeenAt,
+	)
 	return i, err
 }
 
@@ -284,4 +289,19 @@ func (q *Queries) ListJoinedCampaignIDsForUser(ctx context.Context, userID strin
 		return nil, err
 	}
 	return items, nil
+}
+
+const markFeedSeen = `-- name: MarkFeedSeen :exec
+UPDATE campaign_members SET feed_seen_at = $3 WHERE campaign_id = $1 AND user_id = $2
+`
+
+type MarkFeedSeenParams struct {
+	CampaignID string        `json:"campaign_id"`
+	UserID     string        `json:"user_id"`
+	FeedSeenAt sql.NullInt64 `json:"feed_seen_at"`
+}
+
+func (q *Queries) MarkFeedSeen(ctx context.Context, arg MarkFeedSeenParams) error {
+	_, err := q.db.ExecContext(ctx, markFeedSeen, arg.CampaignID, arg.UserID, arg.FeedSeenAt)
+	return err
 }

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package fitter.v1;
 
+import "fitter/v1/activity.proto";
 import "fitter/v1/common.proto";
 import "fitter/v1/goal.proto";
 import "google/protobuf/timestamp.proto";
@@ -21,10 +22,12 @@ message FeedActivity {
   int64 strava_activity_id = 11; // replaces the old string id — see Task 4's schema note
   string sport_type = 12;
   string sport_group = 13; // resolved server-side via internal/sports
-  optional double average_heartrate = 14;
+  // No longer filled: heart rate isn't shown to other members.
+  optional double average_heartrate = 14 [deprecated = true];
   optional double average_watts = 15;
   optional double suffer_score = 16;
   string source = 17; // "strava" or "manual"
+  repeated Block blocks = 18; // a manual strength or circuit session's exercises
 }
 
 message GetCampaignFeedRequest {
@@ -33,7 +36,14 @@ message GetCampaignFeedRequest {
 
 message GetCampaignFeedResponse {
   repeated FeedActivity activities = 1;
+  // When the caller last looked at this feed, before this view. Unset on a first visit.
+  google.protobuf.Timestamp seen_at = 2;
 }
+
+message MarkFeedSeenRequest {
+  string campaign_id = 1;
+}
+message MarkFeedSeenResponse {}
 
 message LeaderboardEntry {
   string user_id = 1;
@@ -147,6 +157,8 @@ message GetCampaignTimelineResponse {
 
 service FeedService {
   rpc GetCampaignFeed(GetCampaignFeedRequest) returns (GetCampaignFeedResponse);
+  // MarkFeedSeen records that the caller has now looked at the campaign's feed.
+  rpc MarkFeedSeen(MarkFeedSeenRequest) returns (MarkFeedSeenResponse);
   rpc GetCampaignLeaderboard(GetCampaignLeaderboardRequest) returns (GetCampaignLeaderboardResponse);
   rpc GetCampaignTimeline(GetCampaignTimelineRequest) returns (GetCampaignTimelineResponse);
 }

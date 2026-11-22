@@ -15,6 +15,8 @@ function fixtures() {
     },
     { id: "-2", sportType: "WeightTraining", name: "Pull day", startDate: "2026-11-19T08:00:00Z", movingTimeS: "3000", lifts: [], blocks: [] },
   ];
+  let feedSettings: Record<string, boolean> = { showPace: true, showPower: true, showEffort: true, showLifts: true };
+  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings });
   const MEASURE = (m: string) => `EXERCISE_MEASURE_${m}`;
   const MUSCLE = (m: string) => `MUSCLE_${m}`;
   let exercises: any[] = [
@@ -29,7 +31,11 @@ function fixtures() {
   const byName = () => exercises.sort((a, b) => a.name.localeCompare(b.name));
   const nameOf = (id: string) => exercises.find((e) => e.id === id)?.name ?? "";
   const handlers: Record<string, (body: any) => unknown> = {
-    "UserService/GetCurrentUser": () => ({ user: { id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active" } }),
+    "UserService/GetCurrentUser": () => ({ user: me() }),
+    "UserService/UpdateFeedSettings": (b: any) => {
+      feedSettings = { showPace: false, showPower: false, showEffort: false, showLifts: false, ...b.feedSettings };
+      return { user: me() };
+    },
     "CatalogService/ListSports": () => ({
       groups: [
         { group: "run", label: "Running", sportTypes: ["Run"] },
@@ -131,7 +137,24 @@ function campaignDetail() {
       campaigns: [{ id: "c1", name: "November Base", startDate: "2026-11-17T00:00:00Z", endDate: "2026-12-15T23:59:59Z", joined: true, memberCount: 6, goalCount: 6 }],
     }),
     "GoalService/ListGoals": () => ({ goals: [] }),
-    "FeedService/GetCampaignFeed": () => ({ activities: [] }),
+    // Times are relative to now: the app shows only the last 7 days. Alexandria last looked 5 hours ago.
+    "FeedService/GetCampaignFeed": () => {
+      const ago = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString();
+      const station = (name: string) => ({ exerciseName: name, weightKg: 60, reps: 8 });
+      return {
+        seenAt: ago(5),
+        activities: [
+          { userId: "u3", userName: "Jo Park", name: "Morning run", sportType: "Run", sportGroup: "run", startDate: ago(1), distanceM: 5000, movingTimeS: "1560", stravaActivityId: "101", source: "strava", sufferScore: 42 },
+          { userId: "u1", userName: "Alexandria Vandenberg-Smith", name: "Evening ride", sportType: "Ride", sportGroup: "ride", startDate: ago(3), distanceM: 30000, movingTimeS: "3600", stravaActivityId: "102", source: "strava", averageWatts: 212.4 },
+          {
+            userId: "u4", userName: "Sam Okafor", name: "Leg day", sportType: "WeightTraining", sportGroup: "strength", startDate: ago(4), movingTimeS: "3000", stravaActivityId: "-5", source: "manual",
+            blocks: ["Squat", "Leg press", "Lunge", "Calf raise"].map((n) => ({ rounds: 1, stations: [station(n)] })),
+          },
+          { userId: "u5", userName: "Rita Mendes", name: "Ancient ride", sportType: "Ride", sportGroup: "ride", startDate: ago(24 * 10), distanceM: 40000, movingTimeS: "5400", stravaActivityId: "103", source: "strava" },
+        ],
+      };
+    },
+    "FeedService/MarkFeedSeen": () => ({}),
     "FeedService/GetCampaignLeaderboard": (b: { window?: string }) => {
       window = b.window ?? window;
       const scale = window === "LEADERBOARD_WINDOW_WEEK" ? 0.3 : 1;

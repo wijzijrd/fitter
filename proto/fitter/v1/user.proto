@@ -2,12 +2,30 @@ syntax = "proto3";
 
 package fitter.v1;
 
+// FeedSettings is what a member chooses to see under each activity in a campaign feed.
+// A viewer preference only: it doesn't change what anyone else sees of them.
+message FeedSettings {
+  bool show_pace = 1;   // pace for runs and walks, speed for rides
+  bool show_power = 2;  // average watts
+  bool show_effort = 3; // Strava's suffer score
+  bool show_lifts = 4;  // the exercises of a manual session
+}
+
 message User {
   string id = 1;
   string name = 2;
   string avatar_url = 3;
   string role = 4;   // "member" | "admin"; UX gate only, server enforces
   string status = 5; // "pending" | "active" | "banned"
+  FeedSettings feed_settings = 6;
+}
+
+message UpdateFeedSettingsRequest {
+  FeedSettings feed_settings = 1; // all four are replaced
+}
+
+message UpdateFeedSettingsResponse {
+  User user = 1;
 }
 
 message GetCurrentUserRequest {}
@@ -18,4 +36,5 @@ message GetCurrentUserResponse {
 
 service UserService {
   rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+  rpc UpdateFeedSettings(UpdateFeedSettingsRequest) returns (UpdateFeedSettingsResponse);
 }

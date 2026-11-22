@@ -43,3 +43,6 @@ SELECT COUNT(*) FROM goals WHERE campaign_id = $1;
 
 -- name: DeleteGoalsForUserInCampaign :exec
 DELETE FROM goals WHERE campaign_id = $1 AND user_id = $2;
+
+-- name: MarkFeedSeen :exec
+UPDATE campaign_members SET feed_seen_at = $3 WHERE campaign_id = $1 AND user_id = $2;

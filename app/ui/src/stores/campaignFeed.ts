@@ -11,9 +11,12 @@ import type {
 } from "../gen/fitter/v1/feed_pb";
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
+import { toDate } from "../lib/timestamp";
 
 interface CampaignFeedState {
   activities: FeedActivity[];
+  // When the caller last looked at the feed, as of this load; unset on a first visit.
+  seenAt?: Date;
   leaderboardGroups: LeaderboardGroup[];
   people: PersonStanding[];
   pooledProgressValue?: number;
@@ -65,6 +68,7 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
         feedClient.getCampaignTimeline({ campaignId }),
       ]);
       s.activities = feed.activities;
+      s.seenAt = toDate(feed.seenAt) ?? undefined;
       s.leaderboardGroups = leaderboard.groups;
       s.people = leaderboard.people;
       s.pooledProgressValue = leaderboard.pooledProgressValue;
@@ -107,5 +111,16 @@ export const useCampaignFeedStore = defineStore("campaignFeed", () => {
     }
   }
 
-  return { byCampaign, stateFor, fetchAll, fetchLeaderboard, setWindow };
+  // markSeen tells the server the caller has looked at the feed, then clears what was "new" so a
+  // return to the tab reads "caught up". Best effort: a failure just leaves the divider as it was.
+  async function markSeen(campaignId: string): Promise<void> {
+    try {
+      await feedClient.markFeedSeen({ campaignId });
+      stateFor(campaignId).seenAt = new Date();
+    } catch {
+      /* the next visit will mark it */
+    }
+  }
+
+  return { byCampaign, stateFor, fetchAll, fetchLeaderboard, setWindow, markSeen };
 });

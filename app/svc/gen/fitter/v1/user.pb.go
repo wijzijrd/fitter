@@ -21,6 +21,76 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// FeedSettings is what a member chooses to see under each activity in a campaign feed.
+// A viewer preference only: it doesn't change what anyone else sees of them.
+type FeedSettings struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ShowPace      bool                   `protobuf:"varint,1,opt,name=show_pace,json=showPace,proto3" json:"show_pace,omitempty"`       // pace for runs and walks, speed for rides
+	ShowPower     bool                   `protobuf:"varint,2,opt,name=show_power,json=showPower,proto3" json:"show_power,omitempty"`    // average watts
+	ShowEffort    bool                   `protobuf:"varint,3,opt,name=show_effort,json=showEffort,proto3" json:"show_effort,omitempty"` // Strava's suffer score
+	ShowLifts     bool                   `protobuf:"varint,4,opt,name=show_lifts,json=showLifts,proto3" json:"show_lifts,omitempty"`    // the exercises of a manual session
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FeedSettings) Reset() {
+	*x = FeedSettings{}
+	mi := &file_fitter_v1_user_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FeedSettings) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FeedSettings) ProtoMessage() {}
+
+func (x *FeedSettings) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FeedSettings.ProtoReflect.Descriptor instead.
+func (*FeedSettings) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *FeedSettings) GetShowPace() bool {
+	if x != nil {
+		return x.ShowPace
+	}
+	return false
+}
+
+func (x *FeedSettings) GetShowPower() bool {
+	if x != nil {
+		return x.ShowPower
+	}
+	return false
+}
+
+func (x *FeedSettings) GetShowEffort() bool {
+	if x != nil {
+		return x.ShowEffort
+	}
+	return false
+}
+
+func (x *FeedSettings) GetShowLifts() bool {
+	if x != nil {
+		return x.ShowLifts
+	}
+	return false
+}
+
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -28,13 +98,14 @@ type User struct {
 	AvatarUrl     string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`     // "member" | "admin"; UX gate only, server enforces
 	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"` // "pending" | "active" | "banned"
+	FeedSettings  *FeedSettings          `protobuf:"bytes,6,opt,name=feed_settings,json=feedSettings,proto3" json:"feed_settings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_fitter_v1_user_proto_msgTypes[0]
+	mi := &file_fitter_v1_user_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +117,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_user_proto_msgTypes[0]
+	mi := &file_fitter_v1_user_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +130,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_user_proto_rawDescGZIP(), []int{0}
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *User) GetId() string {
@@ -97,6 +168,101 @@ func (x *User) GetStatus() string {
 	return ""
 }
 
+func (x *User) GetFeedSettings() *FeedSettings {
+	if x != nil {
+		return x.FeedSettings
+	}
+	return nil
+}
+
+type UpdateFeedSettingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FeedSettings  *FeedSettings          `protobuf:"bytes,1,opt,name=feed_settings,json=feedSettings,proto3" json:"feed_settings,omitempty"` // all four are replaced
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFeedSettingsRequest) Reset() {
+	*x = UpdateFeedSettingsRequest{}
+	mi := &file_fitter_v1_user_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFeedSettingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFeedSettingsRequest) ProtoMessage() {}
+
+func (x *UpdateFeedSettingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFeedSettingsRequest.ProtoReflect.Descriptor instead.
+func (*UpdateFeedSettingsRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *UpdateFeedSettingsRequest) GetFeedSettings() *FeedSettings {
+	if x != nil {
+		return x.FeedSettings
+	}
+	return nil
+}
+
+type UpdateFeedSettingsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFeedSettingsResponse) Reset() {
+	*x = UpdateFeedSettingsResponse{}
+	mi := &file_fitter_v1_user_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFeedSettingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFeedSettingsResponse) ProtoMessage() {}
+
+func (x *UpdateFeedSettingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFeedSettingsResponse.ProtoReflect.Descriptor instead.
+func (*UpdateFeedSettingsResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UpdateFeedSettingsResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 type GetCurrentUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -105,7 +271,7 @@ type GetCurrentUserRequest struct {
 
 func (x *GetCurrentUserRequest) Reset() {
 	*x = GetCurrentUserRequest{}
-	mi := &file_fitter_v1_user_proto_msgTypes[1]
+	mi := &file_fitter_v1_user_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -117,7 +283,7 @@ func (x *GetCurrentUserRequest) String() string {
 func (*GetCurrentUserRequest) ProtoMessage() {}
 
 func (x *GetCurrentUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_user_proto_msgTypes[1]
+	mi := &file_fitter_v1_user_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -130,7 +296,7 @@ func (x *GetCurrentUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCurrentUserRequest.ProtoReflect.Descriptor instead.
 func (*GetCurrentUserRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_user_proto_rawDescGZIP(), []int{1}
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{4}
 }
 
 type GetCurrentUserResponse struct {
@@ -142,7 +308,7 @@ type GetCurrentUserResponse struct {
 
 func (x *GetCurrentUserResponse) Reset() {
 	*x = GetCurrentUserResponse{}
-	mi := &file_fitter_v1_user_proto_msgTypes[2]
+	mi := &file_fitter_v1_user_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -154,7 +320,7 @@ func (x *GetCurrentUserResponse) String() string {
 func (*GetCurrentUserResponse) ProtoMessage() {}
 
 func (x *GetCurrentUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_user_proto_msgTypes[2]
+	mi := &file_fitter_v1_user_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -167,7 +333,7 @@ func (x *GetCurrentUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCurrentUserResponse.ProtoReflect.Descriptor instead.
 func (*GetCurrentUserResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_user_proto_rawDescGZIP(), []int{2}
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetCurrentUserResponse) GetUser() *User {
@@ -181,19 +347,33 @@ var File_fitter_v1_user_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x14fitter/v1/user.proto\x12\tfitter.v1\"u\n" +
+	"\x14fitter/v1/user.proto\x12\tfitter.v1\"\x8a\x01\n" +
+	"\fFeedSettings\x12\x1b\n" +
+	"\tshow_pace\x18\x01 \x01(\bR\bshowPace\x12\x1d\n" +
+	"\n" +
+	"show_power\x18\x02 \x01(\bR\tshowPower\x12\x1f\n" +
+	"\vshow_effort\x18\x03 \x01(\bR\n" +
+	"showEffort\x12\x1d\n" +
+	"\n" +
+	"show_lifts\x18\x04 \x01(\bR\tshowLifts\"\xb3\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\"\x17\n" +
+	"\x06status\x18\x05 \x01(\tR\x06status\x12<\n" +
+	"\rfeed_settings\x18\x06 \x01(\v2\x17.fitter.v1.FeedSettingsR\ffeedSettings\"Y\n" +
+	"\x19UpdateFeedSettingsRequest\x12<\n" +
+	"\rfeed_settings\x18\x01 \x01(\v2\x17.fitter.v1.FeedSettingsR\ffeedSettings\"A\n" +
+	"\x1aUpdateFeedSettingsResponse\x12#\n" +
+	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user\"\x17\n" +
 	"\x15GetCurrentUserRequest\"=\n" +
 	"\x16GetCurrentUserResponse\x12#\n" +
-	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user2d\n" +
+	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user2\xc7\x01\n" +
 	"\vUserService\x12U\n" +
-	"\x0eGetCurrentUser\x12 .fitter.v1.GetCurrentUserRequest\x1a!.fitter.v1.GetCurrentUserResponseB\x8d\x01\n" +
+	"\x0eGetCurrentUser\x12 .fitter.v1.GetCurrentUserRequest\x1a!.fitter.v1.GetCurrentUserResponse\x12a\n" +
+	"\x12UpdateFeedSettings\x12$.fitter.v1.UpdateFeedSettingsRequest\x1a%.fitter.v1.UpdateFeedSettingsResponseB\x8d\x01\n" +
 	"\rcom.fitter.v1B\tUserProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
 
@@ -209,21 +389,29 @@ func file_fitter_v1_user_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_user_proto_rawDescData
 }
 
-var file_fitter_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_fitter_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_fitter_v1_user_proto_goTypes = []any{
-	(*User)(nil),                   // 0: fitter.v1.User
-	(*GetCurrentUserRequest)(nil),  // 1: fitter.v1.GetCurrentUserRequest
-	(*GetCurrentUserResponse)(nil), // 2: fitter.v1.GetCurrentUserResponse
+	(*FeedSettings)(nil),               // 0: fitter.v1.FeedSettings
+	(*User)(nil),                       // 1: fitter.v1.User
+	(*UpdateFeedSettingsRequest)(nil),  // 2: fitter.v1.UpdateFeedSettingsRequest
+	(*UpdateFeedSettingsResponse)(nil), // 3: fitter.v1.UpdateFeedSettingsResponse
+	(*GetCurrentUserRequest)(nil),      // 4: fitter.v1.GetCurrentUserRequest
+	(*GetCurrentUserResponse)(nil),     // 5: fitter.v1.GetCurrentUserResponse
 }
 var file_fitter_v1_user_proto_depIdxs = []int32{
-	0, // 0: fitter.v1.GetCurrentUserResponse.user:type_name -> fitter.v1.User
-	1, // 1: fitter.v1.UserService.GetCurrentUser:input_type -> fitter.v1.GetCurrentUserRequest
-	2, // 2: fitter.v1.UserService.GetCurrentUser:output_type -> fitter.v1.GetCurrentUserResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 0: fitter.v1.User.feed_settings:type_name -> fitter.v1.FeedSettings
+	0, // 1: fitter.v1.UpdateFeedSettingsRequest.feed_settings:type_name -> fitter.v1.FeedSettings
+	1, // 2: fitter.v1.UpdateFeedSettingsResponse.user:type_name -> fitter.v1.User
+	1, // 3: fitter.v1.GetCurrentUserResponse.user:type_name -> fitter.v1.User
+	4, // 4: fitter.v1.UserService.GetCurrentUser:input_type -> fitter.v1.GetCurrentUserRequest
+	2, // 5: fitter.v1.UserService.UpdateFeedSettings:input_type -> fitter.v1.UpdateFeedSettingsRequest
+	5, // 6: fitter.v1.UserService.GetCurrentUser:output_type -> fitter.v1.GetCurrentUserResponse
+	3, // 7: fitter.v1.UserService.UpdateFeedSettings:output_type -> fitter.v1.UpdateFeedSettingsResponse
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_user_proto_init() }
@@ -237,7 +425,7 @@ func file_fitter_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_user_proto_rawDesc), len(file_fitter_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

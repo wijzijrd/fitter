@@ -301,11 +301,10 @@ func nullIntPtr[T int32 | int64](v T, ok bool) *T {
 	return &v
 }
 
-func (s *ActivityService) toProto(ctx context.Context, q *db.Queries, rows []db.Activity) ([]*fitterv1.ManualActivity, error) {
-	ids := make([]int64, len(rows))
-	for i, r := range rows {
-		ids[i] = r.StravaActivityID
-	}
+// loadBlocks returns each manual activity's blocks (and its legacy lifts) by activity id, three
+// queries however many ids. An activity written by a previous-release container has lifts but no
+// blocks: they come back as 1-round blocks whose stations carry a name only (no exercise id).
+func loadBlocks(ctx context.Context, q *db.Queries, ids []int64) (map[int64][]*fitterv1.Block, map[int64][]*fitterv1.Lift, error) {
 	var (
 		liftRows    []db.ListLiftsForActivitiesRow
 		blockRows   []db.ActivityBlock
@@ -314,13 +313,13 @@ func (s *ActivityService) toProto(ctx context.Context, q *db.Queries, rows []db.
 	if len(ids) > 0 {
 		var err error
 		if liftRows, err = q.ListLiftsForActivities(ctx, ids); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if blockRows, err = q.ListBlocksForActivities(ctx, ids); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if stationRows, err = q.ListStationsForActivities(ctx, ids); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	liftsByID := map[int64][]*fitterv1.Lift{}
@@ -339,8 +338,6 @@ func (s *ActivityService) toProto(ctx context.Context, q *db.Queries, rows []db.
 	for _, b := range blockRows {
 		blocksByID[b.ActivityID] = append(blocksByID[b.ActivityID], &fitterv1.Block{Rounds: b.Rounds, Stations: stationsByBlock[b.ID]})
 	}
-	// An activity written by a previous-release container has lifts but no blocks: show each
-	// as a 1-round block. Those stations carry a name only (no exercise id).
 	for id, lifts := range liftsByID {
 		if len(blocksByID[id]) > 0 {
 			continue
@@ -349,6 +346,18 @@ func (s *ActivityService) toProto(ctx context.Context, q *db.Queries, rows []db.
 			w, r := l.WeightKg, l.Reps
 			blocksByID[id] = append(blocksByID[id], &fitterv1.Block{Rounds: 1, Stations: []*fitterv1.Station{{ExerciseName: l.Exercise, WeightKg: &w, Reps: &r}}})
 		}
+	}
+	return blocksByID, liftsByID, nil
+}
+
+func (s *ActivityService) toProto(ctx context.Context, q *db.Queries, rows []db.Activity) ([]*fitterv1.ManualActivity, error) {
+	ids := make([]int64, len(rows))
+	for i, r := range rows {
+		ids[i] = r.StravaActivityID
+	}
+	blocksByID, liftsByID, err := loadBlocks(ctx, q, ids)
+	if err != nil {
+		return nil, err
 	}
 	out := make([]*fitterv1.ManualActivity, len(rows))
 	for i, r := range rows {

@@ -15,11 +15,19 @@ export interface WhatsNewItem {
   body: string;
 }
 
-// Newest first. Plain sentences, no jargon, no PR numbers.
+// Newest first (by when it shipped). Plain sentences, no jargon, no PR numbers.
 export const whatsNewItems: WhatsNewItem[] = [
   {
+    title: "Fairer leaderboards",
+    body: "Weekly and daily habits are now scored by the weeks or days you hit, not as one running total, and habits, single-effort goals and totals are ranked in their own groups, so a 66% habit is no longer shown ahead of a 9% distance goal. Your rank may move because of this. A neighbour's gap now says who it is measured against, like \"−57% vs you\".",
+  },
+  {
+    title: "New activities show up on their own",
+    body: "Your latest Strava activities now appear when you open the app and while it stays open, with no need to sign out and back in. A brief connection hiccup no longer logs you out either, and when Strava is at capacity you get a clear message.",
+  },
+  {
     title: "Log gym and circuit sessions properly",
-    body: "Pick exercises from a library, group them into blocks, and repeat a block for as many rounds as you did. Supersets, circuits and Hyrox-style sessions all fit. Missing an exercise? Add it from the picker and use it straight away.",
+    body: "Pick exercises from a library, group them into blocks, and repeat a block for as many rounds as you did. Supersets, circuits and Hyrox-style sessions all fit. Missing an exercise? Add it from the picker and use it straight away, and set a goal on the heaviest weight you lift for any exercise.",
   },
   {
     title: "A new group: HIIT & circuits",
@@ -34,19 +42,11 @@ export const whatsNewItems: WhatsNewItem[] = [
     body: "Pace or speed, power, effort and the exercises of a session can each be switched on or off. Open Settings from your name at the top.",
   },
   {
-    title: "Strength goals and kg targets",
-    body: "Log a manual session with weights and set a goal on the heaviest weight you lift for an exercise.",
-  },
-  {
     title: "Leaderboards by week, month or campaign",
     body: "The leaderboard ranks people by how much of their goals they have finished, over the time frame you pick.",
   },
   {
     title: "Easier goals and quicker typing",
     body: "Create every kind of goal in one place, repeat goals, and use stretch presets. Times are typed as digits and the colons fill in. Outlines are softer, and phones get a menu button.",
-  },
-  {
-    title: "New activities show up on their own",
-    body: "Your latest Strava activities now appear when you open the app and while it stays open, with no need to sign out and back in. A brief connection hiccup no longer logs you out either, and when Strava is at capacity you get a clear message.",
   },
 ];

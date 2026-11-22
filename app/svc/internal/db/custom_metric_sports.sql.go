@@ -11,6 +11,17 @@ import (
 	"github.com/lib/pq"
 )
 
+const countMetricsScopedToSport = `-- name: CountMetricsScopedToSport :one
+SELECT count(*)::int FROM custom_metric_sports WHERE sport_ref = $1
+`
+
+func (q *Queries) CountMetricsScopedToSport(ctx context.Context, sportRef string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, countMetricsScopedToSport, sportRef)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const createCustomMetricSport = `-- name: CreateCustomMetricSport :exec
 INSERT INTO custom_metric_sports (metric_id, sport_ref) VALUES ($1, $2)
 `

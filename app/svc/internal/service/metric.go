@@ -2,7 +2,9 @@ package service
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -184,6 +186,11 @@ func sportSelectorToDB(sel *fitterv1.SportSelector) (sportGroup, sportType sql.N
 		}
 		return sql.NullString{String: v.Group, Valid: true}, sql.NullString{}, nil
 	case *fitterv1.SportSelector_SportType:
+		// An empty exact type would match every activity (sports.Selector's zero value) while
+		// being filed under "Other"; padding could never match a real sport_type.
+		if v.SportType == "" || strings.TrimSpace(v.SportType) != v.SportType {
+			return sql.NullString{}, sql.NullString{}, errors.New("sport_type must be a non-empty sport type without surrounding spaces")
+		}
 		return sql.NullString{}, sql.NullString{String: v.SportType, Valid: true}, nil
 	default:
 		return sql.NullString{}, sql.NullString{}, nil

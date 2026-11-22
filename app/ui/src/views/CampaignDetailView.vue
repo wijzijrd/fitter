@@ -9,7 +9,7 @@ import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
 import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { activityMetricValue } from "../lib/labels";
-import { TOGETHER, lead, myEntries, primary, share, unitClause } from "../lib/standings";
+import { TOGETHER, groupKey, lead, myEntries, primary, share, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
 import { plural } from "../lib/schedule";
 import { detailParts, groupByDay, isNew, liftLines, pulse, recent } from "../lib/feed";
@@ -93,7 +93,7 @@ const bibMode = ref<"goal" | "person">("goal");
 const bibGroup = ref<string | null>(null);
 const groupOptions = computed(() => [
   ...(pooled.value ? [{ key: TOGETHER, label: "Together" }] : []),
-  ...bibGroups.value.map((g) => ({ key: g.sportGroup, label: g.sportGroupLabel })),
+  ...bibGroups.value.map((g) => ({ key: groupKey(g), label: g.sportGroupLabel })),
 ]);
 const bibGroups = computed<LeaderboardGroup[]>(() => {
   if (bibMode.value === "goal" || !feed.value.people.length) return feed.value.leaderboardGroups;

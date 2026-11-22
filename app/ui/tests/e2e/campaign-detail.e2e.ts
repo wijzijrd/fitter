@@ -22,7 +22,7 @@ test("changing the view keeps focus on its picker", async ({ page }) => {
 });
 
 test("the group picker switches the bib", async ({ page }) => {
-  await page.selectOption("#bib-group", "strength");
+  await page.selectOption("#bib-group", { label: "Strength" });
   await expect(page.locator(".bibs")).toContainText(/strength/i);
 });
 
@@ -54,4 +54,19 @@ test("the gap wording still fits at 320px", async ({ page }) => {
     if (box) expect(box.x + box.width).toBeLessThanOrEqual(320);
   }
   expect(await overflowsX(page)).toBe(false);
+});
+
+// Totals, single efforts and habits are ranked apart: their percentages mean different things
+// (share of the whole target, vs weeks hit so far), so a 66% habit is not "ahead" of a 9% total.
+test("a sport's habits and totals are separate boards in the picker", async ({ page }) => {
+  const options = await page.locator("#bib-group option").allInnerTexts();
+  expect(options).toEqual(expect.arrayContaining(["Run", "Run · Habits", "Strength", "All sports"]));
+  const values = await page.locator("#bib-group option").evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value));
+  expect(new Set(values).size).toBe(values.length); // two "run" groups, still distinct choices
+
+  await page.selectOption("#bib-group", { label: "Run · Habits" });
+  await expect(page.locator(".bibs")).toContainText(/habit goal/i);
+  await expect(page.locator(".bibs")).not.toContainText(/run goal/i);
+  await page.selectOption("#bib-group", { label: "Run" });
+  await expect(page.locator(".bibs")).toContainText(/run goal/i);
 });

@@ -107,6 +107,11 @@ export function peekBand(slot: "ahead" | "behind", front: LeaderboardEntry, e: L
   return [slot === "ahead" ? "Ahead" : "Behind", delta];
 }
 
+// groupKey identifies a leaderboard group: its sport group AND goal kind, since the server ranks
+// totals, single efforts and habits apart (their ratios mean different things). The sport group
+// alone isn't unique any more; an empty kind is a server that predates kinds.
+export const groupKey = (g: LeaderboardGroup) => `${g.sportGroup}|${g.goalKind}`;
+
 // The bib-group key for the pooled "Together" bib; real group keys are sport groups ("" included).
 export const TOGETHER = "__together__";
 

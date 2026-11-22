@@ -192,9 +192,11 @@ function campaignDetail() {
       const scale = window === "LEADERBOARD_WINDOW_WEEK" ? 0.3 : 1;
       return {
         groups: [
-          { sportGroup: "run", sportGroupLabel: "Run", entries: entries("run", [62, 48, 40, 31, 22, 9].map((v) => v * scale)) },
-          { sportGroup: "strength", sportGroupLabel: "Strength", entries: entries("strength", [70, 55, 20]) },
-          { sportGroup: "", sportGroupLabel: "All sports", entries: entries("all", [35, 30]) },
+          { sportGroup: "run", sportGroupLabel: "Run", goalKind: "total", entries: entries("run", [62, 48, 40, 31, 22, 9].map((v) => v * scale)) },
+          // Same sport group, different kind: ranked apart because the ratios mean different things.
+          { sportGroup: "run", sportGroupLabel: "Run · Habits", goalKind: "habit", entries: entries("habit", [66, 40].map((v) => v * scale)) },
+          { sportGroup: "strength", sportGroupLabel: "Strength", goalKind: "total", entries: entries("strength", [70, 55, 20]) },
+          { sportGroup: "", sportGroupLabel: "All sports", goalKind: "total", entries: entries("all", [35, 30]) },
         ],
         people: people.map(([userId, userName], i) => ({ userId, userName, averageRatio: 0.6 - i * 0.08, goalCount: 2, goalsSatisfied: 0, rank: i + 1 })),
       };

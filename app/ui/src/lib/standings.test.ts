@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
 import { ActivityMetric, ClauseScope, Comparator } from "../gen/fitter/v1/common_pb";
 import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1/feed_pb";
-import { amount, gap, lead, myEntries, peekBand, pickGroup, primary, share, unitClause } from "./standings";
+import { TOGETHER, amount, gap, groupKey, lead, myEntries, peekBand, pickGroup, primary, share, unitClause } from "./standings";
 
 const fmt = (_m: ActivityMetric, v: number) => `${Math.round(v / 1000)} km`;
 const distance = (target: number) => ({
@@ -163,5 +163,21 @@ describe("goals beyond 100%", () => {
     expect(share(1, 1)).toBe(100);
     expect(share(0, 1)).toBe(0);
     expect(share(5, 0)).toBe(0);
+  });
+});
+
+describe("groupKey", () => {
+  it("tells a sport's habits from its totals, though both are the run group", () => {
+    const total = create(LeaderboardGroupSchema, { sportGroup: "run", goalKind: "total" });
+    const habit = create(LeaderboardGroupSchema, { sportGroup: "run", goalKind: "habit" });
+    expect(groupKey(total)).not.toBe(groupKey(habit));
+    expect(groupKey(total)).toBe(groupKey(create(LeaderboardGroupSchema, { sportGroup: "run", goalKind: "total" })));
+  });
+  it("keeps the all-sports group distinct and tolerates a server that predates kinds", () => {
+    expect(groupKey(create(LeaderboardGroupSchema, { sportGroup: "" }))).toBe("|");
+    expect(groupKey(create(LeaderboardGroupSchema, { sportGroup: "run" }))).toBe("run|");
+  });
+  it("never collides with the pooled bib's key", () => {
+    expect(groupKey(create(LeaderboardGroupSchema, { sportGroup: TOGETHER }))).not.toBe(TOGETHER);
   });
 });

@@ -39,6 +39,7 @@ function fixtures(unseenSplash: boolean) {
       feedSettings = { showPace: false, showPower: false, showEffort: false, showLifts: false, ...b.feedSettings };
       return { user: me() };
     },
+    "ActivityService/SyncActivities": () => ({ throttled: true }),
     "UserService/MarkWhatsNewSeen": (b: any) => {
       whatsNewSeen = b.release;
       return { user: me() };

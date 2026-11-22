@@ -76,3 +76,8 @@ RETURNING *;
 -- name: SetUserWhatsNewSeen :one
 UPDATE users SET whats_new_seen = $2 WHERE id = $1
 RETURNING *;
+
+-- name: ClaimUserSync :one
+-- Takes the sync slot unless one was taken since $3; no row back means "too soon".
+UPDATE users SET last_synced_at = $2 WHERE id = $1 AND last_synced_at <= $3
+RETURNING *;

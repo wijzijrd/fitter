@@ -45,6 +45,9 @@ const (
 	// ActivityServiceListManualActivitiesProcedure is the fully-qualified name of the ActivityService's
 	// ListManualActivities RPC.
 	ActivityServiceListManualActivitiesProcedure = "/fitter.v1.ActivityService/ListManualActivities"
+	// ActivityServiceSyncActivitiesProcedure is the fully-qualified name of the ActivityService's
+	// SyncActivities RPC.
+	ActivityServiceSyncActivitiesProcedure = "/fitter.v1.ActivityService/SyncActivities"
 )
 
 // ActivityServiceClient is a client for the fitter.v1.ActivityService service.
@@ -53,6 +56,9 @@ type ActivityServiceClient interface {
 	UpdateManualActivity(context.Context, *connect.Request[v1.UpdateManualActivityRequest]) (*connect.Response[v1.UpdateManualActivityResponse], error)
 	DeleteManualActivity(context.Context, *connect.Request[v1.DeleteManualActivityRequest]) (*connect.Response[v1.DeleteManualActivityResponse], error)
 	ListManualActivities(context.Context, *connect.Request[v1.ListManualActivitiesRequest]) (*connect.Response[v1.ListManualActivitiesResponse], error)
+	// SyncActivities pulls the caller's recent Strava activities now, at most once every five minutes.
+	// It backs up the webhook, which only helps once its subscription exists and doesn't replay misses.
+	SyncActivities(context.Context, *connect.Request[v1.SyncActivitiesRequest]) (*connect.Response[v1.SyncActivitiesResponse], error)
 }
 
 // NewActivityServiceClient constructs a client for the fitter.v1.ActivityService service. By
@@ -90,6 +96,12 @@ func NewActivityServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(activityServiceMethods.ByName("ListManualActivities")),
 			connect.WithClientOptions(opts...),
 		),
+		syncActivities: connect.NewClient[v1.SyncActivitiesRequest, v1.SyncActivitiesResponse](
+			httpClient,
+			baseURL+ActivityServiceSyncActivitiesProcedure,
+			connect.WithSchema(activityServiceMethods.ByName("SyncActivities")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -99,6 +111,7 @@ type activityServiceClient struct {
 	updateManualActivity *connect.Client[v1.UpdateManualActivityRequest, v1.UpdateManualActivityResponse]
 	deleteManualActivity *connect.Client[v1.DeleteManualActivityRequest, v1.DeleteManualActivityResponse]
 	listManualActivities *connect.Client[v1.ListManualActivitiesRequest, v1.ListManualActivitiesResponse]
+	syncActivities       *connect.Client[v1.SyncActivitiesRequest, v1.SyncActivitiesResponse]
 }
 
 // CreateManualActivity calls fitter.v1.ActivityService.CreateManualActivity.
@@ -121,12 +134,20 @@ func (c *activityServiceClient) ListManualActivities(ctx context.Context, req *c
 	return c.listManualActivities.CallUnary(ctx, req)
 }
 
+// SyncActivities calls fitter.v1.ActivityService.SyncActivities.
+func (c *activityServiceClient) SyncActivities(ctx context.Context, req *connect.Request[v1.SyncActivitiesRequest]) (*connect.Response[v1.SyncActivitiesResponse], error) {
+	return c.syncActivities.CallUnary(ctx, req)
+}
+
 // ActivityServiceHandler is an implementation of the fitter.v1.ActivityService service.
 type ActivityServiceHandler interface {
 	CreateManualActivity(context.Context, *connect.Request[v1.CreateManualActivityRequest]) (*connect.Response[v1.CreateManualActivityResponse], error)
 	UpdateManualActivity(context.Context, *connect.Request[v1.UpdateManualActivityRequest]) (*connect.Response[v1.UpdateManualActivityResponse], error)
 	DeleteManualActivity(context.Context, *connect.Request[v1.DeleteManualActivityRequest]) (*connect.Response[v1.DeleteManualActivityResponse], error)
 	ListManualActivities(context.Context, *connect.Request[v1.ListManualActivitiesRequest]) (*connect.Response[v1.ListManualActivitiesResponse], error)
+	// SyncActivities pulls the caller's recent Strava activities now, at most once every five minutes.
+	// It backs up the webhook, which only helps once its subscription exists and doesn't replay misses.
+	SyncActivities(context.Context, *connect.Request[v1.SyncActivitiesRequest]) (*connect.Response[v1.SyncActivitiesResponse], error)
 }
 
 // NewActivityServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -160,6 +181,12 @@ func NewActivityServiceHandler(svc ActivityServiceHandler, opts ...connect.Handl
 		connect.WithSchema(activityServiceMethods.ByName("ListManualActivities")),
 		connect.WithHandlerOptions(opts...),
 	)
+	activityServiceSyncActivitiesHandler := connect.NewUnaryHandler(
+		ActivityServiceSyncActivitiesProcedure,
+		svc.SyncActivities,
+		connect.WithSchema(activityServiceMethods.ByName("SyncActivities")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/fitter.v1.ActivityService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ActivityServiceCreateManualActivityProcedure:
@@ -170,6 +197,8 @@ func NewActivityServiceHandler(svc ActivityServiceHandler, opts ...connect.Handl
 			activityServiceDeleteManualActivityHandler.ServeHTTP(w, r)
 		case ActivityServiceListManualActivitiesProcedure:
 			activityServiceListManualActivitiesHandler.ServeHTTP(w, r)
+		case ActivityServiceSyncActivitiesProcedure:
+			activityServiceSyncActivitiesHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -193,4 +222,8 @@ func (UnimplementedActivityServiceHandler) DeleteManualActivity(context.Context,
 
 func (UnimplementedActivityServiceHandler) ListManualActivities(context.Context, *connect.Request[v1.ListManualActivitiesRequest]) (*connect.Response[v1.ListManualActivitiesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.ActivityService.ListManualActivities is not implemented"))
+}
+
+func (UnimplementedActivityServiceHandler) SyncActivities(context.Context, *connect.Request[v1.SyncActivitiesRequest]) (*connect.Response[v1.SyncActivitiesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.ActivityService.SyncActivities is not implemented"))
 }

@@ -2,6 +2,7 @@
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import { useSyncStore } from "../stores/sync";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
 import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
@@ -266,6 +267,9 @@ function contributionNote(userId: string, value: number): string {
 
 // Units on the left already say how far; the share says how far along the goal that is.
 const rowShare = (e: LeaderboardEntry) => (unitClause(e) ? `${share(e.progressRatio, 1)}%` : "");
+
+// New Strava activities arrived: show them.
+watch(() => useSyncStore().imported, load);
 
 onMounted(() => {
   load();

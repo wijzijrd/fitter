@@ -675,6 +675,95 @@ func (x *ListManualActivitiesResponse) GetActivities() []*ManualActivity {
 	return nil
 }
 
+// ActivityService manages the caller's own manually-logged activities.
+type SyncActivitiesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SyncActivitiesRequest) Reset() {
+	*x = SyncActivitiesRequest{}
+	mi := &file_fitter_v1_activity_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SyncActivitiesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncActivitiesRequest) ProtoMessage() {}
+
+func (x *SyncActivitiesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_activity_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncActivitiesRequest.ProtoReflect.Descriptor instead.
+func (*SyncActivitiesRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_activity_proto_rawDescGZIP(), []int{12}
+}
+
+type SyncActivitiesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Imported      int32                  `protobuf:"varint,1,opt,name=imported,proto3" json:"imported,omitempty"`   // activities that were not stored before this call
+	Throttled     bool                   `protobuf:"varint,2,opt,name=throttled,proto3" json:"throttled,omitempty"` // a sync ran recently, so nothing was fetched
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SyncActivitiesResponse) Reset() {
+	*x = SyncActivitiesResponse{}
+	mi := &file_fitter_v1_activity_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SyncActivitiesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncActivitiesResponse) ProtoMessage() {}
+
+func (x *SyncActivitiesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_activity_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncActivitiesResponse.ProtoReflect.Descriptor instead.
+func (*SyncActivitiesResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_activity_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SyncActivitiesResponse) GetImported() int32 {
+	if x != nil {
+		return x.Imported
+	}
+	return 0
+}
+
+func (x *SyncActivitiesResponse) GetThrottled() bool {
+	if x != nil {
+		return x.Throttled
+	}
+	return false
+}
+
 var File_fitter_v1_activity_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_activity_proto_rawDesc = "" +
@@ -732,12 +821,17 @@ const file_fitter_v1_activity_proto_rawDesc = "" +
 	"\x1cListManualActivitiesResponse\x129\n" +
 	"\n" +
 	"activities\x18\x01 \x03(\v2\x19.fitter.v1.ManualActivityR\n" +
-	"activities2\xb5\x03\n" +
+	"activities\"\x17\n" +
+	"\x15SyncActivitiesRequest\"R\n" +
+	"\x16SyncActivitiesResponse\x12\x1a\n" +
+	"\bimported\x18\x01 \x01(\x05R\bimported\x12\x1c\n" +
+	"\tthrottled\x18\x02 \x01(\bR\tthrottled2\x8c\x04\n" +
 	"\x0fActivityService\x12g\n" +
 	"\x14CreateManualActivity\x12&.fitter.v1.CreateManualActivityRequest\x1a'.fitter.v1.CreateManualActivityResponse\x12g\n" +
 	"\x14UpdateManualActivity\x12&.fitter.v1.UpdateManualActivityRequest\x1a'.fitter.v1.UpdateManualActivityResponse\x12g\n" +
 	"\x14DeleteManualActivity\x12&.fitter.v1.DeleteManualActivityRequest\x1a'.fitter.v1.DeleteManualActivityResponse\x12g\n" +
-	"\x14ListManualActivities\x12&.fitter.v1.ListManualActivitiesRequest\x1a'.fitter.v1.ListManualActivitiesResponseB\x91\x01\n" +
+	"\x14ListManualActivities\x12&.fitter.v1.ListManualActivitiesRequest\x1a'.fitter.v1.ListManualActivitiesResponse\x12U\n" +
+	"\x0eSyncActivities\x12 .fitter.v1.SyncActivitiesRequest\x1a!.fitter.v1.SyncActivitiesResponseB\x91\x01\n" +
 	"\rcom.fitter.v1B\rActivityProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
 
@@ -753,7 +847,7 @@ func file_fitter_v1_activity_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_activity_proto_rawDescData
 }
 
-var file_fitter_v1_activity_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_fitter_v1_activity_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_fitter_v1_activity_proto_goTypes = []any{
 	(*Lift)(nil),                         // 0: fitter.v1.Lift
 	(*Station)(nil),                      // 1: fitter.v1.Station
@@ -767,11 +861,13 @@ var file_fitter_v1_activity_proto_goTypes = []any{
 	(*DeleteManualActivityResponse)(nil), // 9: fitter.v1.DeleteManualActivityResponse
 	(*ListManualActivitiesRequest)(nil),  // 10: fitter.v1.ListManualActivitiesRequest
 	(*ListManualActivitiesResponse)(nil), // 11: fitter.v1.ListManualActivitiesResponse
-	(*timestamppb.Timestamp)(nil),        // 12: google.protobuf.Timestamp
+	(*SyncActivitiesRequest)(nil),        // 12: fitter.v1.SyncActivitiesRequest
+	(*SyncActivitiesResponse)(nil),       // 13: fitter.v1.SyncActivitiesResponse
+	(*timestamppb.Timestamp)(nil),        // 14: google.protobuf.Timestamp
 }
 var file_fitter_v1_activity_proto_depIdxs = []int32{
 	1,  // 0: fitter.v1.Block.stations:type_name -> fitter.v1.Station
-	12, // 1: fitter.v1.ManualActivity.start_date:type_name -> google.protobuf.Timestamp
+	14, // 1: fitter.v1.ManualActivity.start_date:type_name -> google.protobuf.Timestamp
 	0,  // 2: fitter.v1.ManualActivity.lifts:type_name -> fitter.v1.Lift
 	2,  // 3: fitter.v1.ManualActivity.blocks:type_name -> fitter.v1.Block
 	3,  // 4: fitter.v1.CreateManualActivityRequest.activity:type_name -> fitter.v1.ManualActivity
@@ -783,12 +879,14 @@ var file_fitter_v1_activity_proto_depIdxs = []int32{
 	6,  // 10: fitter.v1.ActivityService.UpdateManualActivity:input_type -> fitter.v1.UpdateManualActivityRequest
 	8,  // 11: fitter.v1.ActivityService.DeleteManualActivity:input_type -> fitter.v1.DeleteManualActivityRequest
 	10, // 12: fitter.v1.ActivityService.ListManualActivities:input_type -> fitter.v1.ListManualActivitiesRequest
-	5,  // 13: fitter.v1.ActivityService.CreateManualActivity:output_type -> fitter.v1.CreateManualActivityResponse
-	7,  // 14: fitter.v1.ActivityService.UpdateManualActivity:output_type -> fitter.v1.UpdateManualActivityResponse
-	9,  // 15: fitter.v1.ActivityService.DeleteManualActivity:output_type -> fitter.v1.DeleteManualActivityResponse
-	11, // 16: fitter.v1.ActivityService.ListManualActivities:output_type -> fitter.v1.ListManualActivitiesResponse
-	13, // [13:17] is the sub-list for method output_type
-	9,  // [9:13] is the sub-list for method input_type
+	12, // 13: fitter.v1.ActivityService.SyncActivities:input_type -> fitter.v1.SyncActivitiesRequest
+	5,  // 14: fitter.v1.ActivityService.CreateManualActivity:output_type -> fitter.v1.CreateManualActivityResponse
+	7,  // 15: fitter.v1.ActivityService.UpdateManualActivity:output_type -> fitter.v1.UpdateManualActivityResponse
+	9,  // 16: fitter.v1.ActivityService.DeleteManualActivity:output_type -> fitter.v1.DeleteManualActivityResponse
+	11, // 17: fitter.v1.ActivityService.ListManualActivities:output_type -> fitter.v1.ListManualActivitiesResponse
+	13, // 18: fitter.v1.ActivityService.SyncActivities:output_type -> fitter.v1.SyncActivitiesResponse
+	14, // [14:19] is the sub-list for method output_type
+	9,  // [9:14] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
 	9,  // [9:9] is the sub-list for extension extendee
 	0,  // [0:9] is the sub-list for field type_name
@@ -807,7 +905,7 @@ func file_fitter_v1_activity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_activity_proto_rawDesc), len(file_fitter_v1_activity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

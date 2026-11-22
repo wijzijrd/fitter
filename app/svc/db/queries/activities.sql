@@ -85,3 +85,6 @@ DELETE FROM activities WHERE strava_activity_id = $1 AND user_id = $2 AND source
 
 -- name: ListManualActivitiesForUser :many
 SELECT * FROM activities WHERE user_id = $1 AND source = 'manual' ORDER BY start_date DESC LIMIT 200;
+
+-- name: CountActivitiesForUser :one
+SELECT COUNT(*) FROM activities WHERE user_id = $1;

@@ -46,7 +46,7 @@ export const whatsNewItems: WhatsNewItem[] = [
     body: "Create every kind of goal in one place, repeat goals, and use stretch presets. Times are typed as digits and the colons fill in. Outlines are softer, and phones get a menu button.",
   },
   {
-    title: "Fewer surprise sign-outs",
-    body: "A brief connection hiccup no longer logs you out, and when Strava is at capacity you now get a clear message.",
+    title: "New activities show up on their own",
+    body: "Your latest Strava activities now appear when you open the app and while it stays open, with no need to sign out and back in. A brief connection hiccup no longer logs you out either, and when Strava is at capacity you get a clear message.",
   },
 ];

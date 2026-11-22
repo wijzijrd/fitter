@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useGoalsStore } from "../stores/goals";
+import { useSyncStore } from "../stores/sync";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCatalogStore } from "../stores/catalog";
 import { ClauseScope, Comparator, Recurrence } from "../gen/fitter/v1/common_pb";
@@ -52,6 +53,8 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// New Strava activities arrived: show them.
+watch(() => useSyncStore().imported, load);
 
 async function open(g?: Goal, campaignId = ""): Promise<void> {
   showErrors.value = false;

@@ -40,6 +40,8 @@ test("leaving the tab marks the feed seen, and coming back reads caught up", asy
 
 test("Settings turns details off, saves each choice, and the feed follows", async ({ page }) => {
   await page.goto("/campaigns/c1");
+  // The route change that finishes loading closes the menu, so open it only once the page is up.
+  await expect(page.getByRole("tab", { name: "Feed" })).toBeVisible();
   await page.locator(".menu-btn").click();
   await page.getByRole("link", { name: /^Settings, signed in as/ }).click();
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();

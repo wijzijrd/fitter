@@ -2,11 +2,13 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useAuthStore } from "./stores/auth";
 import { useWhatsNewStore } from "./stores/whatsNew";
+import { useSyncStore } from "./stores/sync";
 import WhatsNewDialog from "./components/WhatsNewDialog.vue";
 import { useRoute, useRouter } from "vue-router";
 
 const auth = useAuthStore();
 const whatsNew = useWhatsNewStore();
+const activitySync = useSyncStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -36,13 +38,25 @@ function onPointer(ev: PointerEvent): void {
 watch(() => route.fullPath, () => close());
 // The router guard loads the user after sign-in; once it is there, offer the splash if it is unseen.
 watch(() => auth.user, () => whatsNew.offer(), { immediate: true });
+
+// Pull the member's new Strava activities on load, when they come back to the tab, and every five
+// minutes while it stays open. Pending members have no campaigns to see them in.
+function syncNow(): void {
+  if (auth.user && !auth.isPending && document.visibilityState === "visible") activitySync.sync();
+}
+let syncTimer: ReturnType<typeof setInterval> | undefined;
+watch(() => auth.user?.id, syncNow, { immediate: true });
 onMounted(() => {
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", onPointer);
+  document.addEventListener("visibilitychange", syncNow);
+  syncTimer = setInterval(syncNow, 5 * 60 * 1000);
 });
 onBeforeUnmount(() => {
   document.removeEventListener("keydown", onKey);
   document.removeEventListener("pointerdown", onPointer);
+  document.removeEventListener("visibilitychange", syncNow);
+  clearInterval(syncTimer);
 });
 </script>
 

@@ -12,6 +12,17 @@ import (
 	"github.com/lib/pq"
 )
 
+const countActivitiesForUser = `-- name: CountActivitiesForUser :one
+SELECT COUNT(*) FROM activities WHERE user_id = $1
+`
+
+func (q *Queries) CountActivitiesForUser(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActivitiesForUser, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createManualActivity = `-- name: CreateManualActivity :one
 INSERT INTO activities (
     strava_activity_id, user_id, type, sport_type, name, start_date,

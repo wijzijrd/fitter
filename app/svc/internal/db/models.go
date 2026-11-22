@@ -172,4 +172,6 @@ type User struct {
 	FeedShowPower   bool           `json:"feed_show_power"`
 	FeedShowEffort  bool           `json:"feed_show_effort"`
 	FeedShowLifts   bool           `json:"feed_show_lifts"`
+	WhatsNewSeen    string         `json:"whats_new_seen"`
+	LastSyncedAt    int64          `json:"last_synced_at"`
 }

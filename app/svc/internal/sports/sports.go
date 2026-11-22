@@ -113,10 +113,13 @@ var labelByGroup = func() map[Group]string {
 }()
 
 // Groups returns the curated group definitions in stable, user-visible
-// order. Callers must not mutate the returned slice or its SportTypes.
+// order. The result is a deep copy, so a caller can't corrupt the table.
 func Groups() []GroupDef {
 	out := make([]GroupDef, len(groups))
-	copy(out, groups)
+	for i, g := range groups {
+		g.SportTypes = append([]string(nil), g.SportTypes...)
+		out[i] = g
+	}
 	return out
 }
 

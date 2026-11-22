@@ -1,12 +1,26 @@
 import { test as base, type Page } from "@playwright/test";
+import { RELEASE } from "../../src/lib/whatsNew";
 
 // In-memory stand-in for the Connect API (JSON over POST /api/fitter.v1.<Service>/<Method>).
 // Each test gets fresh data; deletes mutate it so list reloads reflect them.
-function fixtures() {
+// Signed-in users have already dismissed the current splash unless a test says otherwise.
+function fixtures(unseenSplash: boolean) {
   let sports = [
     { id: "s1", key: "powerlifting", label: "Powerlifting" },
     { id: "s2", key: "climbing", label: "Climbing" },
   ];
+  let users: any[] = [
+    { id: "u2", name: "Sam Okafor", role: "member", status: "pending", createdAt: "2026-11-18T08:00:00Z" },
+    { id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active" },
+    { id: "u3", name: "Jo", role: "member", status: "active" },
+    { id: "u4", name: "Priya", role: "admin", status: "active" },
+  ];
+  const setUser = (id: string, patch: object) => (users = users.map((u) => (u.id === id ? { ...u, ...patch } : u)));
+  let customMetrics: any[] = [{ id: "m1", key: "reps", label: "Reps", unit: "reps", aggregation: "sum" }];
+  let adminActions: any[] = [
+    { id: "a1", actorName: "Alexandria Vandenberg-Smith", action: "approve", detail: "Jo", createdAt: "2026-11-19T08:00:00Z" },
+  ];
+  let seq = 100;
   let activities: any[] = [
     {
       id: "-1", sportType: "WeightTraining", name: "Push day", startDate: "2026-11-20T08:00:00Z", movingTimeS: "3600",
@@ -16,7 +30,8 @@ function fixtures() {
     { id: "-2", sportType: "WeightTraining", name: "Pull day", startDate: "2026-11-19T08:00:00Z", movingTimeS: "3000", lifts: [], blocks: [] },
   ];
   let feedSettings: Record<string, boolean> = { showPace: true, showPower: true, showEffort: true, showLifts: true };
-  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings });
+  let whatsNewSeen = unseenSplash ? "" : RELEASE;
+  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings, whatsNewSeen });
   const MEASURE = (m: string) => `EXERCISE_MEASURE_${m}`;
   const MUSCLE = (m: string) => `MUSCLE_${m}`;
   let exercises: any[] = [
@@ -34,6 +49,11 @@ function fixtures() {
     "UserService/GetCurrentUser": () => ({ user: me() }),
     "UserService/UpdateFeedSettings": (b: any) => {
       feedSettings = { showPace: false, showPower: false, showEffort: false, showLifts: false, ...b.feedSettings };
+      return { user: me() };
+    },
+    "ActivityService/SyncActivities": () => ({ throttled: true }),
+    "UserService/MarkWhatsNewSeen": (b: any) => {
+      whatsNewSeen = b.release;
       return { user: me() };
     },
     "CatalogService/ListSports": () => ({
@@ -89,20 +109,32 @@ function fixtures() {
       activities = activities.filter((a) => a.id !== b.id);
       return {};
     },
-    "AdminService/ListUsers": () => ({
-      users: [
-        { id: "u2", name: "Sam Okafor", role: "member", status: "pending", createdAt: "2026-11-18T08:00:00Z" },
-        { id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active" },
-        { id: "u3", name: "Jo", role: "member", status: "active" },
-      ],
-    }),
+    "AdminService/ListUsers": () => ({ users }),
+    "AdminService/ApproveUser": (b: any) => (setUser(b.id, { status: "active" }), {}),
+    "AdminService/BanUser": (b: any) => (setUser(b.id, { status: "banned", banReason: b.reason, bannedAt: "2026-11-22T08:00:00Z" }), {}),
+    "AdminService/UnbanUser": (b: any) => (setUser(b.id, { status: "active", banReason: "" }), {}),
+    "AdminService/SetUserRole": (b: any) => (setUser(b.id, { role: b.role }), {}),
     "AdminService/ListCustomSports": () => ({ sports }),
-    "AdminService/ListCustomMetrics": () => ({ metrics: [{ id: "m1", key: "reps", label: "Reps", unit: "reps", aggregation: "sum" }] }),
+    "AdminService/CreateCustomSport": (b: any) => {
+      const sport = { id: `s${++seq}`, key: b.key, label: b.label };
+      sports = [...sports, sport];
+      return { sport };
+    },
     "AdminService/DeleteCustomSport": (b: { id: string }) => {
       sports = sports.filter((s) => s.id !== b.id);
       return {};
     },
-    "AdminService/ListAdminActions": () => ({ actions: [] }),
+    "AdminService/ListCustomMetrics": () => ({ metrics: customMetrics }),
+    "AdminService/CreateCustomMetric": (b: any) => {
+      const metric = { id: `m${++seq}`, ...b };
+      customMetrics = [...customMetrics, metric];
+      return { metric };
+    },
+    "AdminService/DeleteCustomMetric": (b: { id: string }) => {
+      customMetrics = customMetrics.filter((m) => m.id !== b.id);
+      return {};
+    },
+    "AdminService/ListAdminActions": () => ({ actions: adminActions }),
     ...campaignDetail(),
   };
   return handlers;
@@ -160,9 +192,11 @@ function campaignDetail() {
       const scale = window === "LEADERBOARD_WINDOW_WEEK" ? 0.3 : 1;
       return {
         groups: [
-          { sportGroup: "run", sportGroupLabel: "Run", entries: entries("run", [62, 48, 40, 31, 22, 9].map((v) => v * scale)) },
-          { sportGroup: "strength", sportGroupLabel: "Strength", entries: entries("strength", [70, 55, 20]) },
-          { sportGroup: "", sportGroupLabel: "All sports", entries: entries("all", [35, 30]) },
+          { sportGroup: "run", sportGroupLabel: "Run", goalKind: "total", entries: entries("run", [62, 48, 40, 31, 22, 9].map((v) => v * scale)) },
+          // Same sport group, different kind: ranked apart because the ratios mean different things.
+          { sportGroup: "run", sportGroupLabel: "Run · Habits", goalKind: "habit", entries: entries("habit", [66, 40].map((v) => v * scale)) },
+          { sportGroup: "strength", sportGroupLabel: "Strength", goalKind: "total", entries: entries("strength", [70, 55, 20]) },
+          { sportGroup: "", sportGroupLabel: "All sports", goalKind: "total", entries: entries("all", [35, 30]) },
         ],
         people: people.map(([userId, userName], i) => ({ userId, userName, averageRatio: 0.6 - i * 0.08, goalCount: 2, goalsSatisfied: 0, rank: i + 1 })),
       };
@@ -174,8 +208,8 @@ function campaignDetail() {
   };
 }
 
-async function mockApi(page: Page): Promise<void> {
-  const handlers = fixtures();
+async function mockApi(page: Page, unseenSplash: boolean): Promise<void> {
+  const handlers = fixtures(unseenSplash);
   await page.addInitScript(() => localStorage.setItem("fitter_token", "e2e"));
   await page.route("**/api/fitter.v1.*/**", async (route) => {
     const method = route.request().url().split("/fitter.v1.")[1];
@@ -190,9 +224,10 @@ async function mockApi(page: Page): Promise<void> {
 }
 
 // `page` arrives signed in as an admin with the mock API installed.
-export const test = base.extend({
-  page: async ({ page }, use) => {
-    await mockApi(page);
+export const test = base.extend<{ unseenSplash: boolean }>({
+  unseenSplash: [false, { option: true }],
+  page: async ({ page, unseenSplash }, use) => {
+    await mockApi(page, unseenSplash);
     await use(page);
   },
 });

@@ -72,9 +72,18 @@ message ListManualActivitiesResponse {
 }
 
 // ActivityService manages the caller's own manually-logged activities.
+message SyncActivitiesRequest {}
+message SyncActivitiesResponse {
+  int32 imported = 1;   // activities that were not stored before this call
+  bool throttled = 2;   // a sync ran recently, so nothing was fetched
+}
+
 service ActivityService {
   rpc CreateManualActivity(CreateManualActivityRequest) returns (CreateManualActivityResponse);
   rpc UpdateManualActivity(UpdateManualActivityRequest) returns (UpdateManualActivityResponse);
   rpc DeleteManualActivity(DeleteManualActivityRequest) returns (DeleteManualActivityResponse);
   rpc ListManualActivities(ListManualActivitiesRequest) returns (ListManualActivitiesResponse);
+  // SyncActivities pulls the caller's recent Strava activities now, at most once every five minutes.
+  // It backs up the webhook, which only helps once its subscription exists and doesn't replay misses.
+  rpc SyncActivities(SyncActivitiesRequest) returns (SyncActivitiesResponse);
 }

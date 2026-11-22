@@ -4,7 +4,7 @@ import type { LeaderboardEntry, LeaderboardGroup, PooledContribution } from "../
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { useCatalogStore } from "../stores/catalog";
 import { ordinal } from "../lib/labels";
-import { TOGETHER, amount, firstName, gap, lead, myEntries, pickGroup, primary, share } from "../lib/standings";
+import { TOGETHER, amount, firstName, gap, lead, myEntries, groupKey, peekBand as peekBandFor, pickGroup, primary, share } from "../lib/standings";
 import type { Gap } from "../lib/standings";
 import { formatRelative } from "../lib/timestamp";
 
@@ -31,7 +31,7 @@ const mine = computed(() => myEntries(props.groups, props.meId));
 const myLead = computed(() => lead(mine.value));
 const options = computed(() => [
   ...(props.pooled ? [{ key: TOGETHER, label: "Together" }] : []),
-  ...props.groups.map((g) => ({ key: g.sportGroup, label: g.sportGroupLabel })),
+  ...props.groups.map((g) => ({ key: groupKey(g), label: g.sportGroupLabel })),
 ]);
 
 // The group on the bib. The parent owns it (v-model:group) and draws the picker, so it survives
@@ -41,12 +41,12 @@ const selected = defineModel<string | null>("group", { default: null });
 watch(
   options,
   () => {
-    selected.value = pickGroup(options.value.map((o) => o.key), selected.value, myLead.value?.group.sportGroup);
+    selected.value = pickGroup(options.value.map((o) => o.key), selected.value, myLead.value && groupKey(myLead.value.group));
   },
   { immediate: true },
 );
 
-const group = computed(() => props.groups.find((g) => g.sportGroup === selected.value));
+const group = computed(() => props.groups.find((g) => groupKey(g) === selected.value));
 const entries = computed(() => group.value?.entries ?? []);
 const together = computed(() => selected.value === TOGETHER);
 // Your best entry in the selected group, if you have one there.
@@ -73,7 +73,7 @@ function step(to: "ahead" | "behind"): void {
 function focusGoal(goalId: string): void {
   const g = props.groups.find((g) => g.entries.some((e) => e.goalId === goalId));
   if (!g) return;
-  selected.value = g.sportGroup;
+  selected.value = groupKey(g);
   const i = g.entries.findIndex((e) => e.goalId === goalId);
   if (!browsable.value || i === focus.value) return;
   direction.value = i < focus.value ? "ahead" : "behind";
@@ -175,10 +175,7 @@ function peekNote(e: LeaderboardEntry): string {
 
 function peekBand(slot: "ahead" | "behind", e: LeaderboardEntry): [string, string] {
   if (!browsable.value) return [slot === "ahead" ? "Top" : "2nd", primary(e, fmt)];
-  const f = front.value!;
-  const d = Math.abs(e.progressRatio - f.progressRatio);
-  const delta = d > 0 ? `${slot === "ahead" ? "+" : "−"}${amount(f, d, fmt, e)}` : "Level";
-  return [slot === "ahead" ? "Ahead" : "Behind", delta];
+  return peekBandFor(slot, front.value!, e, fmt, isMe(front.value));
 }
 
 // What a peek shows, whether it stands for a neighbour in the field or a top contributor.

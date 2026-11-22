@@ -150,3 +150,40 @@ test("delete asks first and keeps focus in the list", async ({ page }) => {
   await expect(page.locator(".history b", { hasText: "Push day" })).toBeHidden();
   expect((await focused(page)).text).toContain("Pull day");
 });
+
+// The sport decides which inputs the form offers: distance sports ask for distance, lifting and
+// circuit sessions ask for exercises, and distance moves onto the stations for circuits.
+test("each sport group shows the right inputs and clears the others' values", async ({ page }) => {
+  await page.selectOption("#al-sport", "Run");
+  await expect(page.locator("#al-distance")).toBeVisible();
+  await expect(page.locator('input[role="combobox"]')).toHaveCount(0);
+
+  await page.selectOption("#al-sport", "WeightTraining");
+  await expect(combo(page)).toBeVisible();
+
+  await page.selectOption("#al-sport", "Crossfit");
+  await expect(combo(page)).toBeVisible();
+  await expect(page.locator("#al-distance")).toBeHidden();
+
+  // Back to a distance sport: no exercise rows are sent with a run.
+  await page.selectOption("#al-sport", "Run");
+  await expect(page.locator('input[role="combobox"]')).toHaveCount(0);
+  await page.locator("#al-distance").fill("5");
+  const req = page.waitForRequest((r) => r.url().endsWith("CreateManualActivity"));
+  await page.locator('button[type="submit"]').click();
+  const { activity } = (await req).postDataJSON();
+  expect(activity.sportType).toBe("Run");
+  expect(activity.blocks ?? []).toEqual([]);
+});
+
+test("a lifting session typed and then switched to a run drops its exercises", async ({ page }) => {
+  await page.selectOption("#al-sport", "WeightTraining");
+  await choose(page, 0, "bench");
+  await page.getByPlaceholder("kg", { exact: true }).fill("80");
+  await page.getByPlaceholder("reps", { exact: true }).fill("5");
+  await page.selectOption("#al-sport", "Run");
+  await page.locator("#al-distance").fill("5");
+  const req = page.waitForRequest((r) => r.url().endsWith("CreateManualActivity"));
+  await page.locator('button[type="submit"]').click();
+  expect(((await req).postDataJSON().activity.blocks ?? []).length).toBe(0);
+});

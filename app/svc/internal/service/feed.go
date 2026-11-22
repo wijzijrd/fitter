@@ -230,6 +230,7 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			PeriodStart: r.PeriodStart,
 			PeriodEnd:   r.PeriodEnd,
 			CreatedAt:   r.CreatedAt,
+			Recurrence:  r.Recurrence, // a habit must be scored as a habit, not as a running total
 		}
 		userNameByGoal[r.ID] = r.UserName
 		avatarByGoal[r.ID] = r.UserAvatarUrl
@@ -271,10 +272,11 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 	}
 	goals = kept
 
-	entriesByGroup := make(map[string][]*fitterv1.LeaderboardEntry)
+	entriesByGroup := make(map[leaderboardGroupKey][]*fitterv1.LeaderboardEntry)
 	for _, g := range goals {
 		res := results[g.ID]
-		entriesByGroup[goalGroupKey(g.SportGroup, g.SportType)] = append(entriesByGroup[goalGroupKey(g.SportGroup, g.SportType)], &fitterv1.LeaderboardEntry{
+		key := leaderboardGroupKey{sport: goalGroupKey(g.SportGroup, g.SportType), kind: goalKindOf(g, clausesByGoal[g.ID])}
+		entriesByGroup[key] = append(entriesByGroup[key], &fitterv1.LeaderboardEntry{
 			UserId:                  g.UserID,
 			UserName:                userNameByGoal[g.ID],
 			UserAvatarUrl:           avatarByGoal[g.ID],
@@ -289,11 +291,16 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 	}
 
 	order := sportGroupOrder()
-	keys := make([]string, 0, len(entriesByGroup))
+	keys := make([]leaderboardGroupKey, 0, len(entriesByGroup))
 	for k := range entriesByGroup {
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool { return order[keys[i]] < order[keys[j]] })
+	sort.Slice(keys, func(i, j int) bool {
+		if order[keys[i].sport] != order[keys[j].sport] {
+			return order[keys[i].sport] < order[keys[j].sport]
+		}
+		return kindOrder[keys[i].kind] < kindOrder[keys[j].kind]
+	})
 
 	groups := make([]*fitterv1.LeaderboardGroup, 0, len(keys))
 	for _, k := range keys {
@@ -316,10 +323,15 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 		for i, e := range entries {
 			e.Rank = int32(i + 1)
 		}
+		label := sportGroupLabel(k.sport)
+		if kl := kindLabel[k.kind]; kl != "" {
+			label += " · " + kl
+		}
 		groups = append(groups, &fitterv1.LeaderboardGroup{
-			SportGroup:      k,
-			SportGroupLabel: sportGroupLabel(k),
+			SportGroup:      k.sport,
+			SportGroupLabel: label,
 			Entries:         entries,
+			GoalKind:        k.kind,
 		})
 	}
 

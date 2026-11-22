@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"connectrpc.com/connect"
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -79,6 +82,31 @@ func customMetricToProto(m db.CustomMetric, sportRefs []string) *fitterv1.Custom
 	}
 }
 
+const (
+	maxSportKeyLen   = 64
+	maxSportLabelLen = 60
+)
+
+// validateSportKeyAndLabel returns the label trimmed. A key is matched verbatim against
+// activities' sport_type and shares a namespace with the group keys in custom-metric sport refs,
+// so it must be a clean token that can't shadow a group; a label is display text.
+func validateSportKeyAndLabel(key, label string) (string, error) {
+	label = strings.TrimSpace(label)
+	if label == "" || utf8.RuneCountInString(label) > maxSportLabelLen {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("label is required and at most %d characters", maxSportLabelLen))
+	}
+	if key == "" || utf8.RuneCountInString(key) > maxSportKeyLen {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("key is required and at most %d characters", maxSportKeyLen))
+	}
+	if strings.ContainsFunc(key, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) {
+		return "", connect.NewError(connect.CodeInvalidArgument, errors.New("key can't contain spaces or control characters"))
+	}
+	if sports.ValidGroup(key) {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("key %q is a built-in sport group", key))
+	}
+	return label, nil
+}
+
 func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Request[fitterv1.CreateCustomSportRequest]) (*connect.Response[fitterv1.CreateCustomSportResponse], error) {
 	if err := requireAdmin(ctx); err != nil {
 		return nil, err
@@ -89,9 +117,9 @@ func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Reque
 	}
 
 	key := req.Msg.GetKey()
-	label := req.Msg.GetLabel()
-	if key == "" || label == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("key and label are required"))
+	label, err := validateSportKeyAndLabel(key, req.Msg.GetLabel())
+	if err != nil {
+		return nil, err
 	}
 	if isKnownStravaSportType(key) {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("key %q collides with a real Strava sport_type", key))
@@ -158,6 +186,13 @@ func (s *AdminService) DeleteCustomSport(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("custom sport not found"))
 	} else if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	// No refs means "applies to every sport", so deleting a sport a metric is scoped to would
+	// silently widen that metric. Remove the metric (or its scope) first.
+	if n, err := qtx.CountMetricsScopedToSport(ctx, sp.Key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	} else if n > 0 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("%d custom metric(s) are scoped to this sport; delete them first", n))
 	}
 	if err := qtx.DeleteCustomSport(ctx, sp.ID); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)

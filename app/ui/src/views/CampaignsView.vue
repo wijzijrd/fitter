@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useAuthStore } from "../stores/auth";
+import { useSyncStore } from "../stores/sync";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
 import { useCatalogStore } from "../stores/catalog";
@@ -66,6 +67,8 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// New Strava activities arrived: show them.
+watch(() => useSyncStore().imported, load);
 
 // target is the campaign's group target, when it has one.
 const target = (c: Campaign) => (c.metric !== undefined && c.targetValue !== undefined ? { metric: c.metric, value: c.targetValue } : undefined);

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/user.proto.
  */
 export const file_fitter_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChRmaXR0ZXIvdjEvdXNlci5wcm90bxIJZml0dGVyLnYxIl4KDEZlZWRTZXR0aW5ncxIRCglzaG93X3BhY2UYASABKAgSEgoKc2hvd19wb3dlchgCIAEoCBITCgtzaG93X2VmZm9ydBgDIAEoCBISCgpzaG93X2xpZnRzGAQgASgIIoIBCgRVc2VyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKYXZhdGFyX3VybBgDIAEoCRIMCgRyb2xlGAQgASgJEg4KBnN0YXR1cxgFIAEoCRIuCg1mZWVkX3NldHRpbmdzGAYgASgLMhcuZml0dGVyLnYxLkZlZWRTZXR0aW5ncyJLChlVcGRhdGVGZWVkU2V0dGluZ3NSZXF1ZXN0Ei4KDWZlZWRfc2V0dGluZ3MYASABKAsyFy5maXR0ZXIudjEuRmVlZFNldHRpbmdzIjsKGlVwZGF0ZUZlZWRTZXR0aW5nc1Jlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlciIXChVHZXRDdXJyZW50VXNlclJlcXVlc3QiNwoWR2V0Q3VycmVudFVzZXJSZXNwb25zZRIdCgR1c2VyGAEgASgLMg8uZml0dGVyLnYxLlVzZXIyxwEKC1VzZXJTZXJ2aWNlElUKDkdldEN1cnJlbnRVc2VyEiAuZml0dGVyLnYxLkdldEN1cnJlbnRVc2VyUmVxdWVzdBohLmZpdHRlci52MS5HZXRDdXJyZW50VXNlclJlc3BvbnNlEmEKElVwZGF0ZUZlZWRTZXR0aW5ncxIkLmZpdHRlci52MS5VcGRhdGVGZWVkU2V0dGluZ3NSZXF1ZXN0GiUuZml0dGVyLnYxLlVwZGF0ZUZlZWRTZXR0aW5nc1Jlc3BvbnNlQo0BCg1jb20uZml0dGVyLnYxQglVc2VyUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM");
+  fileDesc("ChRmaXR0ZXIvdjEvdXNlci5wcm90bxIJZml0dGVyLnYxIl4KDEZlZWRTZXR0aW5ncxIRCglzaG93X3BhY2UYASABKAgSEgoKc2hvd19wb3dlchgCIAEoCBITCgtzaG93X2VmZm9ydBgDIAEoCBISCgpzaG93X2xpZnRzGAQgASgIIpoBCgRVc2VyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKYXZhdGFyX3VybBgDIAEoCRIMCgRyb2xlGAQgASgJEg4KBnN0YXR1cxgFIAEoCRIuCg1mZWVkX3NldHRpbmdzGAYgASgLMhcuZml0dGVyLnYxLkZlZWRTZXR0aW5ncxIWCg53aGF0c19uZXdfc2VlbhgHIAEoCSJLChlVcGRhdGVGZWVkU2V0dGluZ3NSZXF1ZXN0Ei4KDWZlZWRfc2V0dGluZ3MYASABKAsyFy5maXR0ZXIudjEuRmVlZFNldHRpbmdzIjsKGlVwZGF0ZUZlZWRTZXR0aW5nc1Jlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlciIqChdNYXJrV2hhdHNOZXdTZWVuUmVxdWVzdBIPCgdyZWxlYXNlGAEgASgJIjkKGE1hcmtXaGF0c05ld1NlZW5SZXNwb25zZRIdCgR1c2VyGAEgASgLMg8uZml0dGVyLnYxLlVzZXIiFwoVR2V0Q3VycmVudFVzZXJSZXF1ZXN0IjcKFkdldEN1cnJlbnRVc2VyUmVzcG9uc2USHQoEdXNlchgBIAEoCzIPLmZpdHRlci52MS5Vc2VyMqQCCgtVc2VyU2VydmljZRJVCg5HZXRDdXJyZW50VXNlchIgLmZpdHRlci52MS5HZXRDdXJyZW50VXNlclJlcXVlc3QaIS5maXR0ZXIudjEuR2V0Q3VycmVudFVzZXJSZXNwb25zZRJhChJVcGRhdGVGZWVkU2V0dGluZ3MSJC5maXR0ZXIudjEuVXBkYXRlRmVlZFNldHRpbmdzUmVxdWVzdBolLmZpdHRlci52MS5VcGRhdGVGZWVkU2V0dGluZ3NSZXNwb25zZRJbChBNYXJrV2hhdHNOZXdTZWVuEiIuZml0dGVyLnYxLk1hcmtXaGF0c05ld1NlZW5SZXF1ZXN0GiMuZml0dGVyLnYxLk1hcmtXaGF0c05ld1NlZW5SZXNwb25zZUKNAQoNY29tLmZpdHRlci52MUIJVXNlclByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z");
 
 /**
  * FeedSettings is what a member chooses to see under each activity in a campaign feed.
@@ -92,6 +92,13 @@ export type User = Message<"fitter.v1.User"> & {
    * @generated from field: fitter.v1.FeedSettings feed_settings = 6;
    */
   feedSettings?: FeedSettings | undefined;
+
+  /**
+   * release id of the last what's-new splash dismissed; "" = none yet
+   *
+   * @generated from field: string whats_new_seen = 7;
+   */
+  whatsNewSeen: string;
 };
 
 /**
@@ -138,6 +145,42 @@ export const UpdateFeedSettingsResponseSchema: GenMessage<UpdateFeedSettingsResp
   messageDesc(file_fitter_v1_user, 3);
 
 /**
+ * @generated from message fitter.v1.MarkWhatsNewSeenRequest
+ */
+export type MarkWhatsNewSeenRequest = Message<"fitter.v1.MarkWhatsNewSeenRequest"> & {
+  /**
+   * the UI's release id, 1 to 32 characters
+   *
+   * @generated from field: string release = 1;
+   */
+  release: string;
+};
+
+/**
+ * Describes the message fitter.v1.MarkWhatsNewSeenRequest.
+ * Use `create(MarkWhatsNewSeenRequestSchema)` to create a new message.
+ */
+export const MarkWhatsNewSeenRequestSchema: GenMessage<MarkWhatsNewSeenRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 4);
+
+/**
+ * @generated from message fitter.v1.MarkWhatsNewSeenResponse
+ */
+export type MarkWhatsNewSeenResponse = Message<"fitter.v1.MarkWhatsNewSeenResponse"> & {
+  /**
+   * @generated from field: fitter.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.MarkWhatsNewSeenResponse.
+ * Use `create(MarkWhatsNewSeenResponseSchema)` to create a new message.
+ */
+export const MarkWhatsNewSeenResponseSchema: GenMessage<MarkWhatsNewSeenResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 5);
+
+/**
  * @generated from message fitter.v1.GetCurrentUserRequest
  */
 export type GetCurrentUserRequest = Message<"fitter.v1.GetCurrentUserRequest"> & {
@@ -148,7 +191,7 @@ export type GetCurrentUserRequest = Message<"fitter.v1.GetCurrentUserRequest"> &
  * Use `create(GetCurrentUserRequestSchema)` to create a new message.
  */
 export const GetCurrentUserRequestSchema: GenMessage<GetCurrentUserRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 4);
+  messageDesc(file_fitter_v1_user, 6);
 
 /**
  * @generated from message fitter.v1.GetCurrentUserResponse
@@ -165,7 +208,7 @@ export type GetCurrentUserResponse = Message<"fitter.v1.GetCurrentUserResponse">
  * Use `create(GetCurrentUserResponseSchema)` to create a new message.
  */
 export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 5);
+  messageDesc(file_fitter_v1_user, 7);
 
 /**
  * @generated from service fitter.v1.UserService
@@ -186,6 +229,14 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof UpdateFeedSettingsRequestSchema;
     output: typeof UpdateFeedSettingsResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.MarkWhatsNewSeen
+   */
+  markWhatsNewSeen: {
+    methodKind: "unary";
+    input: typeof MarkWhatsNewSeenRequestSchema;
+    output: typeof MarkWhatsNewSeenResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_fitter_v1_user, 0);

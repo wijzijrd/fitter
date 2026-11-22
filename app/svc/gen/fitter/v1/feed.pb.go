@@ -559,13 +559,19 @@ func (x *LeaderboardEntry) GetClauseDefs() []*GoalClause {
 	return nil
 }
 
+// A group holds goals of one sport group AND one kind, because their progress ratios mean
+// different things: a total is a share of the whole target, a habit is weeks hit over weeks so
+// far, a single effort is how close one activity got. Ranking them together compares nothing.
 type LeaderboardGroup struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	SportGroup      string                 `protobuf:"bytes,1,opt,name=sport_group,json=sportGroup,proto3" json:"sport_group,omitempty"` // "" = goals with no sport filter ("all sports")
-	SportGroupLabel string                 `protobuf:"bytes,2,opt,name=sport_group_label,json=sportGroupLabel,proto3" json:"sport_group_label,omitempty"`
+	SportGroup      string                 `protobuf:"bytes,1,opt,name=sport_group,json=sportGroup,proto3" json:"sport_group,omitempty"`                  // "" = goals with no sport filter ("all sports")
+	SportGroupLabel string                 `protobuf:"bytes,2,opt,name=sport_group_label,json=sportGroupLabel,proto3" json:"sport_group_label,omitempty"` // includes the kind when it isn't "total", e.g. "Run · Habits"
 	Entries         []*LeaderboardEntry    `protobuf:"bytes,3,rep,name=entries,proto3" json:"entries,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// "total" (add up over the period), "performance" (one activity must do it) or "habit"
+	// (repeats each day, week or month). Empty from a server that predates kinds.
+	GoalKind      string `protobuf:"bytes,4,opt,name=goal_kind,json=goalKind,proto3" json:"goal_kind,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LeaderboardGroup) Reset() {
@@ -617,6 +623,13 @@ func (x *LeaderboardGroup) GetEntries() []*LeaderboardEntry {
 		return x.Entries
 	}
 	return nil
+}
+
+func (x *LeaderboardGroup) GetGoalKind() string {
+	if x != nil {
+		return x.GoalKind
+	}
+	return ""
 }
 
 // One person's standing across all their goals in the campaign.
@@ -1326,12 +1339,13 @@ const file_fitter_v1_feed_proto_rawDesc = "" +
 	"\x19considered_activity_count\x18\n" +
 	" \x01(\x05R\x17consideredActivityCount\x126\n" +
 	"\vclause_defs\x18\v \x03(\v2\x15.fitter.v1.GoalClauseR\n" +
-	"clauseDefs\"\x96\x01\n" +
+	"clauseDefs\"\xb3\x01\n" +
 	"\x10LeaderboardGroup\x12\x1f\n" +
 	"\vsport_group\x18\x01 \x01(\tR\n" +
 	"sportGroup\x12*\n" +
 	"\x11sport_group_label\x18\x02 \x01(\tR\x0fsportGroupLabel\x125\n" +
-	"\aentries\x18\x03 \x03(\v2\x1b.fitter.v1.LeaderboardEntryR\aentries\"\x96\x02\n" +
+	"\aentries\x18\x03 \x03(\v2\x1b.fitter.v1.LeaderboardEntryR\aentries\x12\x1b\n" +
+	"\tgoal_kind\x18\x04 \x01(\tR\bgoalKind\"\x96\x02\n" +
 	"\x0ePersonStanding\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tuser_name\x18\x02 \x01(\tR\buserName\x12&\n" +

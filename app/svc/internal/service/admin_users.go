@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -113,7 +114,7 @@ func (s *AdminService) ApproveUser(ctx context.Context, req *connect.Request[fit
 }
 
 func (s *AdminService) BanUser(ctx context.Context, req *connect.Request[fitterv1.BanUserRequest]) (*connect.Response[fitterv1.BanUserResponse], error) {
-	reason := req.Msg.GetReason()
+	reason := strings.TrimSpace(req.Msg.GetReason())
 	if reason == "" || utf8.RuneCountInString(reason) > maxBanReasonLen {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required and must be at most 500 characters"))
 	}

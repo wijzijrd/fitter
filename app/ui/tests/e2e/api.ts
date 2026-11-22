@@ -9,6 +9,18 @@ function fixtures(unseenSplash: boolean) {
     { id: "s1", key: "powerlifting", label: "Powerlifting" },
     { id: "s2", key: "climbing", label: "Climbing" },
   ];
+  let users: any[] = [
+    { id: "u2", name: "Sam Okafor", role: "member", status: "pending", createdAt: "2026-11-18T08:00:00Z" },
+    { id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active" },
+    { id: "u3", name: "Jo", role: "member", status: "active" },
+    { id: "u4", name: "Priya", role: "admin", status: "active" },
+  ];
+  const setUser = (id: string, patch: object) => (users = users.map((u) => (u.id === id ? { ...u, ...patch } : u)));
+  let customMetrics: any[] = [{ id: "m1", key: "reps", label: "Reps", unit: "reps", aggregation: "sum" }];
+  let adminActions: any[] = [
+    { id: "a1", actorName: "Alexandria Vandenberg-Smith", action: "approve", detail: "Jo", createdAt: "2026-11-19T08:00:00Z" },
+  ];
+  let seq = 100;
   let activities: any[] = [
     {
       id: "-1", sportType: "WeightTraining", name: "Push day", startDate: "2026-11-20T08:00:00Z", movingTimeS: "3600",
@@ -97,20 +109,32 @@ function fixtures(unseenSplash: boolean) {
       activities = activities.filter((a) => a.id !== b.id);
       return {};
     },
-    "AdminService/ListUsers": () => ({
-      users: [
-        { id: "u2", name: "Sam Okafor", role: "member", status: "pending", createdAt: "2026-11-18T08:00:00Z" },
-        { id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active" },
-        { id: "u3", name: "Jo", role: "member", status: "active" },
-      ],
-    }),
+    "AdminService/ListUsers": () => ({ users }),
+    "AdminService/ApproveUser": (b: any) => (setUser(b.id, { status: "active" }), {}),
+    "AdminService/BanUser": (b: any) => (setUser(b.id, { status: "banned", banReason: b.reason, bannedAt: "2026-11-22T08:00:00Z" }), {}),
+    "AdminService/UnbanUser": (b: any) => (setUser(b.id, { status: "active", banReason: "" }), {}),
+    "AdminService/SetUserRole": (b: any) => (setUser(b.id, { role: b.role }), {}),
     "AdminService/ListCustomSports": () => ({ sports }),
-    "AdminService/ListCustomMetrics": () => ({ metrics: [{ id: "m1", key: "reps", label: "Reps", unit: "reps", aggregation: "sum" }] }),
+    "AdminService/CreateCustomSport": (b: any) => {
+      const sport = { id: `s${++seq}`, key: b.key, label: b.label };
+      sports = [...sports, sport];
+      return { sport };
+    },
     "AdminService/DeleteCustomSport": (b: { id: string }) => {
       sports = sports.filter((s) => s.id !== b.id);
       return {};
     },
-    "AdminService/ListAdminActions": () => ({ actions: [] }),
+    "AdminService/ListCustomMetrics": () => ({ metrics: customMetrics }),
+    "AdminService/CreateCustomMetric": (b: any) => {
+      const metric = { id: `m${++seq}`, ...b };
+      customMetrics = [...customMetrics, metric];
+      return { metric };
+    },
+    "AdminService/DeleteCustomMetric": (b: { id: string }) => {
+      customMetrics = customMetrics.filter((m) => m.id !== b.id);
+      return {};
+    },
+    "AdminService/ListAdminActions": () => ({ actions: adminActions }),
     ...campaignDetail(),
   };
   return handlers;

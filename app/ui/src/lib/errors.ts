@@ -9,6 +9,8 @@ export function errorMessage(err: unknown, fallback: string): string {
       return "Some of those details aren't valid. Check them and try again.";
     case Code.NotFound:
       return "That doesn't exist any more. It may have been deleted.";
+    case Code.FailedPrecondition:
+      return "That can't be done right now. It may already be in that state, or something still depends on it.";
     case Code.PermissionDenied:
       return "You don't have access to that.";
     case Code.Unavailable:

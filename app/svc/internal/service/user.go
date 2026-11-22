@@ -34,6 +34,7 @@ func currentUserToProto(u db.User) *fitterv1.User {
 		Role:         u.Role,
 		Status:       u.Status,
 		WhatsNewSeen: u.WhatsNewSeen,
+		Email:        u.Email,
 		FeedSettings: &fitterv1.FeedSettings{
 			ShowPace: u.FeedShowPace, ShowPower: u.FeedShowPower, ShowEffort: u.FeedShowEffort, ShowLifts: u.FeedShowLifts,
 		},

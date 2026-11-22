@@ -449,7 +449,7 @@ onMounted(() => {
                     </template>
                   </ol>
                 </section>
-                <p class="feed-foot"><router-link to="/settings">Choose which details show</router-link></p>
+                <p class="feed-foot"><router-link to="/settings/permissions">Choose which details show</router-link></p>
               </template>
             </template>
 

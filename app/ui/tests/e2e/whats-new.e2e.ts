@@ -32,8 +32,8 @@ test.describe("first visit after a release", () => {
 
   test("a release older than a week is no longer offered on its own", async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-12-01T09:00:00Z"));
-    await page.goto("/settings");
-    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+    await page.goto("/settings/permissions");
+    await expect(page.getByRole("heading", { name: "App permissions" })).toBeVisible();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.getByRole("button", { name: "Show what's new" }).click();
     await expect(page.getByRole("dialog", { name: "What's new" })).toBeVisible();
@@ -56,8 +56,8 @@ test.describe("first visit after a release", () => {
 });
 
 test("a seen release stays quiet, and Settings reopens it", async ({ page }) => {
-  await page.goto("/settings");
-  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await page.goto("/settings/permissions");
+  await expect(page.getByRole("heading", { name: "App permissions" })).toBeVisible();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const open = page.getByRole("button", { name: "Show what's new" });
   await open.click();

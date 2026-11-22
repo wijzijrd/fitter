@@ -27,6 +27,11 @@ export const useAuthStore = defineStore("auth", () => {
     if (resp.user) user.value = resp.user;
   }
 
+  async function verifyEmail(code: string): Promise<void> {
+    const resp = await userClient.verifyEmail({ code });
+    if (resp.user) user.value = resp.user;
+  }
+
   async function fetchCurrentUser(): Promise<void> {
     const resp = await userClient.getCurrentUser({});
     user.value = resp.user ?? null;
@@ -43,5 +48,5 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
   }
 
-  return { user, feedSettings, saveFeedSettings, markWhatsNewSeen, isAdmin, isPending, isAuthenticated, fetchCurrentUser, completeLogin, logout };
+  return { user, feedSettings, saveFeedSettings, markWhatsNewSeen, verifyEmail, isAdmin, isPending, isAuthenticated, fetchCurrentUser, completeLogin, logout };
 });

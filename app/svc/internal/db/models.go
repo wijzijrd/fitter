@@ -118,6 +118,15 @@ type CustomSport struct {
 	CreatedAt int64  `json:"created_at"`
 }
 
+type EmailVerification struct {
+	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
+	CodeHash  string `json:"code_hash"`
+	Attempts  int32  `json:"attempts"`
+	SentAt    int64  `json:"sent_at"`
+	ExpiresAt int64  `json:"expires_at"`
+}
+
 type Exercise struct {
 	ID         string         `json:"id"`
 	Name       string         `json:"name"`
@@ -174,4 +183,5 @@ type User struct {
 	FeedShowLifts   bool           `json:"feed_show_lifts"`
 	WhatsNewSeen    string         `json:"whats_new_seen"`
 	LastSyncedAt    int64          `json:"last_synced_at"`
+	Email           string         `json:"email"`
 }

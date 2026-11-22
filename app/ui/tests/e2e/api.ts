@@ -31,7 +31,9 @@ function fixtures(unseenSplash: boolean) {
   ];
   let feedSettings: Record<string, boolean> = { showPace: true, showPower: true, showEffort: true, showLifts: true };
   let whatsNewSeen = unseenSplash ? "" : RELEASE;
-  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings, whatsNewSeen });
+  let email = "";
+  let pendingEmail = "";
+  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings, whatsNewSeen, email });
   const MEASURE = (m: string) => `EXERCISE_MEASURE_${m}`;
   const MUSCLE = (m: string) => `MUSCLE_${m}`;
   let exercises: any[] = [
@@ -56,6 +58,17 @@ function fixtures(unseenSplash: boolean) {
       whatsNewSeen = b.release;
       return { user: me() };
     },
+    "UserService/SendEmailCode": (b: any) => {
+      pendingEmail = b.email;
+      return {};
+    },
+    // The mock's code is always 123456.
+    "UserService/VerifyEmail": (b: any) => {
+      if (b.code !== "123456") throw { code: "invalid_argument", message: "the code doesn't match" };
+      email = pendingEmail;
+      return { user: me() };
+    },
+    "UserService/SubmitFeedback": () => ({}),
     "CatalogService/ListSports": () => ({
       groups: [
         { group: "run", label: "Running", sportTypes: ["Run"] },
@@ -218,7 +231,13 @@ async function mockApi(page: Page, unseenSplash: boolean): Promise<void> {
       await route.fulfill({ status: 501, contentType: "application/json", body: JSON.stringify({ code: "unimplemented", message: `no e2e mock for ${method}` }) });
       return;
     }
-    const body = handler(JSON.parse(route.request().postData() || "{}"));
+    let body: unknown;
+    try {
+      body = handler(JSON.parse(route.request().postData() || "{}"));
+    } catch (err) {
+      await route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify(err) });
+      return;
+    }
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
   });
 }

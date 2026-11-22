@@ -44,7 +44,8 @@ test("Settings turns details off, saves each choice, and the feed follows", asyn
   await expect(page.getByRole("tab", { name: "Feed" })).toBeVisible();
   await page.locator(".menu-btn").click();
   await page.getByRole("link", { name: /^Settings, signed in as/ }).click();
-  await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+  await page.getByRole("link", { name: /App permissions/ }).click();
+  await expect(page.getByRole("heading", { name: "App permissions" })).toBeVisible();
   for (const box of await page.getByRole("checkbox").all()) {
     await expect(box).toBeChecked();
     expect((await box.locator("xpath=ancestor::label").boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
@@ -61,5 +62,5 @@ test("Settings turns details off, saves each choice, and the feed follows", asyn
   await expect(page.locator(".activity", { hasText: "Morning run" })).toContainText("Effort 42");
   await expect(page.locator(".lift-line")).toHaveCount(0);
   await page.getByRole("link", { name: "Choose which details show" }).click();
-  await expect(page).toHaveURL(/\/settings$/);
+  await expect(page).toHaveURL(/\/settings\/permissions$/);
 });

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ import (
 	"github.com/fitter/svc/internal/db"
 	"github.com/fitter/svc/internal/handler"
 	"github.com/fitter/svc/internal/httpmw"
+	"github.com/fitter/svc/internal/mail"
 	"github.com/fitter/svc/internal/service"
 	"github.com/fitter/svc/internal/strava"
 	"github.com/pressly/goose/v3"
@@ -67,6 +69,10 @@ func main() {
 		Strava:    stravaClient,
 		JWTSecret: cfg.jwtSecret,
 		JWTTTL:    cfg.jwtTTL,
+
+		Mail:       cfg.mail,
+		FeedbackTo: cfg.feedbackTo,
+		AppEnv:     cfg.appEnv,
 	}
 	handlerDeps := &handler.Deps{
 		Queries:               queries,
@@ -171,6 +177,9 @@ type config struct {
 	corsOrigin               string
 	originSharedSecret       string
 	adminStravaAthleteIDs    []int64
+	appEnv                   string
+	mail                     mail.Sender
+	feedbackTo               string
 }
 
 func loadConfig() config {
@@ -183,6 +192,27 @@ func loadConfig() config {
 	if os.Getenv("APP_ENV") != "" && originSharedSecret == "" {
 		slog.Error("ORIGIN_SHARED_SECRET is required when APP_ENV is set")
 		os.Exit(1)
+	}
+
+	// Deployed envs send through the infra repo's SES mailer (its SSM parameters arrive as
+	// SES_*); the IAM policy only allows the env's identity domain and fitter-<env> config set.
+	// Locally mail is only logged, so no credentials are needed.
+	appEnv := os.Getenv("APP_ENV")
+	sender, feedbackTo := mail.Sender(mail.Log), os.Getenv("FEEDBACK_TO")
+	if appEnv != "" {
+		site, err := url.Parse(frontendURL)
+		if err != nil || site.Hostname() == "" {
+			slog.Error("FRONTEND_URL has no host", "value", frontendURL)
+			os.Exit(1)
+		}
+		sender = mail.SMTP(
+			envOr("SES_SMTP_HOST", "email-smtp.eu-west-1.amazonaws.com"),
+			mustEnv("SES_ACCESS_KEY_ID"),
+			mustEnv("SES_SMTP_PASSWORD"),
+			envOr("MAIL_FROM", "Fitter <no-reply@"+site.Hostname()+">"),
+			"fitter-"+appEnv,
+		)
+		feedbackTo = mustEnv("FEEDBACK_TO")
 	}
 
 	return config{
@@ -199,6 +229,9 @@ func loadConfig() config {
 		corsOrigin:               envOr("CORS_ORIGIN", frontendURL),
 		originSharedSecret:       originSharedSecret,
 		adminStravaAthleteIDs:    parseInt64CSV("ADMIN_STRAVA_ATHLETE_IDS", os.Getenv("ADMIN_STRAVA_ATHLETE_IDS")),
+		appEnv:                   appEnv,
+		mail:                     sender,
+		feedbackTo:               feedbackTo,
 	}
 }
 

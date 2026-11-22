@@ -81,3 +81,25 @@ RETURNING *;
 -- Takes the sync slot unless one was taken since $3; no row back means "too soon".
 UPDATE users SET last_synced_at = $2 WHERE id = $1 AND last_synced_at <= $3
 RETURNING *;
+
+-- name: ClaimEmailVerification :one
+-- Stores a fresh code unless the last one was sent after sent_before; no row back means "too soon".
+INSERT INTO email_verifications (user_id, email, code_hash, attempts, sent_at, expires_at)
+VALUES ($1, $2, $3, 0, $4, $5)
+ON CONFLICT (user_id) DO UPDATE
+SET email = EXCLUDED.email, code_hash = EXCLUDED.code_hash, attempts = 0,
+    sent_at = EXCLUDED.sent_at, expires_at = EXCLUDED.expires_at
+WHERE email_verifications.sent_at <= sqlc.arg(sent_before)
+RETURNING *;
+
+-- name: CountEmailVerificationAttempt :one
+-- Uses up one try and returns the row as it was checked against.
+UPDATE email_verifications SET attempts = attempts + 1 WHERE user_id = $1
+RETURNING *;
+
+-- name: DeleteEmailVerification :exec
+DELETE FROM email_verifications WHERE user_id = $1;
+
+-- name: SetUserEmail :one
+UPDATE users SET email = $2 WHERE id = $1
+RETURNING *;

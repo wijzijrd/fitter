@@ -97,6 +97,9 @@ export function gap(group: LeaderboardGroup, e: LeaderboardEntry, fmt: Fmt): Gap
   return e.satisfied ? { kind: "done" } : { kind: "finish", amount: amount(e, 1 - e.progressRatio, fmt) };
 }
 
+// The bib-group key for the pooled "Together" bib; real group keys are sport groups ("" included).
+export const TOGETHER = "__together__";
+
 // pickGroup keeps the current bib group while it still exists, else opens on
 // your best standing's group, else the first one. "" is a real key (goals with
 // no sport filter), so only null means "nothing chosen yet".

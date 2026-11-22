@@ -8,7 +8,7 @@ import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
 import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { activityMetricValue } from "../lib/labels";
-import { lead, myEntries, primary, share, unitClause } from "../lib/standings";
+import { TOGETHER, lead, myEntries, primary, share, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
 import { plural } from "../lib/schedule";
 import BibStack from "../components/BibStack.vue";
@@ -46,12 +46,19 @@ const stack = ref<InstanceType<typeof BibStack> | null>(null);
 
 // The bib stack can show one bib per goal (by sport group) or one per person.
 const windows = [
-  { id: LeaderboardWindow.WEEK, label: "This week" },
-  { id: LeaderboardWindow.MONTH, label: "This month" },
+  { id: LeaderboardWindow.WEEK, label: "Week" },
+  { id: LeaderboardWindow.MONTH, label: "Month" },
   { id: LeaderboardWindow.CAMPAIGN, label: "Campaign" },
 ];
 const windowError = ref("");
-async function pickWindow(w: LeaderboardWindow): Promise<void> {
+async function pickWindow(ev: Event): Promise<void> {
+  const el = ev.target as HTMLSelectElement;
+  // One board at a time: a second pick mid-load could land out of order, so it snaps back.
+  if (feed.value.windowLoading) {
+    el.value = String(feed.value.window);
+    return;
+  }
+  const w = Number(el.value) as LeaderboardWindow;
   windowError.value = "";
   try {
     await feedStore.setWindow(props.id, w);
@@ -61,6 +68,12 @@ async function pickWindow(w: LeaderboardWindow): Promise<void> {
 }
 
 const bibMode = ref<"goal" | "person">("goal");
+// The sport group on the bib (BibStack picks the default); the picker lives in the controls row.
+const bibGroup = ref<string | null>(null);
+const groupOptions = computed(() => [
+  ...(pooled.value ? [{ key: TOGETHER, label: "Together" }] : []),
+  ...bibGroups.value.map((g) => ({ key: g.sportGroup, label: g.sportGroupLabel })),
+]);
 const bibGroups = computed<LeaderboardGroup[]>(() => {
   if (bibMode.value === "goal" || !feed.value.people.length) return feed.value.leaderboardGroups;
   const entries = feed.value.people.map((p) =>
@@ -282,29 +295,33 @@ onMounted(() => {
           </div>
 
           <section ref="stackEl" class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Bib stack">
-            <div v-if="campaign.joined && feed.loaded" class="bib-mode" role="group" aria-label="Standings period">
-              <button
-                v-for="w in windows"
-                :key="w.id"
-                type="button"
-                class="pill"
-                :aria-pressed="feed.window === w.id"
-                v-busy="feed.windowLoading"
-                @click="pickWindow(w.id)"
-              >
-                {{ w.label }}
-              </button>
+            <!-- One line of pickers: which group, which period, which view. -->
+            <div v-if="campaign.joined && feed.loaded" class="bib-controls" :aria-busy="feed.windowLoading">
+              <template v-if="groupOptions.length > 1">
+                <label for="bib-group" class="visually-hidden">Group</label>
+                <select id="bib-group" v-model="bibGroup" class="input">
+                  <option v-for="o in groupOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
+                </select>
+              </template>
+              <label for="bib-window" class="visually-hidden">Period</label>
+              <select id="bib-window" class="input" :value="feed.window" @change="pickWindow">
+                <option v-for="w in windows" :key="w.id" :value="w.id">{{ w.label }}</option>
+              </select>
+              <template v-if="feed.people.length > 1">
+                <label for="bib-view" class="visually-hidden">View</label>
+                <select id="bib-view" v-model="bibMode" class="input">
+                  <option value="goal">By goal</option>
+                  <option value="person">By person</option>
+                </select>
+              </template>
             </div>
             <p v-if="windowError" class="field-error" role="alert">{{ windowError }}</p>
             <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
             <template v-else>
-              <div v-if="feed.people.length > 1" class="bib-mode" role="group" aria-label="Bib stack view">
-                <button type="button" class="pill" :aria-pressed="bibMode === 'goal'" @click="bibMode = 'goal'">By goal</button>
-                <button type="button" class="pill" :aria-pressed="bibMode === 'person'" @click="bibMode = 'person'">By person</button>
-              </div>
             <BibStack
               :key="bibMode"
               ref="stack"
+              v-model:group="bibGroup"
               :groups="bibGroups"
               :pooled="pooled"
               :contributions="feed.pooledContributions"
@@ -614,13 +631,28 @@ button.row {
   color: var(--ink-muted);
   font-size: 0.8125rem;
 }
-.bib-mode {
+/* Compact selects sharing one row; each grows to its label, and the row wraps only if it must. */
+.bib-controls {
   display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
 }
-.bib-mode .pill[aria-pressed="true"] {
-  background: var(--cool-blue);
+.bib-controls .input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: var(--space-1) 1.9rem var(--space-1) var(--space-3);
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+@media (pointer: coarse) {
+  .bib-controls .input {
+    min-height: 2.75rem;
+  }
 }
 .goal-rows {
   list-style: none;

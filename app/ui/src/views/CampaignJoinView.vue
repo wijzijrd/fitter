@@ -165,21 +165,6 @@ async function save(withGoal: boolean): Promise<void> {
   font-family: var(--font-body);
   color: var(--ink);
 }
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  color: var(--ink-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.back:hover {
-  color: var(--ink);
-}
-.back:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-}
 h1 {
   margin: var(--space-4) 0 0;
   font: 400 clamp(1.625rem, 6.5vw, 2.5rem) / 1.05 var(--font-display);

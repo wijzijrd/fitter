@@ -132,6 +132,36 @@ h2[tabindex="-1"]:focus {
   }
 }
 
+/* Back link above create, join and campaign detail: one rule so all three share size and hit area. */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 2.5rem;
+  color: var(--ink-muted);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .back:hover {
+    color: var(--ink);
+  }
+}
+
+/* Touch: text links and underline tabs reach 44px too (tabs are 43px by their padding alone). */
+@media (pointer: coarse) {
+  .back,
+  .navbar .wordmark {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  [role="tab"] {
+    min-height: 2.75rem;
+  }
+}
+
 /* Race Bib form controls. */
 .rb-field {
   display: flex;

@@ -189,7 +189,7 @@ const sorted = computed(() =>
       </div>
       <p v-else-if="store.loading && !store.allGoals.length" class="quiet" aria-live="polite">Loading goals…</p>
 
-      <CampaignBib v-else-if="!store.allGoals.length && !editing" :band="['No. —', 'Private']">
+      <CampaignBib v-else-if="!store.allGoals.length && !editing" class="empty" :band="['No. —', 'Private']">
         <div class="unclaimed">
           <b>No goals yet</b>
           <small>Set a private target, like 200 km of riding this month. Your Strava activities count toward it.</small>
@@ -327,6 +327,11 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+/* A bib, not a banner: the empty state keeps a goal bib's proportions on wide screens. */
+.empty {
+  max-width: 560px;
 }
 .dates {
   display: grid;

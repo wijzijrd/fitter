@@ -36,3 +36,19 @@ test.describe("phone", () => {
     expect((await focused(page)).text).toContain("Open menu");
   });
 });
+
+test.describe("phone, touch targets", () => {
+  test.use({ viewport: { width: 320, height: 720 }, hasTouch: true, isMobile: true });
+
+  for (const [route, selector] of [
+    ["/campaigns/new", ".back, .navbar .wordmark"],
+    ["/campaigns/c1", ".back, .navbar .wordmark, [role=tab]"],
+  ] as const) {
+    test(`back link, wordmark and tabs are 44px on ${route}`, async ({ page }) => {
+      await page.goto(route);
+      await expect(page.locator(".back")).toBeVisible();
+      const sizes = await page.locator(selector).evaluateAll((els) => els.map((e) => { const b = e.getBoundingClientRect(); return [e.textContent?.trim(), Math.round(b.width), Math.round(b.height)]; }));
+      for (const [, w, h] of sizes) expect.soft(Math.min(w as number, h as number), JSON.stringify(sizes)).toBeGreaterThanOrEqual(44);
+    });
+  }
+});

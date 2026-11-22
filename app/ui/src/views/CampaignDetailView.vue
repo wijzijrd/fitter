@@ -470,19 +470,6 @@ onMounted(() => {
   color: var(--ink);
 }
 
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 2.5rem;
-  color: var(--ink-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.back:hover {
-  color: var(--ink);
-}
-
 .cd-head {
   margin: var(--space-4) 0 var(--space-5);
 }
@@ -516,6 +503,7 @@ h1 {
   margin-bottom: var(--space-5);
 }
 .cd-tabs button {
+  min-width: 2.75rem;
   border: 0;
   background: none;
   padding: var(--space-3) 0 var(--row);
@@ -777,7 +765,6 @@ svg {
   stroke-linejoin: round;
 }
 
-.back:focus-visible,
 .cd-tabs button:focus-visible,
 .row:focus-visible {
   outline: 3px solid var(--ink);

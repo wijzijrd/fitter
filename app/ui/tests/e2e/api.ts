@@ -71,7 +71,9 @@ function campaignDetail() {
     "CampaignService/GetCampaign": () => ({
       campaign: { id: "c1", name: "November Base", startDate: "2026-11-17T00:00:00Z", endDate: "2026-12-15T23:59:59Z", joined: true, memberCount: 6, goalCount: 6 },
     }),
-    "CampaignService/ListCampaigns": () => ({ campaigns: [] }),
+    "CampaignService/ListCampaigns": () => ({
+      campaigns: [{ id: "c1", name: "November Base", startDate: "2026-11-17T00:00:00Z", endDate: "2026-12-15T23:59:59Z", joined: true, memberCount: 6, goalCount: 6 }],
+    }),
     "GoalService/ListGoals": () => ({ goals: [] }),
     "FeedService/GetCampaignFeed": () => ({ activities: [] }),
     "FeedService/GetCampaignLeaderboard": (b: { window?: string }) => {

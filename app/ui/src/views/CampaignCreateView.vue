@@ -323,7 +323,7 @@ legend {
 .notice {
   margin: 0 0 var(--space-5);
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;
@@ -337,7 +337,7 @@ legend {
   gap: var(--space-4);
   margin: 0 calc(var(--space-5) * -1);
   padding: var(--space-4) var(--space-5) calc(var(--space-4) + env(safe-area-inset-bottom));
-  border-top: 2px solid var(--ink);
+  border-top: 2px solid var(--line);
   background: var(--paper);
 }
 .bar .pill {

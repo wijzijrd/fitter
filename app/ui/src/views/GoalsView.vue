@@ -321,7 +321,7 @@ h2 {
 .editor {
   max-width: 560px;
   padding-bottom: var(--space-7);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--line);
 }
 .presets {
   display: flex;
@@ -403,7 +403,7 @@ h2 {
   gap: var(--space-4);
   margin: 0 0 var(--space-5);
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;

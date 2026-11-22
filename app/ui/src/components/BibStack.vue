@@ -372,7 +372,7 @@ function tap(to: "ahead" | "behind"): void {
   position: absolute;
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
   background: var(--paper);
@@ -472,7 +472,7 @@ button.peek {
   min-height: 176px;
   z-index: 1;
   /* The one lift in the system: only the bib in focus sits on top of the stack. */
-  box-shadow: 0 6px 0 var(--ink);
+  box-shadow: 0 6px 0 var(--line);
 }
 
 .bib-main {
@@ -509,7 +509,7 @@ button.peek {
   gap: var(--space-3);
   width: 100%;
   border: 0;
-  border-top: 2px dashed var(--ink);
+  border-top: 2px dashed var(--line);
   background: var(--cool-blue);
   color: var(--ink);
   padding: var(--space-3) var(--bib-inset);

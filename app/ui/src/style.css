@@ -9,6 +9,8 @@
   --cool-blue-deep: #c3e6ff;
   /* Lighter, not darker: Black Cherry text stays above 4.5:1 on hover. */
   --tangerine-hover: #ff7a59;
+  /* Outlines and rules: Black Cherry softened to ~55% (3.6:1 on Paper, so input edges still clear 3:1). Text, focus rings and chevrons stay full Black Cherry. */
+  --line: #908389;
   --hairline: #e9e2e6;
   --font-display: "Bungee", Impact, sans-serif;
   --font-body: "Hanken Grotesk Variable", system-ui, sans-serif;
@@ -77,7 +79,7 @@ h2[tabindex="-1"]:focus {
   align-items: center;
   gap: var(--space-2);
   min-height: 2.5rem;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink);
@@ -118,7 +120,7 @@ h2[tabindex="-1"]:focus {
 }
 .pill--primary:disabled,
 .pill--primary[aria-disabled="true"] {
-  border-color: var(--ink);
+  border-color: var(--line);
   color: var(--ink);
   opacity: 0.6;
   cursor: progress;
@@ -189,7 +191,7 @@ h2[tabindex="-1"]:focus {
 .input {
   width: 100%;
   min-height: 2.75rem;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 6px;
   background: var(--paper);
   color: var(--ink);
@@ -212,8 +214,9 @@ h2[tabindex="-1"]:focus {
   -webkit-appearance: none;
   margin: 0;
 }
-/* 2px border plus a 1px inset reads as a heavier 3px rule without shifting layout. */
+/* Invalid goes back to full Black Cherry, plus a 1px inset so it reads as a heavier 3px rule without shifting layout. */
 .input[aria-invalid="true"] {
+  border-color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--ink);
 }
 
@@ -230,7 +233,7 @@ select.input {
   display: flex;
   align-items: flex-start;
   gap: var(--row);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   padding: var(--row) var(--bib-inset);
   color: var(--ink);
@@ -295,7 +298,7 @@ select.input {
   gap: var(--space-5);
   padding: var(--space-4) var(--space-5);
   background: var(--paper);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--line);
   color: var(--ink);
   font-family: var(--font-body);
 }
@@ -335,7 +338,7 @@ select.input {
 }
 
 .navbar .logout {
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink);
@@ -359,7 +362,7 @@ select.input {
   width: 2.75rem;
   height: 2.75rem;
   margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) calc(var(--space-2) * -1) auto;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink);
@@ -412,7 +415,7 @@ select.input {
     gap: 0;
     padding: 0 var(--space-5) var(--space-4);
     background: var(--paper);
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 2px solid var(--line);
   }
   .navbar.is-open nav {
     display: flex;

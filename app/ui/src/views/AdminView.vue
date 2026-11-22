@@ -363,7 +363,7 @@ h2 {
 }
 .notice {
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;
@@ -477,7 +477,7 @@ td {
   vertical-align: top;
 }
 th {
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--line);
 }
 .mono {
   font-family: ui-monospace, monospace;

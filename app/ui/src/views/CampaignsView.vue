@@ -316,7 +316,7 @@ h1 {
 }
 
 .sheet {
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -348,7 +348,7 @@ h1 {
 }
 .cols {
   padding-block: var(--space-3) var(--space-2);
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--line);
   color: var(--ink-muted);
   font: 400 0.75rem/1.2 var(--font-display);
   text-transform: uppercase;
@@ -476,7 +476,7 @@ h1 {
   margin: 0;
   color: var(--ink);
   text-wrap: pretty;
-  border-top: 2px dashed var(--ink);
+  border-top: 2px dashed var(--line);
   background: var(--cool-blue);
   padding: var(--space-3) var(--space-4);
   font-weight: 700;
@@ -546,7 +546,7 @@ a.tear:focus-visible {
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
 }

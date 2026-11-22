@@ -7,6 +7,7 @@ colors:
   paper: "#ffffff"
   black-cherry: "#351e28"
   muted-ink: "#5a4a52"
+  line: "#908389"
   hairline: "#e9e2e6"
   tangerine-hover: "#ff7a59"
   cool-blue-soft: "#eef8ff"
@@ -151,15 +152,15 @@ components:
 
 Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next ("8.2 km to catch Sam"). Standing reads in seconds, on a phone after a workout or on a desktop.
 
-Energy comes from type scale, bold flat colour and 2px Black Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.
+Energy comes from type scale, bold flat colour and 2px Soft Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.
 
 The Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, campaign create and join, goals, and login run on it; goals are flat bibs in a grid, and every goal form (join, "Add a goal", create's last step, the goals editor) is the same Goal Builder. Login and the auth callback share a bare shell (navbar-sized Bungee wordmark, one column (400px, 480px from 600px, 520px from 900px) that centres vertically at every size, lifted to the optical centre, "Powered by Strava") around a flat "Unclaimed" bib, over the one decorative ground in the system: an inline SVG pattern of interlocked dumbbells in flat Hairline grey, turned 45° into a full chain-link lattice. Running shoes (SVG Repo "sports-shoes-2", inlined), drawn bicycles and drawn kettlebells fill the large diamond gaps only, each type in its own vertical column and always upright (a three-column repeat on a 444px tile); the small gaps between dumbbell ends stay empty. It is aria-hidden, never Tangerine or Cool Blue. Its band is Cool Blue here, so Tangerine never competes with the official Connect with Strava button in its body; the title is the page's largest type, and the tear-off tab states what Fitter reads and who sees it. Login errors are Cool Blue notices; callback errors sit in the bib.
 
 **Key Characteristics:**
-- White ground, Black Cherry ink and outlines, Tangerine and Cool Blue as flat pops.
+- White ground, Black Cherry ink, Soft Cherry outlines, Tangerine and Cool Blue as flat pops.
 - Bib anatomy: band, monumental numeral, dashed tear-off tab; the start-list sheet reuses band and tear-off.
 - Bungee capitals for numerals, titles and labels; Hanken Grotesk for names and reading.
-- Flat surfaces defined by 2px outlines; one hard offset under the bib in focus.
+- Flat surfaces defined by 2px Soft Cherry outlines; one hard offset under the bib in focus.
 - Tabular figures everywhere a number appears.
 
 ## Colors
@@ -177,7 +178,8 @@ A white ground with one deep warm-brown ink and two saturated pops, each with on
 
 ### Neutral
 - **Paper White** (#ffffff): page ground (the body background) and bib bodies.
-- **Black Cherry** (#351e28): all primary text, rank numerals, 2px outlines, the dashed tear-off rule, focus rings, the drawn select chevron, the 2px rule under the open goal editor, and the front bib's offset. The "brown for emphasis".
+- **Black Cherry** (#351e28): all primary text, rank numerals, focus rings, the drawn select chevron, and an invalid field's outline. The "brown for emphasis".
+- **Soft Cherry** (#908389): Black Cherry at about 55% on Paper (3.6:1, so input edges still clear 3:1). Every outline and structural rule: bib, sheet, chip, pill, input and notice outlines, the dashed tear-off rule, the navbar and sticky-bar rules, the 2px rule under the open goal editor, and the front bib's offset. It sits between Black Cherry text and Hairline dividers so edges and rules read as one family, never as a second ink.
 - **Muted Ink** (#5a4a52): secondary text, metadata, start-list column labels, the step count, back links at rest, inactive tabs and nav links, disabled pill text, input placeholders.
 - **Hairline** (#e9e2e6): list, start-list and goal-builder clause row dividers (1px), the tab-bar baseline (2px), disabled pill borders, chart grid lines, the placeholder numeral while a standing loads. Structure only, never an outline on a bib.
 
@@ -212,13 +214,13 @@ A white ground with one deep warm-brown ink and two saturated pops, each with on
 
 Phone-first, one column with 1rem side gutters inside a 1120px max container. The order is header, tabs, then the bib stack, then the panel; on phones the stack shows only under Standings. From 900px the body becomes two panes: a sticky stack column (minmax(340px, 400px)) on the left and tabs plus panel on the right, 3rem apart, with 1.5rem gutters. Lists are three-column grids (2.25rem rank chip, flexible name, right-aligned value) with 0.7rem row padding and 1px Hairline dividers, so numbers sit in a strict right-hand column. Everything holds at 320px: names and band text truncate with ellipsis rather than wrap.
 
-The campaigns list stacks its sheets in one column, 1.25rem apart. A start-list row is a three-column grid (3.5rem number, flexible race, auto right-aligned gap), 0.75rem gap and inline padding, 0.7rem row padding over 1px Hairline dividers; the column-label row sits on a 2px Black Cherry rule. From 900px the Racing sheet takes a left column (max 640px) and the other sheets a side column (280 to 400px), 2.5rem apart. Create and join pair a preview bib (340 to 400px, sticky on create) with the form (max 560px on create, 480px on join), 3rem apart from 900px; below 900px the preview sits above the form. Create runs four steps (name, window, group target, your goal). On phones create's Back / count / Next bar is sticky to the viewport bottom with a 2px Black Cherry top rule and safe-area padding; from 900px it sits inline under the form.
+The campaigns list stacks its sheets in one column, 1.25rem apart. A start-list row is a three-column grid (3.5rem number, flexible race, auto right-aligned gap), 0.75rem gap and inline padding, 0.7rem row padding over 1px Hairline dividers; the column-label row sits on a 2px Soft Cherry rule. From 900px the Racing sheet takes a left column (max 640px) and the other sheets a side column (280 to 400px), 2.5rem apart. Create and join pair a preview bib (340 to 400px, sticky on create) with the form (max 560px on create, 480px on join), 3rem apart from 900px; below 900px the preview sits above the form. Create runs four steps (name, window, group target, your goal). On phones create's Back / count / Next bar is sticky to the viewport bottom with a 2px Soft Cherry top rule and safe-area padding; from 900px it sits inline under the form.
 
-The goals page is a grid of flat goal bibs (auto-fill columns of at least 340px, capped at 100% on phones, 1.25rem gap) under the page headline; with no goals it shows one flat "No goals yet" bib, capped at 560px so it stays a bib rather than a banner. Editing a goal replaces its bib in the same grid slot: the editor spans the full row, caps at 560px, and closes on a 2px Black Cherry rule. On campaign detail, standings group by sport under a group label, 1.75rem between groups; a pooled campaign opens with a Together group whose rows are each member's contribution (rank chip, name, amount with their share of the group), when the metric can be split. Standings rows carry 0.5rem of inline padding, offset by an equal negative margin, so the selected fill has room without moving the columns. While the front bib is not the Together bib, a one-line group summary (label left, "536 km of 1,000 km · 54%" right) sits between the switcher and the stack. The timeline repeats one chart per group and metric, 1.75rem apart. Above the bib stack, one row of three compact selects (group, period Week / Month / Campaign, view By goal / By person; 700 0.875rem, 2.5rem tall, 2.75rem on touch, 0.4rem apart, 1.25rem below) sets what the stack shows; each select only appears when it has a choice to offer.4rem gap, 1rem below) switches the group the stack shows.
+The goals page is a grid of flat goal bibs (auto-fill columns of at least 340px, capped at 100% on phones, 1.25rem gap) under the page headline; with no goals it shows one flat "No goals yet" bib, capped at 560px so it stays a bib rather than a banner. Editing a goal replaces its bib in the same grid slot: the editor spans the full row, caps at 560px, and closes on a 2px Soft Cherry rule. On campaign detail, standings group by sport under a group label, 1.75rem between groups; a pooled campaign opens with a Together group whose rows are each member's contribution (rank chip, name, amount with their share of the group), when the metric can be split. Standings rows carry 0.5rem of inline padding, offset by an equal negative margin, so the selected fill has room without moving the columns. While the front bib is not the Together bib, a one-line group summary (label left, "536 km of 1,000 km · 54%" right) sits between the switcher and the stack. The timeline repeats one chart per group and metric, 1.75rem apart. Above the bib stack, one row of three compact selects (group, period Week / Month / Campaign, view By goal / By person; 700 0.875rem, 2.5rem tall, 2.75rem on touch, 0.4rem apart, 1.25rem below) sets what the stack shows; each select only appears when it has a choice to offer.4rem gap, 1rem below) switches the group the stack shows.
 
 ## Elevation & Depth
 
-Surfaces are flat. Bibs, chips, pills and notices are defined by 2px Black Cherry outlines, not shadows. The single depth cue is a hard, unblurred Black Cherry offset (`box-shadow: 0 6px 0 var(--ink)`) under the front bib so it reads as on top of the stack.
+Surfaces are flat. Bibs, chips, pills and notices are defined by 2px Soft Cherry outlines, not shadows. The single depth cue is a hard, unblurred Soft Cherry offset (`box-shadow: 0 6px 0 var(--line)`) under the front bib so it reads as on top of the stack.
 
 **The One Lift Rule.** Only the bib in focus gets the hard offset. Nothing else casts a shadow: preview bibs, empty-state bibs and start-list sheets sit flat. The 1px inset that thickens an invalid input's outline is a stroke, not a shadow.
 
@@ -226,15 +228,15 @@ Motion: bringing a neighbour's bib to the front is one orchestrated swap, enteri
 
 ## Shapes
 
-Bibs, start-list sheets, notices, choice cards and the private-goal box have softly rounded corners (10px) with a 2px outline and clipped bands. Rank chips and text inputs are small rounded squares (6px); the FINISHER tag is tighter (4px). Every button is a pill (999px) with a 2px Black Cherry border. The dashed 2px Black Cherry rule is the tear-off motif: it separates the tear-off tab from the bib and the tear-off footer from a start-list sheet, outlines the private-goal box, and marks quiet pills ("Back to you", "Leave campaign", create's "Cancel"). Tabs are underline tabs, not pills. Short radio sets are choice pills (999px). Selects are 6px inputs with a drawn chevron. Goal-builder conditions are separated by 1px Hairline rules, not boxed. Icons are 1 to 1.1rem stroked SVG arrows and a padlock, 2px round strokes in currentColor.
+Bibs, start-list sheets, notices, choice cards and the private-goal box have softly rounded corners (10px) with a 2px outline and clipped bands. Rank chips and text inputs are small rounded squares (6px); the FINISHER tag is tighter (4px). Every button is a pill (999px) with a 2px Soft Cherry border. The dashed 2px Soft Cherry rule is the tear-off motif: it separates the tear-off tab from the bib and the tear-off footer from a start-list sheet, outlines the private-goal box, and marks quiet pills ("Back to you", "Leave campaign", create's "Cancel"). Tabs are underline tabs, not pills. Short radio sets are choice pills (999px). Selects are 6px inputs with a drawn chevron. Goal-builder conditions are separated by 1px Hairline rules, not boxed. Icons are 1 to 1.1rem stroked SVG arrows and a padlock, 2px round strokes in currentColor.
 
 ## Components
 
 ### Buttons
 Tactile, outlined, pill-shaped.
-- **Shape:** full pill (999px), 2px Black Cherry border.
+- **Shape:** full pill (999px), 2px Soft Cherry border.
 - **Primary:** Tangerine fill, Black Cherry text, Hanken Grotesk 700 0.9375rem, 0.5rem 1.1rem. Used for "Join campaign" on the unclaimed bib in the stack. Disabled at 60% opacity.
-- **Primary pill:** the shared form of the primary action elsewhere: pill metrics (min-height 2.5rem, 0.35rem 1.1rem) with a Tangerine fill, 700 0.9375rem, Tangerine Hover on hover; disabled keeps the Black Cherry border and text at 60% opacity. "New campaign", "Next", "Create campaign", "Join campaign" on the join page, and the confirming "Leave". One per view region.
+- **Primary pill:** the shared form of the primary action elsewhere: pill metrics (min-height 2.5rem, 0.35rem 1.1rem) with a Tangerine fill, 700 0.9375rem, Tangerine Hover on hover; disabled keeps the Soft Cherry border and Black Cherry text at 60% opacity. "New campaign", "Next", "Create campaign", "Join campaign" on the join page, and the confirming "Leave". One per view region.
 - **Pill (secondary):** Paper fill, Black Cherry text, 700 0.875rem, min-height 2.5rem. Hover fills Cool Blue on hover-capable devices only (every hover fill in the system is gated this way, so a tapped control never stays lit on a phone). Disabled drops the border to Hairline and text to Muted Ink. The quiet variant uses a dashed border.
 - **Focus:** 3px solid Black Cherry outline, 2px offset, on every interactive element (a global `:focus-visible` rule is the fallback).
 - **Back link:** a Muted Ink 600 0.875rem text link with a leading arrow, 2.5rem tall, that darkens to Black Cherry on hover; one shared `.back` rule in `style.css`, used above create, join and campaign detail.
@@ -243,26 +245,26 @@ Tactile, outlined, pill-shaped.
 - **Add pill:** a secondary pill with a leading 1rem stroked plus ("Add condition", "Add a goal").
 
 ### Chips
-- **Rank chip:** 2rem tall, 6px radius, 2px Black Cherry outline, Bungee 0.9375rem tabular numeral. Your row's chip fills Tangerine; once a campaign has ended, the chips of the top three ranks that scored fill Cool Blue (podium).
+- **Rank chip:** 2rem tall, 6px radius, 2px Soft Cherry outline, Bungee 0.9375rem tabular numeral. Your row's chip fills Tangerine; once a campaign has ended, the chips of the top three ranks that scored fill Cool Blue (podium).
 - **FINISHER tag:** Cool Blue fill, Black Cherry Bungee 0.6875rem capitals, 4px radius.
 
 ### Cards / Containers
 - **Corner Style:** 10px.
 - **Background:** Paper; notices fill Cool Blue.
 - **Shadow Strategy:** none, except the front bib (see Elevation & Depth).
-- **Border:** 2px Black Cherry, solid; dashed for the private-goal box.
+- **Border:** 2px Soft Cherry, solid; dashed for the private-goal box.
 - **Internal Padding:** 0.6 to 0.9rem.
 
 ### Inputs / Fields
-- **Style:** Paper fill, 2px Black Cherry outline, 6px radius, min-height 2.75rem, Hanken Grotesk 400 1rem with tabular figures, 0.5rem 0.75rem padding; Muted Ink placeholder. Number spinners are hidden. Selects drop the platform arrow for a drawn Black Cherry chevron (1.1rem, 0.65rem from the right edge, 2.25rem right padding). A target field sets its value in Bungee 1.625rem, max 12rem wide.
+- **Style:** Paper fill, 2px Soft Cherry outline, 6px radius, min-height 2.75rem, Hanken Grotesk 400 1rem with tabular figures, 0.5rem 0.75rem padding; Muted Ink placeholder. Number spinners are hidden. Selects drop the platform arrow for a drawn Black Cherry chevron (1.1rem, 0.65rem from the right edge, 2.25rem right padding). A target field sets its value in Bungee 1.625rem, max 12rem wide.
 - **Field:** label or legend in Hanken 700 0.9375rem above the control, 0.35rem gap, 1.25rem below; hints in Meta.
 - **Focus:** the standard 3px Black Cherry ring at 2px offset.
-- **Error:** the outline thickens by a 1px Black Cherry inset (reads as 3px without shifting layout) and a Black Cherry 700 0.875rem message sits under the field. No red: errors are carried by weight and wording.
+- **Error:** the outline turns full Black Cherry and thickens by a 1px inset (reads as 3px without shifting layout) and a Black Cherry 700 0.875rem message sits under the field. No red: errors are carried by weight and wording.
 - **Choice cards:** radio options as 2px-outlined 10px cards (0.7rem 0.9rem) with a bold title and Meta explanation; checked fills Cool Blue, hover fills Cool Blue Soft only where hover exists; the native radio is tinted Black Cherry; focus rings the whole card.
 - **Choice pills:** short radio sets (metric, Total / One activity scope, comparators) as outlined pills, 700 0.9375rem, 0.45rem 0.9rem 0.45rem 0.7rem, with the same checked and hover fills. They are global, not per-surface.
 
 ### Navigation
-A Paper bar with a 2px Black Cherry bottom rule. Bungee wordmark left; links in Hanken Grotesk 600, Muted Ink, the active link in Black Cherry with a 3px Tangerine underline offset 6px. Logout is an outlined pill that fills Cool Blue on hover. Under 720px the links, user name and logout collapse behind a 2.75rem outlined round menu button (Cool Blue while open) into a Paper panel under the bar, closed by a 2px Black Cherry rule: links are 2.75rem rows over 1px Hairline dividers, then the name, then the logout pill. The panel closes on navigation, Escape (focus returns to the button) and a tap outside. Campaign tabs (and the admin view's Users / Catalog / Audit tabs) follow the same grammar: 700 1rem labels over a 2px Hairline baseline, the selected tab marked by a 3px Tangerine underline, arrow keys move between tabs.
+A Paper bar with a 2px Soft Cherry bottom rule. Bungee wordmark left; links in Hanken Grotesk 600, Muted Ink, the active link in Black Cherry with a 3px Tangerine underline offset 6px. Logout is an outlined pill that fills Cool Blue on hover. Under 720px the links, user name and logout collapse behind a 2.75rem outlined round menu button (Cool Blue while open) into a Paper panel under the bar, closed by a 2px Soft Cherry rule: links are 2.75rem rows over 1px Hairline dividers, then the name, then the logout pill. The panel closes on navigation, Escape (focus returns to the button) and a tap outside. Campaign tabs (and the admin view's Users / Catalog / Audit tabs) follow the same grammar: 700 1rem labels over a 2px Hairline baseline, the selected tab marked by a 3px Tangerine underline, arrow keys move between tabs.
 
 ### The Bib (signature)
 A 2px-outlined, 10px card with three parts. The **band** runs across the top in Bungee label capitals with two justified slots (campaign name and wearer; or "AHEAD" and the gap): Tangerine on the front bib, Cool Blue on peeks and when the wearer has finished ("FINISHER"). The **body** sets the rank as a monumental numeral bottom-left against the value and sub-lines right-aligned. The **tear-off tab** sits under a 2px dashed rule on Cool Blue, carrying the next gap in Hanken 700 with a trailing arrow; it is a button when it steps the field (hover deepens the blue). Peek bibs are 64% wide (max 250px), carry a 2.75rem numeral with name and last-active note, and step the field when tapped. Peeks and the tear-off tab are pointer paths only (out of the tab order); every swipe has the Ahead / Behind pill equivalent, which is the keyboard path and stays focusable at the ends of the field by using `aria-disabled` rather than `disabled`. A peek whose gap is zero reads "Level". The front bib has four states: your standing in the selected group; the Group bib (band "Group", pooled percentage as numeral, one sub-line each for the target, the distance left and the time note) under "Together", whose tab says what you added ("You added 42 km · 18%", or "You haven't added to the group yet") and whose peeks are the top two contributors (bands "Top" and "2nd" with their totals, "18% of the group" as the note) instead of neighbours in the field; "Set your goal" for a member with no goal yet (band "You", primary pill); and "Get your bib" for a non-member (band "No. —" / "Unclaimed", Join primary pill). While browsing, the ends of the field show a placeholder peek in the peek's place, Cool Blue band "Leading" or "Last" with no numeral ("Top of the field" / "Back of the field"); it is not a button. Once the campaign has ended the band reads "Final" in place of the campaign name, the group bib counts "short" instead of "to go", and the two bibs without a standing say "No goal set" or "Race over". When a member has standings in more than one group, or the campaign is pooled, the group select in the row above the stack ("Together" plus each sport group) switches it.
@@ -289,7 +291,7 @@ ECharts draws on canvas, so the chart reads the colour tokens from `:root` at re
 - **Do** give every swipe interaction a visible button equivalent ("Ahead" / "Behind").
 - **Do** show "Powered by Strava" on every screen that displays Strava data.
 - **Do** mark "you" with Tangerine, consistently, on every surface: your band, your rank chip, your chart line.
-- **Do** outline bibs, sheets, chips, pills, inputs and notices in 2px Black Cherry, and focus with a 3px Black Cherry ring at 2px offset.
+- **Do** outline bibs, sheets, chips, pills, inputs and notices in 2px Soft Cherry, and focus with a 3px Black Cherry ring at 2px offset.
 - **Do** make a whole bib or start-list row clickable with a stretched link on its name, keeping nested controls above it.
 - **Do** word lower-is-better comparisons as "or faster" / "or slower", never "at most" a pace.
 - **Do** drop trailing zeros in values: "536 km" not "536.0 km", "2h" not "2h 0m".

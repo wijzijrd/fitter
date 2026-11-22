@@ -1,7 +1,14 @@
-// The what's-new splash. RELEASE names this list: change it (and the items) when a release has
-// something to tell members, and everyone sees the splash once more. The server only keeps the
-// last RELEASE each member dismissed (users.whats_new_seen).
+// The what's-new splash. RELEASE is the release's date (YYYY-MM-DD) and names this list: change
+// it (and the items) when a release has something to tell members, and everyone sees the splash
+// once more. The server only keeps the last RELEASE each member dismissed (users.whats_new_seen).
 export const RELEASE = "2026-11-22";
+
+// After a week the news is stale: it is no longer offered on its own, only from Settings.
+export const FRESH_DAYS = 7;
+
+export function isFresh(now: number = Date.now(), release: string = RELEASE): boolean {
+  return now - Date.parse(release) < FRESH_DAYS * 86_400_000;
+}
 
 export interface WhatsNewItem {
   title: string;

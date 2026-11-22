@@ -4,6 +4,8 @@ test.use({ viewport: { width: 320, height: 760 }, hasTouch: true, isMobile: true
 
 test.describe("first visit after a release", () => {
   test.use({ unseenSplash: true });
+  // Pin the clock inside the release's first week so these don't rot as real time passes.
+  test.beforeEach(async ({ page }) => page.clock.setFixedTime(new Date("2026-11-23T09:00:00Z")));
 
   test("shows once, traps focus, closes on Escape and stays closed", async ({ page }) => {
     await page.goto("/");
@@ -26,6 +28,15 @@ test.describe("first visit after a release", () => {
     await page.reload();
     await expect(page.getByRole("heading", { name: "Campaigns" })).toBeVisible();
     await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+
+  test("a release older than a week is no longer offered on its own", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-12-01T09:00:00Z"));
+    await page.goto("/settings");
+    await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await page.getByRole("button", { name: "Show what's new" }).click();
+    await expect(page.getByRole("dialog", { name: "What's new" })).toBeVisible();
   });
 
   test("Got it closes it", async ({ page }) => {

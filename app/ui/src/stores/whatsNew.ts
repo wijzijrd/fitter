@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useAuthStore } from "./auth";
-import { RELEASE } from "../lib/whatsNew";
+import { RELEASE, isFresh } from "../lib/whatsNew";
 
 export const useWhatsNewStore = defineStore("whatsNew", () => {
   const auth = useAuthStore();
@@ -9,10 +9,10 @@ export const useWhatsNewStore = defineStore("whatsNew", () => {
   // Opened automatically at most once per page load, so closing it isn't undone by the next user refresh.
   let autoOffered = false;
 
-  // Called when the signed-in user is known; shows the splash if this release hasn't been dismissed.
+  // Called when the signed-in user is known; shows the splash if this release is fresh and hasn't been dismissed.
   function offer(): void {
     const u = auth.user;
-    if (autoOffered || !u || auth.isPending || u.whatsNewSeen === RELEASE) return;
+    if (autoOffered || !u || auth.isPending || u.whatsNewSeen === RELEASE || !isFresh()) return;
     autoOffered = true;
     open.value = true;
   }

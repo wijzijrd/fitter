@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+// Muscle is the fixed list an exercise's targets come from.
+enum Muscle {
+  MUSCLE_UNSPECIFIED = 0;
+  MUSCLE_CHEST = 1;
+  MUSCLE_BACK = 2;
+  MUSCLE_SHOULDERS = 3;
+  MUSCLE_BICEPS = 4;
+  MUSCLE_TRICEPS = 5;
+  MUSCLE_FOREARMS = 6;
+  MUSCLE_CORE = 7;
+  MUSCLE_GLUTES = 8;
+  MUSCLE_QUADS = 9;
+  MUSCLE_HAMSTRINGS = 10;
+  MUSCLE_CALVES = 11;
+  MUSCLE_FULL_BODY = 12;
+  MUSCLE_CARDIO = 13;
+}
+
+// ExerciseMeasure is what a station of this exercise records.
+enum ExerciseMeasure {
+  EXERCISE_MEASURE_UNSPECIFIED = 0;
+  EXERCISE_MEASURE_WEIGHT_REPS = 1; // weight_kg and reps
+  EXERCISE_MEASURE_REPS = 2;        // reps only
+  EXERCISE_MEASURE_DISTANCE = 3;    // distance_m, plus weight_kg when loaded
+  EXERCISE_MEASURE_TIME = 4;        // duration_s, plus weight_kg when loaded
+}
+
+message Exercise {
+  string id = 1;
+  string name = 2; // as entered
+  string key = 3;  // normalised name; what goal clauses and legacy lifts refer to
+  ExerciseMeasure measure = 4;
+  bool loaded = 5; // a weight is optional (distance and time only)
+  repeated Muscle muscles = 6;
+  int32 use_count = 7; // stations that use it; lets the admin tab block deletes
+}
+
+message ListExercisesRequest {}
+message ListExercisesResponse {
+  repeated Exercise exercises = 1; // by name
+}
+
+message CreateExerciseRequest {
+  string name = 1;
+  ExerciseMeasure measure = 2;
+  bool loaded = 3;
+  repeated Muscle muscles = 4; // at least one
+}
+message CreateExerciseResponse {
+  Exercise exercise = 1;
+  // True when the name already existed: exercise is the stored one and the
+  // request's measure and muscles were ignored.
+  bool already_existed = 2;
+}
+
+// ExerciseService is the library every signed-in member reads and adds to.
+// Editing, deleting and merging are on AdminService.
+service ExerciseService {
+  rpc ListExercises(ListExercisesRequest) returns (ListExercisesResponse);
+  rpc CreateExercise(CreateExerciseRequest) returns (CreateExerciseResponse);
+}

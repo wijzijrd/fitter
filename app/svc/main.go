@@ -89,6 +89,7 @@ func main() {
 	registerService(fitterv1connect.NewFeedServiceHandler(service.NewFeedService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewCatalogServiceHandler(service.NewCatalogService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewActivityServiceHandler(service.NewActivityService(svcDeps), connectOpts))
+	registerService(fitterv1connect.NewExerciseServiceHandler(service.NewExerciseService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewAdminServiceHandler(service.NewAdminService(svcDeps), connectOpts))
 
 	api.HandleFunc("/auth/strava/login", handlerDeps.Login)

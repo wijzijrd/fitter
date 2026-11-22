@@ -4,6 +4,8 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Exercise, ExerciseMeasure, Muscle } from "./exercise_pb";
+import { file_fitter_v1_exercise } from "./exercise_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/admin.proto.
  */
 export const file_fitter_v1_admin: GenFile = /*@__PURE__*/
-  fileDesc("ChVmaXR0ZXIvdjEvYWRtaW4ucHJvdG8SCWZpdHRlci52MSJ5CgtDdXN0b21TcG9ydBIKCgJpZBgBIAEoCRILCgNrZXkYAiABKAkSDQoFbGFiZWwYAyABKAkSEgoKY3JlYXRlZF9ieRgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKoAgoMQ3VzdG9tTWV0cmljEgoKAmlkGAEgASgJEgsKA2tleRgCIAEoCRINCgVsYWJlbBgDIAEoCRIMCgR1bml0GAQgASgJEhMKC2FnZ3JlZ2F0aW9uGAUgASgJEhAKCG51bGxhYmxlGAYgASgIEhcKD2xvd2VyX2lzX2JldHRlchgHIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYCCABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAkgASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgKIAMoCRISCgpjcmVhdGVkX2J5GAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjYKGENyZWF0ZUN1c3RvbVNwb3J0UmVxdWVzdBILCgNrZXkYASABKAkSDQoFbGFiZWwYAiABKAkiQgoZQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRIlCgVzcG9ydBgBIAEoCzIWLmZpdHRlci52MS5DdXN0b21TcG9ydCIZChdMaXN0Q3VzdG9tU3BvcnRzUmVxdWVzdCJCChhMaXN0Q3VzdG9tU3BvcnRzUmVzcG9uc2USJgoGc3BvcnRzGAEgAygLMhYuZml0dGVyLnYxLkN1c3RvbVNwb3J0IiYKGERlbGV0ZUN1c3RvbVNwb3J0UmVxdWVzdBIKCgJpZBgBIAEoCSIbChlEZWxldGVDdXN0b21TcG9ydFJlc3BvbnNlIuUBChlDcmVhdGVDdXN0b21NZXRyaWNSZXF1ZXN0EgsKA2tleRgBIAEoCRINCgVsYWJlbBgCIAEoCRIMCgR1bml0GAMgASgJEhMKC2FnZ3JlZ2F0aW9uGAQgASgJEhAKCG51bGxhYmxlGAUgASgIEhcKD2xvd2VyX2lzX2JldHRlchgGIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYByABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAggASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgJIAMoCSJFChpDcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRInCgZtZXRyaWMYASABKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIhoKGExpc3RDdXN0b21NZXRyaWNzUmVxdWVzdCJFChlMaXN0Q3VzdG9tTWV0cmljc1Jlc3BvbnNlEigKB21ldHJpY3MYASADKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIicKGURlbGV0ZUN1c3RvbU1ldHJpY1JlcXVlc3QSCgoCaWQYASABKAkiHAoaRGVsZXRlQ3VzdG9tTWV0cmljUmVzcG9uc2Ui+AEKCUFkbWluVXNlchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhIKCmF2YXRhcl91cmwYAyABKAkSGQoRc3RyYXZhX2F0aGxldGVfaWQYBCABKAMSDAoEcm9sZRgFIAEoCRIOCgZzdGF0dXMYBiABKAkSEgoKYmFuX3JlYXNvbhgHIAEoCRIRCgliYW5uZWRfYnkYCCABKAkSLQoJYmFubmVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKiAQoLQWRtaW5BY3Rpb24SCgoCaWQYASABKAkSEAoIYWN0b3JfaWQYAiABKAkSEgoKYWN0b3JfbmFtZRgDIAEoCRIOCgZhY3Rpb24YBCABKAkSEQoJdGFyZ2V0X2lkGAUgASgJEg4KBmRldGFpbBgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIiChBMaXN0VXNlcnNSZXF1ZXN0Eg4KBnN0YXR1cxgBIAEoCSI4ChFMaXN0VXNlcnNSZXNwb25zZRIjCgV1c2VycxgBIAMoCzIULmZpdHRlci52MS5BZG1pblVzZXIiIAoSQXBwcm92ZVVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0FwcHJvdmVVc2VyUmVzcG9uc2UiLAoOQmFuVXNlclJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIhEKD0JhblVzZXJSZXNwb25zZSIeChBVbmJhblVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhMKEVVuYmFuVXNlclJlc3BvbnNlIi4KElNldFVzZXJSb2xlUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRyb2xlGAIgASgJIhUKE1NldFVzZXJSb2xlUmVzcG9uc2UiKAoXTGlzdEFkbWluQWN0aW9uc1JlcXVlc3QSDQoFbGltaXQYASABKAUiQwoYTGlzdEFkbWluQWN0aW9uc1Jlc3BvbnNlEicKB2FjdGlvbnMYASADKAsyFi5maXR0ZXIudjEuQWRtaW5BY3Rpb24ynAgKDEFkbWluU2VydmljZRJGCglMaXN0VXNlcnMSGy5maXR0ZXIudjEuTGlzdFVzZXJzUmVxdWVzdBocLmZpdHRlci52MS5MaXN0VXNlcnNSZXNwb25zZRJMCgtBcHByb3ZlVXNlchIdLmZpdHRlci52MS5BcHByb3ZlVXNlclJlcXVlc3QaHi5maXR0ZXIudjEuQXBwcm92ZVVzZXJSZXNwb25zZRJACgdCYW5Vc2VyEhkuZml0dGVyLnYxLkJhblVzZXJSZXF1ZXN0GhouZml0dGVyLnYxLkJhblVzZXJSZXNwb25zZRJGCglVbmJhblVzZXISGy5maXR0ZXIudjEuVW5iYW5Vc2VyUmVxdWVzdBocLmZpdHRlci52MS5VbmJhblVzZXJSZXNwb25zZRJMCgtTZXRVc2VyUm9sZRIdLmZpdHRlci52MS5TZXRVc2VyUm9sZVJlcXVlc3QaHi5maXR0ZXIudjEuU2V0VXNlclJvbGVSZXNwb25zZRJbChBMaXN0QWRtaW5BY3Rpb25zEiIuZml0dGVyLnYxLkxpc3RBZG1pbkFjdGlvbnNSZXF1ZXN0GiMuZml0dGVyLnYxLkxpc3RBZG1pbkFjdGlvbnNSZXNwb25zZRJeChFDcmVhdGVDdXN0b21TcG9ydBIjLmZpdHRlci52MS5DcmVhdGVDdXN0b21TcG9ydFJlcXVlc3QaJC5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRJbChBMaXN0Q3VzdG9tU3BvcnRzEiIuZml0dGVyLnYxLkxpc3RDdXN0b21TcG9ydHNSZXF1ZXN0GiMuZml0dGVyLnYxLkxpc3RDdXN0b21TcG9ydHNSZXNwb25zZRJeChFEZWxldGVDdXN0b21TcG9ydBIjLmZpdHRlci52MS5EZWxldGVDdXN0b21TcG9ydFJlcXVlc3QaJC5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tU3BvcnRSZXNwb25zZRJhChJDcmVhdGVDdXN0b21NZXRyaWMSJC5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tTWV0cmljUmVxdWVzdBolLmZpdHRlci52MS5DcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRJeChFMaXN0Q3VzdG9tTWV0cmljcxIjLmZpdHRlci52MS5MaXN0Q3VzdG9tTWV0cmljc1JlcXVlc3QaJC5maXR0ZXIudjEuTGlzdEN1c3RvbU1ldHJpY3NSZXNwb25zZRJhChJEZWxldGVDdXN0b21NZXRyaWMSJC5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tTWV0cmljUmVxdWVzdBolLmZpdHRlci52MS5EZWxldGVDdXN0b21NZXRyaWNSZXNwb25zZUKOAQoNY29tLmZpdHRlci52MUIKQWRtaW5Qcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChVmaXR0ZXIvdjEvYWRtaW4ucHJvdG8SCWZpdHRlci52MSJ5CgtDdXN0b21TcG9ydBIKCgJpZBgBIAEoCRILCgNrZXkYAiABKAkSDQoFbGFiZWwYAyABKAkSEgoKY3JlYXRlZF9ieRgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKoAgoMQ3VzdG9tTWV0cmljEgoKAmlkGAEgASgJEgsKA2tleRgCIAEoCRINCgVsYWJlbBgDIAEoCRIMCgR1bml0GAQgASgJEhMKC2FnZ3JlZ2F0aW9uGAUgASgJEhAKCG51bGxhYmxlGAYgASgIEhcKD2xvd2VyX2lzX2JldHRlchgHIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYCCABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAkgASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgKIAMoCRISCgpjcmVhdGVkX2J5GAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjYKGENyZWF0ZUN1c3RvbVNwb3J0UmVxdWVzdBILCgNrZXkYASABKAkSDQoFbGFiZWwYAiABKAkiQgoZQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRIlCgVzcG9ydBgBIAEoCzIWLmZpdHRlci52MS5DdXN0b21TcG9ydCIZChdMaXN0Q3VzdG9tU3BvcnRzUmVxdWVzdCJCChhMaXN0Q3VzdG9tU3BvcnRzUmVzcG9uc2USJgoGc3BvcnRzGAEgAygLMhYuZml0dGVyLnYxLkN1c3RvbVNwb3J0IiYKGERlbGV0ZUN1c3RvbVNwb3J0UmVxdWVzdBIKCgJpZBgBIAEoCSIbChlEZWxldGVDdXN0b21TcG9ydFJlc3BvbnNlIuUBChlDcmVhdGVDdXN0b21NZXRyaWNSZXF1ZXN0EgsKA2tleRgBIAEoCRINCgVsYWJlbBgCIAEoCRIMCgR1bml0GAMgASgJEhMKC2FnZ3JlZ2F0aW9uGAQgASgJEhAKCG51bGxhYmxlGAUgASgIEhcKD2xvd2VyX2lzX2JldHRlchgGIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYByABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAggASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgJIAMoCSJFChpDcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRInCgZtZXRyaWMYASABKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIhoKGExpc3RDdXN0b21NZXRyaWNzUmVxdWVzdCJFChlMaXN0Q3VzdG9tTWV0cmljc1Jlc3BvbnNlEigKB21ldHJpY3MYASADKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIicKGURlbGV0ZUN1c3RvbU1ldHJpY1JlcXVlc3QSCgoCaWQYASABKAkiHAoaRGVsZXRlQ3VzdG9tTWV0cmljUmVzcG9uc2Ui+AEKCUFkbWluVXNlchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhIKCmF2YXRhcl91cmwYAyABKAkSGQoRc3RyYXZhX2F0aGxldGVfaWQYBCABKAMSDAoEcm9sZRgFIAEoCRIOCgZzdGF0dXMYBiABKAkSEgoKYmFuX3JlYXNvbhgHIAEoCRIRCgliYW5uZWRfYnkYCCABKAkSLQoJYmFubmVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKiAQoLQWRtaW5BY3Rpb24SCgoCaWQYASABKAkSEAoIYWN0b3JfaWQYAiABKAkSEgoKYWN0b3JfbmFtZRgDIAEoCRIOCgZhY3Rpb24YBCABKAkSEQoJdGFyZ2V0X2lkGAUgASgJEg4KBmRldGFpbBgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIiChBMaXN0VXNlcnNSZXF1ZXN0Eg4KBnN0YXR1cxgBIAEoCSI4ChFMaXN0VXNlcnNSZXNwb25zZRIjCgV1c2VycxgBIAMoCzIULmZpdHRlci52MS5BZG1pblVzZXIiIAoSQXBwcm92ZVVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0FwcHJvdmVVc2VyUmVzcG9uc2UiLAoOQmFuVXNlclJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIhEKD0JhblVzZXJSZXNwb25zZSIeChBVbmJhblVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhMKEVVuYmFuVXNlclJlc3BvbnNlIi4KElNldFVzZXJSb2xlUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRyb2xlGAIgASgJIhUKE1NldFVzZXJSb2xlUmVzcG9uc2UiKAoXTGlzdEFkbWluQWN0aW9uc1JlcXVlc3QSDQoFbGltaXQYASABKAUiQwoYTGlzdEFkbWluQWN0aW9uc1Jlc3BvbnNlEicKB2FjdGlvbnMYASADKAsyFi5maXR0ZXIudjEuQWRtaW5BY3Rpb24ikgEKFVVwZGF0ZUV4ZXJjaXNlUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEisKB21lYXN1cmUYAyABKA4yGi5maXR0ZXIudjEuRXhlcmNpc2VNZWFzdXJlEg4KBmxvYWRlZBgEIAEoCBIiCgdtdXNjbGVzGAUgAygOMhEuZml0dGVyLnYxLk11c2NsZSI/ChZVcGRhdGVFeGVyY2lzZVJlc3BvbnNlEiUKCGV4ZXJjaXNlGAEgASgLMhMuZml0dGVyLnYxLkV4ZXJjaXNlIiMKFURlbGV0ZUV4ZXJjaXNlUmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVFeGVyY2lzZVJlc3BvbnNlIj0KFU1lcmdlRXhlcmNpc2VzUmVxdWVzdBIRCglzb3VyY2VfaWQYASABKAkSEQoJdGFyZ2V0X2lkGAIgASgJIj8KFk1lcmdlRXhlcmNpc2VzUmVzcG9uc2USJQoIZXhlcmNpc2UYASABKAsyEy5maXR0ZXIudjEuRXhlcmNpc2UyoQoKDEFkbWluU2VydmljZRJGCglMaXN0VXNlcnMSGy5maXR0ZXIudjEuTGlzdFVzZXJzUmVxdWVzdBocLmZpdHRlci52MS5MaXN0VXNlcnNSZXNwb25zZRJMCgtBcHByb3ZlVXNlchIdLmZpdHRlci52MS5BcHByb3ZlVXNlclJlcXVlc3QaHi5maXR0ZXIudjEuQXBwcm92ZVVzZXJSZXNwb25zZRJACgdCYW5Vc2VyEhkuZml0dGVyLnYxLkJhblVzZXJSZXF1ZXN0GhouZml0dGVyLnYxLkJhblVzZXJSZXNwb25zZRJGCglVbmJhblVzZXISGy5maXR0ZXIudjEuVW5iYW5Vc2VyUmVxdWVzdBocLmZpdHRlci52MS5VbmJhblVzZXJSZXNwb25zZRJMCgtTZXRVc2VyUm9sZRIdLmZpdHRlci52MS5TZXRVc2VyUm9sZVJlcXVlc3QaHi5maXR0ZXIudjEuU2V0VXNlclJvbGVSZXNwb25zZRJbChBMaXN0QWRtaW5BY3Rpb25zEiIuZml0dGVyLnYxLkxpc3RBZG1pbkFjdGlvbnNSZXF1ZXN0GiMuZml0dGVyLnYxLkxpc3RBZG1pbkFjdGlvbnNSZXNwb25zZRJeChFDcmVhdGVDdXN0b21TcG9ydBIjLmZpdHRlci52MS5DcmVhdGVDdXN0b21TcG9ydFJlcXVlc3QaJC5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRJbChBMaXN0Q3VzdG9tU3BvcnRzEiIuZml0dGVyLnYxLkxpc3RDdXN0b21TcG9ydHNSZXF1ZXN0GiMuZml0dGVyLnYxLkxpc3RDdXN0b21TcG9ydHNSZXNwb25zZRJeChFEZWxldGVDdXN0b21TcG9ydBIjLmZpdHRlci52MS5EZWxldGVDdXN0b21TcG9ydFJlcXVlc3QaJC5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tU3BvcnRSZXNwb25zZRJhChJDcmVhdGVDdXN0b21NZXRyaWMSJC5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tTWV0cmljUmVxdWVzdBolLmZpdHRlci52MS5DcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRJeChFMaXN0Q3VzdG9tTWV0cmljcxIjLmZpdHRlci52MS5MaXN0Q3VzdG9tTWV0cmljc1JlcXVlc3QaJC5maXR0ZXIudjEuTGlzdEN1c3RvbU1ldHJpY3NSZXNwb25zZRJhChJEZWxldGVDdXN0b21NZXRyaWMSJC5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tTWV0cmljUmVxdWVzdBolLmZpdHRlci52MS5EZWxldGVDdXN0b21NZXRyaWNSZXNwb25zZRJVCg5VcGRhdGVFeGVyY2lzZRIgLmZpdHRlci52MS5VcGRhdGVFeGVyY2lzZVJlcXVlc3QaIS5maXR0ZXIudjEuVXBkYXRlRXhlcmNpc2VSZXNwb25zZRJVCg5EZWxldGVFeGVyY2lzZRIgLmZpdHRlci52MS5EZWxldGVFeGVyY2lzZVJlcXVlc3QaIS5maXR0ZXIudjEuRGVsZXRlRXhlcmNpc2VSZXNwb25zZRJVCg5NZXJnZUV4ZXJjaXNlcxIgLmZpdHRlci52MS5NZXJnZUV4ZXJjaXNlc1JlcXVlc3QaIS5maXR0ZXIudjEuTWVyZ2VFeGVyY2lzZXNSZXNwb25zZUKOAQoNY29tLmZpdHRlci52MUIKQWRtaW5Qcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_fitter_v1_exercise, file_google_protobuf_timestamp]);
 
 /**
  * AdminService manages the custom-sport/custom-metric taxonomy an admin can
@@ -693,6 +695,138 @@ export const ListAdminActionsResponseSchema: GenMessage<ListAdminActionsResponse
   messageDesc(file_fitter_v1_admin, 27);
 
 /**
+ * @generated from message fitter.v1.UpdateExerciseRequest
+ */
+export type UpdateExerciseRequest = Message<"fitter.v1.UpdateExerciseRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * may differ from the stored one only while the exercise is unused
+   *
+   * @generated from field: fitter.v1.ExerciseMeasure measure = 3;
+   */
+  measure: ExerciseMeasure;
+
+  /**
+   * @generated from field: bool loaded = 4;
+   */
+  loaded: boolean;
+
+  /**
+   * @generated from field: repeated fitter.v1.Muscle muscles = 5;
+   */
+  muscles: Muscle[];
+};
+
+/**
+ * Describes the message fitter.v1.UpdateExerciseRequest.
+ * Use `create(UpdateExerciseRequestSchema)` to create a new message.
+ */
+export const UpdateExerciseRequestSchema: GenMessage<UpdateExerciseRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 28);
+
+/**
+ * @generated from message fitter.v1.UpdateExerciseResponse
+ */
+export type UpdateExerciseResponse = Message<"fitter.v1.UpdateExerciseResponse"> & {
+  /**
+   * @generated from field: fitter.v1.Exercise exercise = 1;
+   */
+  exercise?: Exercise | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.UpdateExerciseResponse.
+ * Use `create(UpdateExerciseResponseSchema)` to create a new message.
+ */
+export const UpdateExerciseResponseSchema: GenMessage<UpdateExerciseResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 29);
+
+/**
+ * @generated from message fitter.v1.DeleteExerciseRequest
+ */
+export type DeleteExerciseRequest = Message<"fitter.v1.DeleteExerciseRequest"> & {
+  /**
+   * refused while any station uses it; merge instead
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message fitter.v1.DeleteExerciseRequest.
+ * Use `create(DeleteExerciseRequestSchema)` to create a new message.
+ */
+export const DeleteExerciseRequestSchema: GenMessage<DeleteExerciseRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 30);
+
+/**
+ * @generated from message fitter.v1.DeleteExerciseResponse
+ */
+export type DeleteExerciseResponse = Message<"fitter.v1.DeleteExerciseResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.DeleteExerciseResponse.
+ * Use `create(DeleteExerciseResponseSchema)` to create a new message.
+ */
+export const DeleteExerciseResponseSchema: GenMessage<DeleteExerciseResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 31);
+
+/**
+ * MergeExercisesRequest moves every station, goal clause and legacy lift from
+ * source to target, then removes source.
+ *
+ * @generated from message fitter.v1.MergeExercisesRequest
+ */
+export type MergeExercisesRequest = Message<"fitter.v1.MergeExercisesRequest"> & {
+  /**
+   * @generated from field: string source_id = 1;
+   */
+  sourceId: string;
+
+  /**
+   * @generated from field: string target_id = 2;
+   */
+  targetId: string;
+};
+
+/**
+ * Describes the message fitter.v1.MergeExercisesRequest.
+ * Use `create(MergeExercisesRequestSchema)` to create a new message.
+ */
+export const MergeExercisesRequestSchema: GenMessage<MergeExercisesRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 32);
+
+/**
+ * @generated from message fitter.v1.MergeExercisesResponse
+ */
+export type MergeExercisesResponse = Message<"fitter.v1.MergeExercisesResponse"> & {
+  /**
+   * the target
+   *
+   * @generated from field: fitter.v1.Exercise exercise = 1;
+   */
+  exercise?: Exercise | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.MergeExercisesResponse.
+ * Use `create(MergeExercisesResponseSchema)` to create a new message.
+ */
+export const MergeExercisesResponseSchema: GenMessage<MergeExercisesResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 33);
+
+/**
  * @generated from service fitter.v1.AdminService
  */
 export const AdminService: GenService<{
@@ -791,6 +925,30 @@ export const AdminService: GenService<{
     methodKind: "unary";
     input: typeof DeleteCustomMetricRequestSchema;
     output: typeof DeleteCustomMetricResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.UpdateExercise
+   */
+  updateExercise: {
+    methodKind: "unary";
+    input: typeof UpdateExerciseRequestSchema;
+    output: typeof UpdateExerciseResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.DeleteExercise
+   */
+  deleteExercise: {
+    methodKind: "unary";
+    input: typeof DeleteExerciseRequestSchema;
+    output: typeof DeleteExerciseResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.MergeExercises
+   */
+  mergeExercises: {
+    methodKind: "unary";
+    input: typeof MergeExercisesRequestSchema;
+    output: typeof MergeExercisesResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_fitter_v1_admin, 0);

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package fitter.v1;
 
+import "fitter/v1/exercise.proto";
 import "google/protobuf/timestamp.proto";
 
 // AdminService manages the custom-sport/custom-metric taxonomy an admin can
@@ -139,6 +140,30 @@ message ListAdminActionsResponse {
   repeated AdminAction actions = 1;
 }
 
+message UpdateExerciseRequest {
+  string id = 1;
+  string name = 2;
+  ExerciseMeasure measure = 3; // may differ from the stored one only while the exercise is unused
+  bool loaded = 4;
+  repeated Muscle muscles = 5;
+}
+message UpdateExerciseResponse {
+  Exercise exercise = 1;
+}
+message DeleteExerciseRequest {
+  string id = 1; // refused while any station uses it; merge instead
+}
+message DeleteExerciseResponse {}
+// MergeExercisesRequest moves every station, goal clause and legacy lift from
+// source to target, then removes source.
+message MergeExercisesRequest {
+  string source_id = 1;
+  string target_id = 2;
+}
+message MergeExercisesResponse {
+  Exercise exercise = 1; // the target
+}
+
 service AdminService {
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
   rpc ApproveUser(ApproveUserRequest) returns (ApproveUserResponse);
@@ -152,4 +177,7 @@ service AdminService {
   rpc CreateCustomMetric(CreateCustomMetricRequest) returns (CreateCustomMetricResponse);
   rpc ListCustomMetrics(ListCustomMetricsRequest) returns (ListCustomMetricsResponse);
   rpc DeleteCustomMetric(DeleteCustomMetricRequest) returns (DeleteCustomMetricResponse);
+  rpc UpdateExercise(UpdateExerciseRequest) returns (UpdateExerciseResponse);
+  rpc DeleteExercise(DeleteExerciseRequest) returns (DeleteExerciseResponse);
+  rpc MergeExercises(MergeExercisesRequest) returns (MergeExercisesResponse);
 }

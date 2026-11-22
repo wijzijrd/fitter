@@ -37,12 +37,30 @@ type Activity struct {
 	StartDateLocal       sql.NullInt64   `json:"start_date_local"`
 }
 
+type ActivityBlock struct {
+	ID         int64 `json:"id"`
+	ActivityID int64 `json:"activity_id"`
+	Position   int32 `json:"position"`
+	Rounds     int32 `json:"rounds"`
+}
+
 type ActivityLift struct {
 	ID         int64   `json:"id"`
 	ActivityID int64   `json:"activity_id"`
 	Exercise   string  `json:"exercise"`
 	WeightKg   float64 `json:"weight_kg"`
 	Reps       int32   `json:"reps"`
+}
+
+type ActivityStation struct {
+	ID         int64           `json:"id"`
+	BlockID    int64           `json:"block_id"`
+	Position   int32           `json:"position"`
+	ExerciseID string          `json:"exercise_id"`
+	WeightKg   sql.NullFloat64 `json:"weight_kg"`
+	Reps       sql.NullInt32   `json:"reps"`
+	DistanceM  sql.NullFloat64 `json:"distance_m"`
+	DurationS  sql.NullInt64   `json:"duration_s"`
 }
 
 type AdminAction struct {
@@ -97,6 +115,17 @@ type CustomSport struct {
 	Label     string `json:"label"`
 	CreatedBy string `json:"created_by"`
 	CreatedAt int64  `json:"created_at"`
+}
+
+type Exercise struct {
+	ID        string         `json:"id"`
+	Name      string         `json:"name"`
+	Key       string         `json:"key"`
+	Measure   string         `json:"measure"`
+	Loaded    bool           `json:"loaded"`
+	Muscles   []string       `json:"muscles"`
+	CreatedBy sql.NullString `json:"created_by"`
+	CreatedAt int64          `json:"created_at"`
 }
 
 type Goal struct {

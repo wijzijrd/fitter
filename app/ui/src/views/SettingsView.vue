@@ -2,9 +2,11 @@
 import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
 import { errorMessage } from "../lib/errors";
+import { useWhatsNewStore } from "../stores/whatsNew";
 import type { FeedSettings } from "../gen/fitter/v1/user_pb";
 
 const auth = useAuthStore();
+const whatsNew = useWhatsNewStore();
 const error = ref("");
 
 // Each choice saves as soon as it's toggled. The checkboxes read the saved value, so a failed
@@ -41,6 +43,11 @@ async function toggle(key: string, on: boolean): Promise<void> {
       </label>
       <p v-if="error" class="field-error" role="alert">{{ error }}</p>
     </fieldset>
+    <section class="rb-field news" aria-labelledby="st-news">
+      <h2 id="st-news">What's new</h2>
+      <p class="meta">The changes since the last time you read them.</p>
+      <button type="button" class="pill" @click="whatsNew.show()">Show what's new</button>
+    </section>
   </main>
 </template>
 
@@ -72,5 +79,16 @@ h1 {
   margin: 0 0 var(--space-3);
   color: var(--ink-muted);
   font-size: 0.875rem;
+}
+.news {
+  margin-top: var(--space-6);
+}
+.news h2 {
+  margin: 0 0 var(--space-2);
+  font: 400 0.875rem/1.3 var(--font-display);
+  text-transform: uppercase;
+}
+.news .pill {
+  justify-self: start;
 }
 </style>

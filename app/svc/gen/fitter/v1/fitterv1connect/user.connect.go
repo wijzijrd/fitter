@@ -39,12 +39,16 @@ const (
 	// UserServiceUpdateFeedSettingsProcedure is the fully-qualified name of the UserService's
 	// UpdateFeedSettings RPC.
 	UserServiceUpdateFeedSettingsProcedure = "/fitter.v1.UserService/UpdateFeedSettings"
+	// UserServiceMarkWhatsNewSeenProcedure is the fully-qualified name of the UserService's
+	// MarkWhatsNewSeen RPC.
+	UserServiceMarkWhatsNewSeenProcedure = "/fitter.v1.UserService/MarkWhatsNewSeen"
 )
 
 // UserServiceClient is a client for the fitter.v1.UserService service.
 type UserServiceClient interface {
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
 	UpdateFeedSettings(context.Context, *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error)
+	MarkWhatsNewSeen(context.Context, *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the fitter.v1.UserService service. By default, it
@@ -70,6 +74,12 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("UpdateFeedSettings")),
 			connect.WithClientOptions(opts...),
 		),
+		markWhatsNewSeen: connect.NewClient[v1.MarkWhatsNewSeenRequest, v1.MarkWhatsNewSeenResponse](
+			httpClient,
+			baseURL+UserServiceMarkWhatsNewSeenProcedure,
+			connect.WithSchema(userServiceMethods.ByName("MarkWhatsNewSeen")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -77,6 +87,7 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 type userServiceClient struct {
 	getCurrentUser     *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
 	updateFeedSettings *connect.Client[v1.UpdateFeedSettingsRequest, v1.UpdateFeedSettingsResponse]
+	markWhatsNewSeen   *connect.Client[v1.MarkWhatsNewSeenRequest, v1.MarkWhatsNewSeenResponse]
 }
 
 // GetCurrentUser calls fitter.v1.UserService.GetCurrentUser.
@@ -89,10 +100,16 @@ func (c *userServiceClient) UpdateFeedSettings(ctx context.Context, req *connect
 	return c.updateFeedSettings.CallUnary(ctx, req)
 }
 
+// MarkWhatsNewSeen calls fitter.v1.UserService.MarkWhatsNewSeen.
+func (c *userServiceClient) MarkWhatsNewSeen(ctx context.Context, req *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error) {
+	return c.markWhatsNewSeen.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the fitter.v1.UserService service.
 type UserServiceHandler interface {
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
 	UpdateFeedSettings(context.Context, *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error)
+	MarkWhatsNewSeen(context.Context, *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -114,12 +131,20 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("UpdateFeedSettings")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceMarkWhatsNewSeenHandler := connect.NewUnaryHandler(
+		UserServiceMarkWhatsNewSeenProcedure,
+		svc.MarkWhatsNewSeen,
+		connect.WithSchema(userServiceMethods.ByName("MarkWhatsNewSeen")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/fitter.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceGetCurrentUserProcedure:
 			userServiceGetCurrentUserHandler.ServeHTTP(w, r)
 		case UserServiceUpdateFeedSettingsProcedure:
 			userServiceUpdateFeedSettingsHandler.ServeHTTP(w, r)
+		case UserServiceMarkWhatsNewSeenProcedure:
+			userServiceMarkWhatsNewSeenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -135,4 +160,8 @@ func (UnimplementedUserServiceHandler) GetCurrentUser(context.Context, *connect.
 
 func (UnimplementedUserServiceHandler) UpdateFeedSettings(context.Context, *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.UpdateFeedSettings is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) MarkWhatsNewSeen(context.Context, *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.MarkWhatsNewSeen is not implemented"))
 }

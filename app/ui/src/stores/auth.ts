@@ -22,6 +22,11 @@ export const useAuthStore = defineStore("auth", () => {
     if (resp.user) user.value = resp.user;
   }
 
+  async function markWhatsNewSeen(release: string): Promise<void> {
+    const resp = await userClient.markWhatsNewSeen({ release });
+    if (resp.user) user.value = resp.user;
+  }
+
   async function fetchCurrentUser(): Promise<void> {
     const resp = await userClient.getCurrentUser({});
     user.value = resp.user ?? null;
@@ -38,5 +43,5 @@ export const useAuthStore = defineStore("auth", () => {
     user.value = null;
   }
 
-  return { user, feedSettings, saveFeedSettings, isAdmin, isPending, isAuthenticated, fetchCurrentUser, completeLogin, logout };
+  return { user, feedSettings, saveFeedSettings, markWhatsNewSeen, isAdmin, isPending, isAuthenticated, fetchCurrentUser, completeLogin, logout };
 });

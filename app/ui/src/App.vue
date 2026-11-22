@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useAuthStore } from "./stores/auth";
+import { useWhatsNewStore } from "./stores/whatsNew";
+import WhatsNewDialog from "./components/WhatsNewDialog.vue";
 import { useRoute, useRouter } from "vue-router";
 
 const auth = useAuthStore();
+const whatsNew = useWhatsNewStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -31,6 +34,8 @@ function onPointer(ev: PointerEvent): void {
 }
 
 watch(() => route.fullPath, () => close());
+// The router guard loads the user after sign-in; once it is there, offer the splash if it is unseen.
+watch(() => auth.user, () => whatsNew.offer(), { immediate: true });
 onMounted(() => {
   document.addEventListener("keydown", onKey);
   document.addEventListener("pointerdown", onPointer);
@@ -70,4 +75,5 @@ onBeforeUnmount(() => {
     </nav>
   </div>
   <router-view />
+  <WhatsNewDialog v-if="whatsNew.open" @close="whatsNew.dismiss()" />
 </template>

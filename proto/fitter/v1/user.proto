@@ -18,6 +18,7 @@ message User {
   string role = 4;   // "member" | "admin"; UX gate only, server enforces
   string status = 5; // "pending" | "active" | "banned"
   FeedSettings feed_settings = 6;
+  string whats_new_seen = 7; // release id of the last what's-new splash dismissed; "" = none yet
 }
 
 message UpdateFeedSettingsRequest {
@@ -25,6 +26,14 @@ message UpdateFeedSettingsRequest {
 }
 
 message UpdateFeedSettingsResponse {
+  User user = 1;
+}
+
+message MarkWhatsNewSeenRequest {
+  string release = 1; // the UI's release id, 1 to 32 characters
+}
+
+message MarkWhatsNewSeenResponse {
   User user = 1;
 }
 
@@ -37,4 +46,5 @@ message GetCurrentUserResponse {
 service UserService {
   rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
   rpc UpdateFeedSettings(UpdateFeedSettingsRequest) returns (UpdateFeedSettingsResponse);
+  rpc MarkWhatsNewSeen(MarkWhatsNewSeenRequest) returns (MarkWhatsNewSeenResponse);
 }

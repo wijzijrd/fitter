@@ -1,8 +1,10 @@
 import { test as base, type Page } from "@playwright/test";
+import { RELEASE } from "../../src/lib/whatsNew";
 
 // In-memory stand-in for the Connect API (JSON over POST /api/fitter.v1.<Service>/<Method>).
 // Each test gets fresh data; deletes mutate it so list reloads reflect them.
-function fixtures() {
+// Signed-in users have already dismissed the current splash unless a test says otherwise.
+function fixtures(unseenSplash: boolean) {
   let sports = [
     { id: "s1", key: "powerlifting", label: "Powerlifting" },
     { id: "s2", key: "climbing", label: "Climbing" },
@@ -16,7 +18,8 @@ function fixtures() {
     { id: "-2", sportType: "WeightTraining", name: "Pull day", startDate: "2026-11-19T08:00:00Z", movingTimeS: "3000", lifts: [], blocks: [] },
   ];
   let feedSettings: Record<string, boolean> = { showPace: true, showPower: true, showEffort: true, showLifts: true };
-  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings });
+  let whatsNewSeen = unseenSplash ? "" : RELEASE;
+  const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings, whatsNewSeen });
   const MEASURE = (m: string) => `EXERCISE_MEASURE_${m}`;
   const MUSCLE = (m: string) => `MUSCLE_${m}`;
   let exercises: any[] = [
@@ -34,6 +37,10 @@ function fixtures() {
     "UserService/GetCurrentUser": () => ({ user: me() }),
     "UserService/UpdateFeedSettings": (b: any) => {
       feedSettings = { showPace: false, showPower: false, showEffort: false, showLifts: false, ...b.feedSettings };
+      return { user: me() };
+    },
+    "UserService/MarkWhatsNewSeen": (b: any) => {
+      whatsNewSeen = b.release;
       return { user: me() };
     },
     "CatalogService/ListSports": () => ({
@@ -174,8 +181,8 @@ function campaignDetail() {
   };
 }
 
-async function mockApi(page: Page): Promise<void> {
-  const handlers = fixtures();
+async function mockApi(page: Page, unseenSplash: boolean): Promise<void> {
+  const handlers = fixtures(unseenSplash);
   await page.addInitScript(() => localStorage.setItem("fitter_token", "e2e"));
   await page.route("**/api/fitter.v1.*/**", async (route) => {
     const method = route.request().url().split("/fitter.v1.")[1];
@@ -190,9 +197,10 @@ async function mockApi(page: Page): Promise<void> {
 }
 
 // `page` arrives signed in as an admin with the mock API installed.
-export const test = base.extend({
-  page: async ({ page }, use) => {
-    await mockApi(page);
+export const test = base.extend<{ unseenSplash: boolean }>({
+  unseenSplash: [false, { option: true }],
+  page: async ({ page, unseenSplash }, use) => {
+    await mockApi(page, unseenSplash);
     await use(page);
   },
 });

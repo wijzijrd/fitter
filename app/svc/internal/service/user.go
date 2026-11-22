@@ -28,11 +28,12 @@ func (s *UserService) GetCurrentUser(ctx context.Context, req *connect.Request[f
 
 func currentUserToProto(u db.User) *fitterv1.User {
 	return &fitterv1.User{
-		Id:        u.ID,
-		Name:      u.Name,
-		AvatarUrl: u.AvatarUrl,
-		Role:      u.Role,
-		Status:    u.Status,
+		Id:           u.ID,
+		Name:         u.Name,
+		AvatarUrl:    u.AvatarUrl,
+		Role:         u.Role,
+		Status:       u.Status,
+		WhatsNewSeen: u.WhatsNewSeen,
 		FeedSettings: &fitterv1.FeedSettings{
 			ShowPace: u.FeedShowPace, ShowPower: u.FeedShowPower, ShowEffort: u.FeedShowEffort, ShowLifts: u.FeedShowLifts,
 		},
@@ -56,4 +57,25 @@ func (s *UserService) UpdateFeedSettings(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.UpdateFeedSettingsResponse{User: currentUserToProto(u)}), nil
+}
+
+// MarkWhatsNewSeen records the release whose splash the caller dismissed. The server doesn't know
+// the release list; it only keeps the last id, so a new release is just a new string in the UI.
+func (s *UserService) MarkWhatsNewSeen(ctx context.Context, req *connect.Request[fitterv1.MarkWhatsNewSeenRequest]) (*connect.Response[fitterv1.MarkWhatsNewSeenResponse], error) {
+	userID, ok := auth.UserIDFromContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("missing user"))
+	}
+	release := req.Msg.GetRelease()
+	if n := len(release); n < 1 || n > 32 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("release must be 1 to 32 characters"))
+	}
+	u, err := s.Queries.SetUserWhatsNewSeen(ctx, db.SetUserWhatsNewSeenParams{ID: userID, WhatsNewSeen: release})
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("user not found"))
+	}
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&fitterv1.MarkWhatsNewSeenResponse{User: currentUserToProto(u)}), nil
 }

@@ -72,3 +72,7 @@ SELECT COUNT(*) FROM users WHERE role = 'admin' AND status = 'active';
 UPDATE users SET feed_show_pace = $2, feed_show_power = $3, feed_show_effort = $4, feed_show_lifts = $5
 WHERE id = $1
 RETURNING *;
+
+-- name: SetUserWhatsNewSeen :one
+UPDATE users SET whats_new_seen = $2 WHERE id = $1
+RETURNING *;

@@ -41,6 +41,12 @@ const router = createRouter({
       component: () => import("../views/SettingsFeedbackView.vue"),
       meta: { requiresAuth: true, title: "Developer feedback" },
     },
+    {
+      path: "/settings/release-notes",
+      name: "settings-release-notes",
+      component: () => import("../views/SettingsReleaseNotesView.vue"),
+      meta: { requiresAuth: true, title: "Release notes" },
+    },
     { path: "/pending", name: "pending", component: () => import("../views/PendingView.vue"), meta: { requiresAuth: true, title: "Waiting for approval" } },
     { path: "/admin", name: "admin", component: () => import("../views/AdminView.vue"), meta: { requiresAuth: true, requiresAdmin: true, title: "Admin" } },
     { path: "/goals/new", name: "goal-new", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "New goal" } },

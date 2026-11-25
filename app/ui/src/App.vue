@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useAuthStore } from "./stores/auth";
-import { useWhatsNewStore } from "./stores/whatsNew";
+import { useReleaseNotesStore } from "./stores/releaseNotes";
 import { useSyncStore } from "./stores/sync";
-import WhatsNewDialog from "./components/WhatsNewDialog.vue";
+import ReleaseNotesDialog from "./components/ReleaseNotesDialog.vue";
 import { useRoute, useRouter } from "vue-router";
 
 const auth = useAuthStore();
-const whatsNew = useWhatsNewStore();
+const releaseNotes = useReleaseNotesStore();
 const activitySync = useSyncStore();
 const router = useRouter();
 const route = useRoute();
@@ -37,7 +37,7 @@ function onPointer(ev: PointerEvent): void {
 
 watch(() => route.fullPath, () => close());
 // The router guard loads the user after sign-in; once it is there, offer the splash if it is unseen.
-watch(() => auth.user, () => whatsNew.offer(), { immediate: true });
+watch(() => auth.user, () => releaseNotes.offer(), { immediate: true });
 
 // Pull the member's new Strava activities on load, when they come back to the tab, and every five
 // minutes while it stays open. Pending members have no campaigns to see them in.
@@ -96,5 +96,5 @@ onBeforeUnmount(() => {
     </nav>
   </div>
   <router-view />
-  <WhatsNewDialog v-if="whatsNew.open" @close="whatsNew.dismiss()" />
+  <ReleaseNotesDialog v-if="releaseNotes.open" :releases="releaseNotes.shown" @close="releaseNotes.dismiss()" />
 </template>

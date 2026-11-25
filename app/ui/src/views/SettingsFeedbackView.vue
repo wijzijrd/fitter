@@ -4,7 +4,7 @@ import { Code, ConnectError } from "@connectrpc/connect";
 import { useAuthStore } from "../stores/auth";
 import { userClient } from "../lib/connect";
 import { errorMessage } from "../lib/errors";
-import { RELEASE } from "../lib/whatsNew";
+import { CURRENT } from "../lib/releases";
 
 const auth = useAuthStore();
 
@@ -83,7 +83,7 @@ const submit = () =>
   run(
     async () => {
       status.value = "";
-      await userClient.submitFeedback({ kind: kind.value, message: message.value, release: RELEASE });
+      await userClient.submitFeedback({ kind: kind.value, message: message.value, release: CURRENT });
       message.value = "";
       status.value = "Thanks, it's sent.";
     },

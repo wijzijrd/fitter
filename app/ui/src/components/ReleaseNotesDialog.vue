@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { whatsNewItems } from "../lib/whatsNew";
+import { kindLabels, kindOf, type Release } from "../lib/releases";
 
+defineProps<{ releases: Release[] }>();
 const emit = defineEmits<{ close: [] }>();
 const dlg = ref<HTMLDialogElement | null>(null);
 
@@ -13,14 +14,22 @@ onMounted(() => dlg.value?.showModal());
 
 <template>
   <dialog ref="dlg" class="wn" aria-labelledby="wn-title" @close="emit('close')">
-    <h2 id="wn-title">What's new</h2>
-    <ol class="items" tabindex="0" aria-label="Changes">
-      <li v-for="item in whatsNewItems" :key="item.title">
-        <b>{{ item.title }}</b>
-        <span>{{ item.body }}</span>
-      </li>
-    </ol>
+    <h2 id="wn-title">Release notes</h2>
+    <div class="items" tabindex="0" role="region" aria-label="Changes">
+      <section v-for="r in releases" :key="r.version">
+        <h3>{{ r.version }}</h3>
+        <p class="kind">{{ kindLabels[kindOf(r.version)] }}</p>
+        <ul>
+          <li v-for="n in r.notes" :key="n.title">
+            <b>{{ n.title }}</b>
+            <span>{{ n.body }}</span>
+          </li>
+        </ul>
+      </section>
+    </div>
     <form method="dialog">
+      <!-- Closing first saves the version and removes the modal before the page changes. -->
+      <router-link to="/settings/release-notes" class="all" @click="dlg?.close()">All release notes</router-link>
       <button class="pill pill--primary" autofocus>Got it</button>
     </form>
   </dialog>
@@ -54,6 +63,9 @@ h2 {
 }
 .items {
   flex: 1 1 auto;
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
   min-height: 0;
   overflow-y: auto;
   margin: 0 calc(-1 * var(--space-2));
@@ -64,6 +76,20 @@ h2 {
 .items:focus-visible {
   outline: 3px solid var(--ink);
   outline-offset: 2px;
+}
+.items h3 {
+  margin: 0;
+  font: 400 1rem/1.2 var(--font-display);
+}
+.kind {
+  margin: var(--space-1) 0 var(--space-2);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.items ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .items li {
   display: grid;
@@ -83,9 +109,22 @@ h2 {
 form {
   display: flex;
   flex: none;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
   margin-top: var(--space-3);
   padding-top: var(--space-4);
   border-top: 1px solid var(--hairline);
+}
+.all {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 </style>

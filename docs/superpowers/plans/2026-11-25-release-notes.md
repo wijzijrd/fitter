@@ -166,3 +166,21 @@ export function unseenReleases(seen: string, list?: Release[]): Release[];
   - `VITE_FEEDBACK_ENABLED= npx playwright test settings release-notes` → PASS; the off test runs and the feedback tests are skipped.
   - `npx playwright test && npx vitest run && npm run build` → all PASS; flag on by default in tests.
 - [ ] **Step 5: Commit** "Developer feedback off unless FEEDBACK_ENABLED=true (0.8.1)". Push `feedback-off` and open PR 2 into `staging`, stacked on PR 1. Its body says how to turn feedback on: `gh variable set FEEDBACK_ENABLED --env staging --body true`, then redeploy the web app.
+
+### Task 4: Kombeweeg name and icons (0.8.2, patch, added at the user's request; closes #28)
+
+Branch `kombeweeg-rename`, stacked on `feedback-off`. The user called it a patch: branding prep for the production redesign, not 1.0.0.
+
+- **User-facing "Fitter" becomes "Kombeweeg":**
+  - nav wordmark, login heading, tab titles, login and connection errors, the feedback placeholder;
+  - email sender name and subjects (`MAIL_FROM` default, code email, feedback subject);
+  - README and DESIGN.md.
+  - Internal names (`fitter_token`, proto package, module, repo) stay.
+- **Icons:**
+  - `public/icons/<staging|prod>/` holds `favicon-32.png`, `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png` and `manifest.json` (`display: browser`). Staging's name is "Kombeweeg Staging".
+  - `index.html` links `/icons/%VITE_APP_ENV%/…`.
+  - `vite.config.ts` defaults `VITE_APP_ENV` to `staging`, and `deploy-web.yml` sets it from `vars.SSM_ENV`.
+  - `public/favicon.svg` is removed.
+- **Nav:** the links and wordmark are `nowrap`, and the signed-in name ellipsizes, so the longer wordmark fits at 721px.
+- **Commits** GLOSSARY.md and `docs/adr/`, per #28.
+- **Tests:** `brand.e2e.ts` covers the wordmark, the tab title, the manifest and icons being served, login with both Strava marks at 320px, and the 0.8.2 note in the release notes dialog. `mail_test` and `email_feedback_test` expect the new names.

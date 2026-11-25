@@ -3,8 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Fitter</title>
+    <!-- Each environment has its own icon set in public/icons/<env>/; swap the files to change them. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/%VITE_APP_ENV%/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/icons/%VITE_APP_ENV%/apple-touch-icon.png" />
+    <link rel="manifest" href="/icons/%VITE_APP_ENV%/manifest.json" />
+    <meta name="apple-mobile-web-app-title" content="Kombeweeg" />
+    <title>Kombeweeg</title>
   </head>
   <body>
     <div id="app"></div>

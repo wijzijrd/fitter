@@ -209,7 +209,7 @@ func loadConfig() config {
 			envOr("SES_SMTP_HOST", "email-smtp.eu-west-1.amazonaws.com"),
 			mustEnv("SES_ACCESS_KEY_ID"),
 			mustEnv("SES_SMTP_PASSWORD"),
-			envOr("MAIL_FROM", "Fitter <no-reply@"+site.Hostname()+">"),
+			envOr("MAIL_FROM", "Kombeweeg <no-reply@"+site.Hostname()+">"),
 			"fitter-"+appEnv,
 		)
 		feedbackTo = mustEnv("FEEDBACK_TO")

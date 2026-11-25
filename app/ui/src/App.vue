@@ -62,7 +62,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="bar" class="navbar" :class="{ 'is-open': open }" v-if="auth.isAuthenticated">
-    <router-link to="/" class="wordmark">Fitter</router-link>
+    <router-link to="/" class="wordmark">Kombeweeg</router-link>
     <button
       ref="toggle"
       type="button"

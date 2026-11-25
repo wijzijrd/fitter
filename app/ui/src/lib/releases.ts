@@ -26,6 +26,16 @@ export const kindLabels: Record<ReleaseKind, string> = {
 // Newest first. Plain sentences, no jargon, no PR numbers.
 export const releases: Release[] = [
   {
+    version: "0.8.2",
+    date: "2026-11-25",
+    notes: [
+      {
+        title: "Fitter is now Kombeweeg",
+        body: "Same app, new name and icon, ahead of a bigger redesign. If you added it to your home screen, add it again to pick up the new icon.",
+      },
+    ],
+  },
+  {
     version: "0.8.1",
     date: "2026-11-25",
     notes: [

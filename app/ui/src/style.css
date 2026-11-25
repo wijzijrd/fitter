@@ -307,6 +307,7 @@ select.input {
   font-family: var(--font-display);
   font-size: 1.25rem;
   color: var(--ink);
+  white-space: nowrap;
 }
 
 .navbar nav {
@@ -319,6 +320,8 @@ select.input {
 .navbar nav a {
   color: var(--ink-muted);
   font-weight: 600;
+  /* Links stay on one line; the signed-in name (.who) ellipsizes to make room. */
+  white-space: nowrap;
   padding: var(--space-1) 0;
   text-underline-offset: 6px;
 }

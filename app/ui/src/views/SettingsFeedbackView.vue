@@ -189,7 +189,7 @@ function restart(): void {
           class="input"
           rows="6"
           maxlength="4000"
-          placeholder="What happened, or what would make Fitter better?"
+          placeholder="What happened, or what would make Kombeweeg better?"
           :aria-invalid="!!error"
           :aria-describedby="error ? 'fb-error' : undefined"
         />

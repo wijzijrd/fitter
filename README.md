@@ -120,11 +120,11 @@ The deploy workflow reads every SSM parameter under `/<project>/<env>/` and inje
 1. Edit `project.env`: `PROJECT_NAME=fitter`, `DOMAIN`, `AWS_ACCOUNT_ID`, regions (`API_REGION` must support Lightsail), `SUPABASE_ORG_ID`, `GITHUB_OWNER`, `APP_REPO=fitter`, `AWS_PROFILE`. Run `make doctor`.
 2. Export `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens).
 3. Declare fitter's secrets in `manual_secret_names` in both `envs/staging/variables.tf` and `envs/prod/variables.tf`:
-   `strava_client_id`, `strava_client_secret`, `strava_webhook_verify_token`, `jwt_secret`, `frontend_url`, `public_base_url` (and optionally `admin_strava_athlete_ids`). They become `STRAVA_CLIENT_ID`, … at deploy time.
+   `strava_client_id`, `strava_client_secret`, `strava_webhook_verify_token`, `jwt_secret`, `frontend_url`, `public_base_url`, `feedback_to` (and optionally `admin_strava_athlete_ids`, `mail_from`). They become `STRAVA_CLIENT_ID`, … at deploy time.
 4. Bootstrap, in order: `make bootstrap`, `make dns`, `make github-setup`, `make oidc-claims` (commit `project.env`), `make iam`, `make github-roles`, `make verify-roles`.
 5. `make plan ENV=staging`, then PR into the infra repo's `staging` branch; merge so CI applies. A merged PR is not a successful apply, so watch the run.
 6. `make github-app-vars ENV=staging` pushes bucket, distribution, Lightsail and ECR names into this repo's GitHub `staging` environment.
-7. Fill each secret: `make ssm-set ENV=staging NAME=<name>`. Values: Strava client ID/secret from step 1 above; `jwt_secret` from `openssl rand -hex 32`; `strava_webhook_verify_token` any random string; `frontend_url` = `https://staging.<domain>`; `public_base_url` = `https://staging.<domain>/api`.
+7. Fill each secret: `make ssm-set ENV=staging NAME=<name>`. Values: Strava client ID/secret from step 1 above; `jwt_secret` from `openssl rand -hex 32`; `strava_webhook_verify_token` any random string; `frontend_url` = `https://staging.<domain>`; `public_base_url` = `https://staging.<domain>/api`; `feedback_to` = the inbox developer feedback is emailed to. Email goes out through the template's SES mailer (`ses_access_key_id`, `ses_smtp_password`, already in SSM) as `no-reply@<frontend_url host>`; set `mail_from` only if the env's SES identity is a different domain. Check with `make ses-status ENV=staging`; until the account leaves the SES sandbox, mail only reaches SES-verified addresses.
 
 **2. This repo**
 

@@ -84,7 +84,14 @@ onBeforeUnmount(() => {
         <router-link to="/activities/new">Log activity</router-link>
         <router-link v-if="auth.isAdmin" to="/admin">Admin</router-link>
       </template>
-      <router-link v-if="auth.user" to="/settings" class="who" :aria-label="`Settings, signed in as ${auth.user.name}`">{{ auth.user.name }}</router-link>
+      <router-link
+        v-if="auth.user"
+        to="/settings"
+        class="who"
+        :class="{ 'router-link-active': String($route.name).startsWith('settings') }"
+        :aria-label="`Settings, signed in as ${auth.user.name}`"
+        >{{ auth.user.name }}</router-link
+      >
       <button class="logout" @click="handleLogout">Log out</button>
     </nav>
   </div>

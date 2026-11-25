@@ -100,6 +100,7 @@ type User struct {
 	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"` // "pending" | "active" | "banned"
 	FeedSettings  *FeedSettings          `protobuf:"bytes,6,opt,name=feed_settings,json=feedSettings,proto3" json:"feed_settings,omitempty"`
 	WhatsNewSeen  string                 `protobuf:"bytes,7,opt,name=whats_new_seen,json=whatsNewSeen,proto3" json:"whats_new_seen,omitempty"` // release id of the last what's-new splash dismissed; "" = none yet
+	Email         string                 `protobuf:"bytes,8,opt,name=email,proto3" json:"email,omitempty"`                                     // verified address that feedback replies go to; "" = not verified
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -179,6 +180,13 @@ func (x *User) GetFeedSettings() *FeedSettings {
 func (x *User) GetWhatsNewSeen() string {
 	if x != nil {
 		return x.WhatsNewSeen
+	}
+	return ""
+}
+
+func (x *User) GetEmail() string {
+	if x != nil {
+		return x.Email
 	}
 	return ""
 }
@@ -359,6 +367,273 @@ func (x *MarkWhatsNewSeenResponse) GetUser() *User {
 	return nil
 }
 
+// SendEmailCodeRequest emails a 6-digit code to the address; one request a minute.
+type SendEmailCodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendEmailCodeRequest) Reset() {
+	*x = SendEmailCodeRequest{}
+	mi := &file_fitter_v1_user_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendEmailCodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendEmailCodeRequest) ProtoMessage() {}
+
+func (x *SendEmailCodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendEmailCodeRequest.ProtoReflect.Descriptor instead.
+func (*SendEmailCodeRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SendEmailCodeRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type SendEmailCodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendEmailCodeResponse) Reset() {
+	*x = SendEmailCodeResponse{}
+	mi := &file_fitter_v1_user_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendEmailCodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendEmailCodeResponse) ProtoMessage() {}
+
+func (x *SendEmailCodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendEmailCodeResponse.ProtoReflect.Descriptor instead.
+func (*SendEmailCodeResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{7}
+}
+
+// VerifyEmailRequest checks the code from the last SendEmailCode; five tries, 15 minutes.
+type VerifyEmailRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailRequest) Reset() {
+	*x = VerifyEmailRequest{}
+	mi := &file_fitter_v1_user_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailRequest) ProtoMessage() {}
+
+func (x *VerifyEmailRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailRequest.ProtoReflect.Descriptor instead.
+func (*VerifyEmailRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *VerifyEmailRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+type VerifyEmailResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyEmailResponse) Reset() {
+	*x = VerifyEmailResponse{}
+	mi := &file_fitter_v1_user_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyEmailResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyEmailResponse) ProtoMessage() {}
+
+func (x *VerifyEmailResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyEmailResponse.ProtoReflect.Descriptor instead.
+func (*VerifyEmailResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *VerifyEmailResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+// SubmitFeedbackRequest emails the developer; the caller must have a verified email.
+type SubmitFeedbackRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Kind          string                 `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`       // "bug" | "idea" | "other"
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"` // 1 to 4000 characters
+	Release       string                 `protobuf:"bytes,3,opt,name=release,proto3" json:"release,omitempty"` // the UI's release id, for context
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubmitFeedbackRequest) Reset() {
+	*x = SubmitFeedbackRequest{}
+	mi := &file_fitter_v1_user_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubmitFeedbackRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitFeedbackRequest) ProtoMessage() {}
+
+func (x *SubmitFeedbackRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitFeedbackRequest.ProtoReflect.Descriptor instead.
+func (*SubmitFeedbackRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *SubmitFeedbackRequest) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *SubmitFeedbackRequest) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *SubmitFeedbackRequest) GetRelease() string {
+	if x != nil {
+		return x.Release
+	}
+	return ""
+}
+
+type SubmitFeedbackResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubmitFeedbackResponse) Reset() {
+	*x = SubmitFeedbackResponse{}
+	mi := &file_fitter_v1_user_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubmitFeedbackResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubmitFeedbackResponse) ProtoMessage() {}
+
+func (x *SubmitFeedbackResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_user_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubmitFeedbackResponse.ProtoReflect.Descriptor instead.
+func (*SubmitFeedbackResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{11}
+}
+
 type GetCurrentUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -367,7 +642,7 @@ type GetCurrentUserRequest struct {
 
 func (x *GetCurrentUserRequest) Reset() {
 	*x = GetCurrentUserRequest{}
-	mi := &file_fitter_v1_user_proto_msgTypes[6]
+	mi := &file_fitter_v1_user_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -379,7 +654,7 @@ func (x *GetCurrentUserRequest) String() string {
 func (*GetCurrentUserRequest) ProtoMessage() {}
 
 func (x *GetCurrentUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_user_proto_msgTypes[6]
+	mi := &file_fitter_v1_user_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -392,7 +667,7 @@ func (x *GetCurrentUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCurrentUserRequest.ProtoReflect.Descriptor instead.
 func (*GetCurrentUserRequest) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_user_proto_rawDescGZIP(), []int{6}
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{12}
 }
 
 type GetCurrentUserResponse struct {
@@ -404,7 +679,7 @@ type GetCurrentUserResponse struct {
 
 func (x *GetCurrentUserResponse) Reset() {
 	*x = GetCurrentUserResponse{}
-	mi := &file_fitter_v1_user_proto_msgTypes[7]
+	mi := &file_fitter_v1_user_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -416,7 +691,7 @@ func (x *GetCurrentUserResponse) String() string {
 func (*GetCurrentUserResponse) ProtoMessage() {}
 
 func (x *GetCurrentUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_fitter_v1_user_proto_msgTypes[7]
+	mi := &file_fitter_v1_user_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -429,7 +704,7 @@ func (x *GetCurrentUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCurrentUserResponse.ProtoReflect.Descriptor instead.
 func (*GetCurrentUserResponse) Descriptor() ([]byte, []int) {
-	return file_fitter_v1_user_proto_rawDescGZIP(), []int{7}
+	return file_fitter_v1_user_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetCurrentUserResponse) GetUser() *User {
@@ -451,7 +726,7 @@ const file_fitter_v1_user_proto_rawDesc = "" +
 	"\vshow_effort\x18\x03 \x01(\bR\n" +
 	"showEffort\x12\x1d\n" +
 	"\n" +
-	"show_lifts\x18\x04 \x01(\bR\tshowLifts\"\xd9\x01\n" +
+	"show_lifts\x18\x04 \x01(\bR\tshowLifts\"\xef\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
@@ -460,7 +735,8 @@ const file_fitter_v1_user_proto_rawDesc = "" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12<\n" +
 	"\rfeed_settings\x18\x06 \x01(\v2\x17.fitter.v1.FeedSettingsR\ffeedSettings\x12$\n" +
-	"\x0ewhats_new_seen\x18\a \x01(\tR\fwhatsNewSeen\"Y\n" +
+	"\x0ewhats_new_seen\x18\a \x01(\tR\fwhatsNewSeen\x12\x14\n" +
+	"\x05email\x18\b \x01(\tR\x05email\"Y\n" +
 	"\x19UpdateFeedSettingsRequest\x12<\n" +
 	"\rfeed_settings\x18\x01 \x01(\v2\x17.fitter.v1.FeedSettingsR\ffeedSettings\"A\n" +
 	"\x1aUpdateFeedSettingsResponse\x12#\n" +
@@ -468,14 +744,29 @@ const file_fitter_v1_user_proto_rawDesc = "" +
 	"\x17MarkWhatsNewSeenRequest\x12\x18\n" +
 	"\arelease\x18\x01 \x01(\tR\arelease\"?\n" +
 	"\x18MarkWhatsNewSeenResponse\x12#\n" +
-	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user\"\x17\n" +
+	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user\",\n" +
+	"\x14SendEmailCodeRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\"\x17\n" +
+	"\x15SendEmailCodeResponse\"(\n" +
+	"\x12VerifyEmailRequest\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\":\n" +
+	"\x13VerifyEmailResponse\x12#\n" +
+	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user\"_\n" +
+	"\x15SubmitFeedbackRequest\x12\x12\n" +
+	"\x04kind\x18\x01 \x01(\tR\x04kind\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x18\n" +
+	"\arelease\x18\x03 \x01(\tR\arelease\"\x18\n" +
+	"\x16SubmitFeedbackResponse\"\x17\n" +
 	"\x15GetCurrentUserRequest\"=\n" +
 	"\x16GetCurrentUserResponse\x12#\n" +
-	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user2\xa4\x02\n" +
+	"\x04user\x18\x01 \x01(\v2\x0f.fitter.v1.UserR\x04user2\x9d\x04\n" +
 	"\vUserService\x12U\n" +
 	"\x0eGetCurrentUser\x12 .fitter.v1.GetCurrentUserRequest\x1a!.fitter.v1.GetCurrentUserResponse\x12a\n" +
 	"\x12UpdateFeedSettings\x12$.fitter.v1.UpdateFeedSettingsRequest\x1a%.fitter.v1.UpdateFeedSettingsResponse\x12[\n" +
-	"\x10MarkWhatsNewSeen\x12\".fitter.v1.MarkWhatsNewSeenRequest\x1a#.fitter.v1.MarkWhatsNewSeenResponseB\x8d\x01\n" +
+	"\x10MarkWhatsNewSeen\x12\".fitter.v1.MarkWhatsNewSeenRequest\x1a#.fitter.v1.MarkWhatsNewSeenResponse\x12R\n" +
+	"\rSendEmailCode\x12\x1f.fitter.v1.SendEmailCodeRequest\x1a .fitter.v1.SendEmailCodeResponse\x12L\n" +
+	"\vVerifyEmail\x12\x1d.fitter.v1.VerifyEmailRequest\x1a\x1e.fitter.v1.VerifyEmailResponse\x12U\n" +
+	"\x0eSubmitFeedback\x12 .fitter.v1.SubmitFeedbackRequest\x1a!.fitter.v1.SubmitFeedbackResponseB\x8d\x01\n" +
 	"\rcom.fitter.v1B\tUserProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
 
@@ -491,7 +782,7 @@ func file_fitter_v1_user_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_user_proto_rawDescData
 }
 
-var file_fitter_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_fitter_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_fitter_v1_user_proto_goTypes = []any{
 	(*FeedSettings)(nil),               // 0: fitter.v1.FeedSettings
 	(*User)(nil),                       // 1: fitter.v1.User
@@ -499,26 +790,39 @@ var file_fitter_v1_user_proto_goTypes = []any{
 	(*UpdateFeedSettingsResponse)(nil), // 3: fitter.v1.UpdateFeedSettingsResponse
 	(*MarkWhatsNewSeenRequest)(nil),    // 4: fitter.v1.MarkWhatsNewSeenRequest
 	(*MarkWhatsNewSeenResponse)(nil),   // 5: fitter.v1.MarkWhatsNewSeenResponse
-	(*GetCurrentUserRequest)(nil),      // 6: fitter.v1.GetCurrentUserRequest
-	(*GetCurrentUserResponse)(nil),     // 7: fitter.v1.GetCurrentUserResponse
+	(*SendEmailCodeRequest)(nil),       // 6: fitter.v1.SendEmailCodeRequest
+	(*SendEmailCodeResponse)(nil),      // 7: fitter.v1.SendEmailCodeResponse
+	(*VerifyEmailRequest)(nil),         // 8: fitter.v1.VerifyEmailRequest
+	(*VerifyEmailResponse)(nil),        // 9: fitter.v1.VerifyEmailResponse
+	(*SubmitFeedbackRequest)(nil),      // 10: fitter.v1.SubmitFeedbackRequest
+	(*SubmitFeedbackResponse)(nil),     // 11: fitter.v1.SubmitFeedbackResponse
+	(*GetCurrentUserRequest)(nil),      // 12: fitter.v1.GetCurrentUserRequest
+	(*GetCurrentUserResponse)(nil),     // 13: fitter.v1.GetCurrentUserResponse
 }
 var file_fitter_v1_user_proto_depIdxs = []int32{
-	0, // 0: fitter.v1.User.feed_settings:type_name -> fitter.v1.FeedSettings
-	0, // 1: fitter.v1.UpdateFeedSettingsRequest.feed_settings:type_name -> fitter.v1.FeedSettings
-	1, // 2: fitter.v1.UpdateFeedSettingsResponse.user:type_name -> fitter.v1.User
-	1, // 3: fitter.v1.MarkWhatsNewSeenResponse.user:type_name -> fitter.v1.User
-	1, // 4: fitter.v1.GetCurrentUserResponse.user:type_name -> fitter.v1.User
-	6, // 5: fitter.v1.UserService.GetCurrentUser:input_type -> fitter.v1.GetCurrentUserRequest
-	2, // 6: fitter.v1.UserService.UpdateFeedSettings:input_type -> fitter.v1.UpdateFeedSettingsRequest
-	4, // 7: fitter.v1.UserService.MarkWhatsNewSeen:input_type -> fitter.v1.MarkWhatsNewSeenRequest
-	7, // 8: fitter.v1.UserService.GetCurrentUser:output_type -> fitter.v1.GetCurrentUserResponse
-	3, // 9: fitter.v1.UserService.UpdateFeedSettings:output_type -> fitter.v1.UpdateFeedSettingsResponse
-	5, // 10: fitter.v1.UserService.MarkWhatsNewSeen:output_type -> fitter.v1.MarkWhatsNewSeenResponse
-	8, // [8:11] is the sub-list for method output_type
-	5, // [5:8] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	0,  // 0: fitter.v1.User.feed_settings:type_name -> fitter.v1.FeedSettings
+	0,  // 1: fitter.v1.UpdateFeedSettingsRequest.feed_settings:type_name -> fitter.v1.FeedSettings
+	1,  // 2: fitter.v1.UpdateFeedSettingsResponse.user:type_name -> fitter.v1.User
+	1,  // 3: fitter.v1.MarkWhatsNewSeenResponse.user:type_name -> fitter.v1.User
+	1,  // 4: fitter.v1.VerifyEmailResponse.user:type_name -> fitter.v1.User
+	1,  // 5: fitter.v1.GetCurrentUserResponse.user:type_name -> fitter.v1.User
+	12, // 6: fitter.v1.UserService.GetCurrentUser:input_type -> fitter.v1.GetCurrentUserRequest
+	2,  // 7: fitter.v1.UserService.UpdateFeedSettings:input_type -> fitter.v1.UpdateFeedSettingsRequest
+	4,  // 8: fitter.v1.UserService.MarkWhatsNewSeen:input_type -> fitter.v1.MarkWhatsNewSeenRequest
+	6,  // 9: fitter.v1.UserService.SendEmailCode:input_type -> fitter.v1.SendEmailCodeRequest
+	8,  // 10: fitter.v1.UserService.VerifyEmail:input_type -> fitter.v1.VerifyEmailRequest
+	10, // 11: fitter.v1.UserService.SubmitFeedback:input_type -> fitter.v1.SubmitFeedbackRequest
+	13, // 12: fitter.v1.UserService.GetCurrentUser:output_type -> fitter.v1.GetCurrentUserResponse
+	3,  // 13: fitter.v1.UserService.UpdateFeedSettings:output_type -> fitter.v1.UpdateFeedSettingsResponse
+	5,  // 14: fitter.v1.UserService.MarkWhatsNewSeen:output_type -> fitter.v1.MarkWhatsNewSeenResponse
+	7,  // 15: fitter.v1.UserService.SendEmailCode:output_type -> fitter.v1.SendEmailCodeResponse
+	9,  // 16: fitter.v1.UserService.VerifyEmail:output_type -> fitter.v1.VerifyEmailResponse
+	11, // 17: fitter.v1.UserService.SubmitFeedback:output_type -> fitter.v1.SubmitFeedbackResponse
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_user_proto_init() }
@@ -532,7 +836,7 @@ func file_fitter_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_user_proto_rawDesc), len(file_fitter_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

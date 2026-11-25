@@ -1,53 +1,26 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useAuthStore } from "../stores/auth";
-import { errorMessage } from "../lib/errors";
-import { useWhatsNewStore } from "../stores/whatsNew";
-import type { FeedSettings } from "../gen/fitter/v1/user_pb";
-
-const auth = useAuthStore();
-const whatsNew = useWhatsNewStore();
-const error = ref("");
-
-// Each choice saves as soon as it's toggled. The checkboxes read the saved value, so a failed
-// save leaves them showing what is actually stored.
-const options: { key: keyof FeedSettings & string; title: string; hint: string }[] = [
-  { key: "showPace", title: "Pace and speed", hint: "Pace for runs and walks, speed for rides." },
-  { key: "showPower", title: "Power", hint: "Average watts, when the ride has a power meter." },
-  { key: "showEffort", title: "Effort", hint: "Strava's relative effort score." },
-  { key: "showLifts", title: "Exercises", hint: "The exercises of a logged gym or circuit session." },
+const sections = [
+  { to: "/settings/permissions", title: "App permissions", hint: "Which details show in campaign feeds, and what's new." },
+  { to: "/settings/feedback", title: "Developer feedback", hint: "Report a bug or suggest an idea." },
 ];
-
-async function toggle(key: string, on: boolean): Promise<void> {
-  error.value = "";
-  try {
-    await auth.saveFeedSettings({ ...auth.feedSettings, [key]: on } as FeedSettings);
-  } catch (err) {
-    error.value = errorMessage(err, "That wasn't saved. Try again.");
-  }
-}
 </script>
 
 <template>
   <main class="st">
     <h1 id="st-title" tabindex="-1">Settings</h1>
-    <fieldset class="rb-field details">
-      <legend>Feed details</legend>
-      <p class="meta">What shows under each activity in a campaign's feed. Only your own view changes: it doesn't change what anyone sees of you.</p>
-      <label v-for="o in options" :key="o.key" class="choice">
-        <input type="checkbox" :checked="auth.feedSettings[o.key] as boolean" @change="toggle(o.key, ($event.target as HTMLInputElement).checked)" />
-        <span>
-          <b>{{ o.title }}</b>
-          <small>{{ o.hint }}</small>
-        </span>
-      </label>
-      <p v-if="error" class="field-error" role="alert">{{ error }}</p>
-    </fieldset>
-    <section class="rb-field news" aria-labelledby="st-news">
-      <h2 id="st-news">What's new</h2>
-      <p class="meta">The changes since the last time you read them.</p>
-      <button type="button" class="pill" @click="whatsNew.show()">Show what's new</button>
-    </section>
+    <nav aria-labelledby="st-title">
+      <ul>
+        <li v-for="s in sections" :key="s.to">
+          <router-link :to="s.to" class="choice">
+            <span>
+              <b>{{ s.title }}</b>
+              <small>{{ s.hint }}</small>
+            </span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" /></svg>
+          </router-link>
+        </li>
+      </ul>
+    </nav>
   </main>
 </template>
 
@@ -64,31 +37,35 @@ h1 {
   font: 400 clamp(1.625rem, 6.5vw, 2.5rem) / 1.05 var(--font-display);
   text-transform: uppercase;
 }
-.details {
-  border: 0;
-  padding: 0;
-  margin: 0;
+ul {
+  display: grid;
   gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.details legend {
-  margin-bottom: var(--space-2);
-  font: 400 0.875rem/1.3 var(--font-display);
-  text-transform: uppercase;
+.choice {
+  justify-content: space-between;
+  align-items: center;
+  min-height: 2.75rem;
+  text-decoration: none;
 }
-.meta {
-  margin: 0 0 var(--space-3);
+.choice small {
   color: var(--ink-muted);
   font-size: 0.875rem;
 }
-.news {
-  margin-top: var(--space-6);
+.choice:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
 }
-.news h2 {
-  margin: 0 0 var(--space-2);
-  font: 400 0.875rem/1.3 var(--font-display);
-  text-transform: uppercase;
-}
-.news .pill {
-  justify-self: start;
+svg {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 </style>

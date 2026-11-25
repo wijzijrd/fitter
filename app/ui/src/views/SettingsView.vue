@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { CURRENT } from "../lib/releases";
+import { feedbackEnabled } from "../lib/config";
 
 const sections = [
   { to: "/settings/permissions", title: "App permissions", hint: "Which details show in campaign feeds." },
-  { to: "/settings/feedback", title: "Developer feedback", hint: "Report a bug or suggest an idea." },
+  ...(feedbackEnabled ? [{ to: "/settings/feedback", title: "Developer feedback", hint: "Report a bug or suggest an idea." }] : []),
   { to: "/settings/release-notes", title: "Release notes", hint: `What changed in each version. You're on ${CURRENT}.` },
 ];
 </script>

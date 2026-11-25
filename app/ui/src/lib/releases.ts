@@ -26,6 +26,16 @@ export const kindLabels: Record<ReleaseKind, string> = {
 // Newest first. Plain sentences, no jargon, no PR numbers.
 export const releases: Release[] = [
   {
+    version: "0.8.1",
+    date: "2026-11-25",
+    notes: [
+      {
+        title: "Developer feedback is paused",
+        body: "It's switched off while email sending is set up properly. It will be back in Settings soon.",
+      },
+    ],
+  },
+  {
     version: "0.8.0",
     date: "2026-11-25",
     notes: [

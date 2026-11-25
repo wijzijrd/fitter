@@ -3,6 +3,7 @@ import { useAuthStore } from "../stores/auth";
 import LoginView from "../views/LoginView.vue";
 import AuthCallbackView from "../views/AuthCallbackView.vue";
 import { saveReturnTo } from "../lib/returnTo";
+import { feedbackEnabled } from "../lib/config";
 
 // Login and callback stay in the entry chunk; every signed-in view (and ECharts)
 // loads on demand so a first-time visitor only downloads the sign-in screen.
@@ -40,6 +41,7 @@ const router = createRouter({
       name: "settings-feedback",
       component: () => import("../views/SettingsFeedbackView.vue"),
       meta: { requiresAuth: true, title: "Developer feedback" },
+      beforeEnter: () => feedbackEnabled || { name: "settings" },
     },
     {
       path: "/settings/release-notes",

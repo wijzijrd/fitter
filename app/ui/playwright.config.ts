@@ -12,7 +12,7 @@ export default defineConfig({
   webServer: {
     command: `vite --port ${PORT} --strictPort --host 127.0.0.1`,
     url: `http://127.0.0.1:${PORT}`,
-    env: { VITE_API_BASE_URL: `http://127.0.0.1:${PORT}/api` },
+    env: { VITE_API_BASE_URL: `http://127.0.0.1:${PORT}/api`, VITE_FEEDBACK_ENABLED: process.env.VITE_FEEDBACK_ENABLED ?? "true" },
     reuseExistingServer: !process.env.CI,
   },
 });

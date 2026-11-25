@@ -6,14 +6,15 @@ const emit = defineEmits<{ close: [] }>();
 const dlg = ref<HTMLDialogElement | null>(null);
 
 // A native modal <dialog> gives the focus trap, Escape and focus return; its `close` event
-// covers both the button and Escape.
+// covers both the button and Escape. Only the list scrolls: if the whole dialog did, focusing
+// Got it (last in the dialog) on open would scroll it to the bottom.
 onMounted(() => dlg.value?.showModal());
 </script>
 
 <template>
   <dialog ref="dlg" class="wn" aria-labelledby="wn-title" @close="emit('close')">
     <h2 id="wn-title">What's new</h2>
-    <ol class="items">
+    <ol class="items" tabindex="0" aria-label="Changes">
       <li v-for="item in whatsNewItems" :key="item.title">
         <b>{{ item.title }}</b>
         <span>{{ item.body }}</span>
@@ -35,20 +36,34 @@ onMounted(() => dlg.value?.showModal());
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  overflow-y: auto;
+  overflow: hidden;
+}
+/* Only while open: display on a closed <dialog> would override its hiding. */
+.wn[open] {
+  display: flex;
+  flex-direction: column;
 }
 .wn::backdrop {
   background: rgb(0 0 0 / 0.45);
 }
 h2 {
+  flex: none;
   margin: 0 0 var(--space-4);
   font: 400 clamp(1.375rem, 5vw, 1.75rem) / 1.1 var(--font-display);
   text-transform: uppercase;
 }
 .items {
-  margin: 0 0 var(--space-5);
-  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 calc(-1 * var(--space-2));
+  padding: 0 var(--space-2);
   list-style: none;
+  overscroll-behavior: contain;
+}
+.items:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
 }
 .items li {
   display: grid;
@@ -67,6 +82,10 @@ h2 {
 }
 form {
   display: flex;
+  flex: none;
   justify-content: flex-end;
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
 }
 </style>

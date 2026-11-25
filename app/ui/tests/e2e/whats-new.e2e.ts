@@ -53,6 +53,22 @@ test.describe("first visit after a release", () => {
     expect((await btn.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
     expect(await overflowsX(page)).toBe(false);
   });
+
+  test("opens at the top on a short screen, with Got it always in view", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto("/");
+    const dialog = page.getByRole("dialog", { name: "What's new" });
+    const btn = dialog.getByRole("button", { name: "Got it" });
+    await expect(btn).toBeFocused();
+    await expect(dialog.getByRole("heading", { name: "What's new" })).toBeInViewport({ ratio: 1 });
+    await expect(dialog.locator("li").first()).toBeInViewport();
+    await expect(btn).toBeInViewport({ ratio: 1 });
+    // Scrolling the list to its end leaves the heading and button where they were.
+    await dialog.locator(".items").evaluate((el) => (el.scrollTop = el.scrollHeight));
+    await expect(dialog.locator("li").last()).toBeInViewport();
+    await expect(dialog.getByRole("heading", { name: "What's new" })).toBeInViewport({ ratio: 1 });
+    await expect(btn).toBeInViewport({ ratio: 1 });
+  });
 });
 
 test("a seen release stays quiet, and Settings reopens it", async ({ page }) => {

@@ -14,15 +14,22 @@ test("Settings is a menu of App permissions and Developer feedback", async ({ pa
 
 test("feedback needs a verified email, then sends kind and message", async ({ page }) => {
   await page.goto("/settings/feedback");
-  await expect(page.getByRole("textbox", { name: "Message" })).toHaveCount(0);
+  // First the page says why an email is needed, and asks for nothing until the member starts.
+  await expect(page.getByRole("heading", { name: "Verify your email to send feedback" })).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveCount(0);
+  await page.getByRole("button", { name: "Verify email" }).click();
 
-  await page.getByLabel("Your email").fill("alex@example.com");
+  const address = page.getByLabel("Your email");
+  await expect(address).toBeFocused();
+  await expect(page.getByText("Step 1 of 2")).toBeVisible();
+  await address.fill("alex@example.com");
   const sent = page.waitForRequest((r) => r.url().endsWith("SendEmailCode"));
   await page.getByRole("button", { name: "Send code" }).click();
   expect((await sent).postDataJSON()).toEqual({ email: "alex@example.com" });
 
   const code = page.getByLabel("6-digit code");
   await expect(code).toBeFocused();
+  await expect(page.getByText("Step 2 of 2")).toBeVisible();
   await code.fill("999999");
   await page.getByRole("button", { name: "Verify" }).click();
   await expect(page.getByRole("alert")).toHaveText("That code doesn't match. Check the email and try again.");
@@ -49,6 +56,7 @@ test.describe("phone", () => {
     }
     expect(await overflowsX(page)).toBe(false);
     await page.goto("/settings/feedback");
+    await page.getByRole("button", { name: "Verify email" }).click();
     await expect(page.getByLabel("Your email")).toBeVisible();
     expect(await overflowsX(page)).toBe(false);
   });

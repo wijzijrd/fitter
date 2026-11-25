@@ -9,7 +9,8 @@ import { RELEASE } from "../lib/whatsNew";
 const auth = useAuthStore();
 
 // Feedback is emailed to the developer with Reply-To set to the member's address, so the address
-// is verified first: enter it, get a 6-digit code, type the code.
+// is verified first: say why, then enter it, get a 6-digit code, type the code.
+const started = ref(false);
 const changing = ref(false);
 const verified = computed(() => !!auth.user?.email && !changing.value);
 const email = ref(auth.user?.email ?? "");
@@ -94,7 +95,13 @@ const submit = () =>
     "It wasn't sent. Try again.",
   );
 
+function start(): void {
+  started.value = true;
+  moved.value = true;
+}
+
 function restart(): void {
+  started.value = true;
   changing.value = true;
   sentTo.value = "";
   error.value = "";
@@ -111,9 +118,18 @@ function restart(): void {
     <h1 id="st-title" tabindex="-1">Developer feedback</h1>
 
     <template v-if="!verified">
-      <p class="meta">Verify your email first, so a reply can reach you. It's only used for feedback.</p>
-      <form v-if="!sentTo" class="rb-field" novalidate @submit.prevent="sendCode">
+      <section v-if="!started" class="gate" aria-labelledby="fb-gate">
+        <h2 id="fb-gate">Verify your email to send feedback</h2>
+        <p class="meta">
+          Bug reports and ideas go straight to the developer by email. To send one, confirm your email address first, so a reply can reach
+          you. It's only used for feedback.
+        </p>
+        <button type="button" class="pill pill--primary" @click="start">Verify email</button>
+      </section>
+      <form v-else-if="!sentTo" class="rb-field" novalidate @submit.prevent="sendCode">
+        <p class="step">Step 1 of 2</p>
         <label for="fb-email">Your email</label>
+        <small id="fb-email-hint">We'll send a 6-digit code to it.</small>
         <input
           id="fb-email"
           v-model="email"
@@ -123,12 +139,13 @@ function restart(): void {
           autocomplete="email"
           maxlength="254"
           :aria-invalid="!!error"
-          :aria-describedby="error ? 'fb-error' : undefined"
+          :aria-describedby="error ? 'fb-email-hint fb-error' : 'fb-email-hint'"
         />
         <p v-if="error" id="fb-error" class="field-error" role="alert">{{ error }}</p>
         <button type="submit" class="pill pill--primary" v-busy="busy">{{ busy ? "Sending…" : "Send code" }}</button>
       </form>
       <form v-else class="rb-field" novalidate @submit.prevent="verify">
+        <p class="step">Step 2 of 2</p>
         <label for="fb-code">6-digit code</label>
         <small id="fb-code-hint">We sent it to {{ sentTo }}. It works for 15 minutes.</small>
         <input
@@ -210,6 +227,31 @@ h1 {
 .fb > .pill {
   justify-self: start;
   align-self: flex-start;
+}
+.gate {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--bib-inset);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+}
+.gate h2 {
+  margin: 0;
+  font: 400 1.125rem/1.2 var(--font-display);
+  text-transform: uppercase;
+}
+.gate .meta {
+  margin: 0;
+}
+.gate .pill {
+  justify-self: start;
+}
+.step {
+  margin: 0;
+  color: var(--ink-muted);
+  font: 400 0.75rem/1.2 var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .code {
   max-width: 10rem;

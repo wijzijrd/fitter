@@ -52,3 +52,8 @@ app/svc/  Go ConnectRPC backend (container; listens on 8081)
   dispatch it with `image_tag=sha-<commit>` for downstream failures, or push a new commit.
 - **Costs:** don't add paid services or raise `api_power` without asking; that's an infra-repo
   change anyway.
+- **Versions:** every user-facing change ships as a release with a semver bump: **major** for
+  app-wide updates, **minor** for new features, **patch** for bug fixes and QOL changes. Before
+  building anything, propose the bump type and **confirm it with the user**; don't pick it
+  silently. The same PR bumps the version and adds the release note. Only major and minor
+  releases pop up on app open; every release is listed on the Release notes page.

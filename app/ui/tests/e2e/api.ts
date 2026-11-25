@@ -1,10 +1,10 @@
 import { test as base, type Page } from "@playwright/test";
-import { RELEASE } from "../../src/lib/whatsNew";
+import { CURRENT } from "../../src/lib/releases";
 
 // In-memory stand-in for the Connect API (JSON over POST /api/fitter.v1.<Service>/<Method>).
 // Each test gets fresh data; deletes mutate it so list reloads reflect them.
 // Signed-in users have already dismissed the current splash unless a test says otherwise.
-function fixtures(unseenSplash: boolean) {
+function fixtures(seen: string) {
   let sports = [
     { id: "s1", key: "powerlifting", label: "Powerlifting" },
     { id: "s2", key: "climbing", label: "Climbing" },
@@ -30,7 +30,7 @@ function fixtures(unseenSplash: boolean) {
     { id: "-2", sportType: "WeightTraining", name: "Pull day", startDate: "2026-11-19T08:00:00Z", movingTimeS: "3000", lifts: [], blocks: [] },
   ];
   let feedSettings: Record<string, boolean> = { showPace: true, showPower: true, showEffort: true, showLifts: true };
-  let whatsNewSeen = unseenSplash ? "" : RELEASE;
+  let whatsNewSeen = seen;
   let email = "";
   let pendingEmail = "";
   const me = () => ({ id: "u1", name: "Alexandria Vandenberg-Smith", role: "admin", status: "active", feedSettings, whatsNewSeen, email });
@@ -221,8 +221,8 @@ function campaignDetail() {
   };
 }
 
-async function mockApi(page: Page, unseenSplash: boolean): Promise<void> {
-  const handlers = fixtures(unseenSplash);
+async function mockApi(page: Page, seen: string): Promise<void> {
+  const handlers = fixtures(seen);
   await page.addInitScript(() => localStorage.setItem("fitter_token", "e2e"));
   await page.route("**/api/fitter.v1.*/**", async (route) => {
     const method = route.request().url().split("/fitter.v1.")[1];
@@ -243,10 +243,11 @@ async function mockApi(page: Page, unseenSplash: boolean): Promise<void> {
 }
 
 // `page` arrives signed in as an admin with the mock API installed.
-export const test = base.extend<{ unseenSplash: boolean }>({
-  unseenSplash: [false, { option: true }],
-  page: async ({ page, unseenSplash }, use) => {
-    await mockApi(page, unseenSplash);
+// `seen` is the release version the member last closed; the default has nothing new to show.
+export const test = base.extend<{ seen: string }>({
+  seen: [CURRENT, { option: true }],
+  page: async ({ page, seen }, use) => {
+    await mockApi(page, seen);
     await use(page);
   },
 });

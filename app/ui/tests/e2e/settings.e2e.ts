@@ -4,6 +4,7 @@ test("Settings is a menu of App permissions and Developer feedback", async ({ pa
   await page.goto("/settings");
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
   await expect(page.getByRole("link", { name: /App permissions/ })).toHaveAttribute("href", "/settings/permissions");
+  await expect(page.getByRole("link", { name: /Release notes/ })).toHaveAttribute("href", "/settings/release-notes");
   await page.getByRole("link", { name: /Developer feedback/ }).click();
   await expect(page.getByRole("heading", { name: "Developer feedback" })).toBeVisible();
   // The navbar name keeps its active underline on the sub-pages.

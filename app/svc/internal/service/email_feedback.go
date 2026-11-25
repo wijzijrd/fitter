@@ -63,8 +63,8 @@ func (s *UserService) SendEmailCode(ctx context.Context, req *connect.Request[fi
 	}
 	err = s.Mail(ctx, mail.Message{
 		To:      email,
-		Subject: "Your Fitter code: " + code,
-		Body:    "Your Fitter verification code is " + code + ".\n\nIt works for 15 minutes. If you didn't ask for it, ignore this email.\n",
+		Subject: "Your Kombeweeg code: " + code,
+		Body:    "Your Kombeweeg verification code is " + code + ".\n\nIt works for 15 minutes. If you didn't ask for it, ignore this email.\n",
 	})
 	if err != nil {
 		slog.Error("send verification code", "user", userID, "error", err)
@@ -146,7 +146,7 @@ func (s *UserService) SubmitFeedback(ctx context.Context, req *connect.Request[f
 	err = s.Mail(ctx, mail.Message{
 		To:      s.FeedbackTo,
 		ReplyTo: u.Email,
-		Subject: fmt.Sprintf("[Fitter %s] %s from %s", env, kind, u.Name),
+		Subject: fmt.Sprintf("[Kombeweeg %s] %s from %s", env, kind, u.Name),
 		Body: fmt.Sprintf("%s\n\n--\nFrom: %s (user %s)\nReply to: %s\nRelease: %s\nEnvironment: %s\n",
 			message, u.Name, u.ID, u.Email, release, env),
 	})

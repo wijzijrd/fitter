@@ -14,7 +14,7 @@ export function errorMessage(err: unknown, fallback: string): string {
     case Code.PermissionDenied:
       return "You don't have access to that.";
     case Code.Unavailable:
-      return "Can't reach Fitter right now. Check your connection and try again.";
+      return "Can't reach Kombeweeg right now. Check your connection and try again.";
     default:
       return fallback;
   }

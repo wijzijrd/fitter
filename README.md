@@ -1,4 +1,6 @@
-# Fitter
+# Kombeweeg
+
+The product is called Kombeweeg; code, infrastructure and this repository keep the name `fitter`.
 
 A Strava activity tracker for you and your friends — join shared campaigns, track personal fitness goals, and see a per-campaign feed, leaderboard, and progress timeline.
 

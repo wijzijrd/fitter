@@ -1,5 +1,5 @@
 ---
-name: Fitter
+name: Kombeweeg
 description: Strava-fed campaigns and private goals for a close friend group, set as race-day bibs.
 colors:
   tangerine: "#ff5c34"
@@ -144,17 +144,17 @@ components:
     backgroundColor: "{colors.cool-blue-soft}"
 ---
 
-# Design System: Fitter
+# Design System: Kombeweeg
 
 ## Overview
 
 **Creative North Star: "The Race Bib"**
 
-Fitter looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next ("8.2 km to catch Sam"). Standing reads in seconds, on a phone after a workout or on a desktop.
+Kombeweeg looks like race day among friends: vibrant, social, eye-catching, yet legible at a glance. The signature is the bib: a Tangerine band across the top, a monumental Bungee rank numeral, and a dashed tear-off tab carrying the one fact that matters next ("8.2 km to catch Sam"). Standing reads in seconds, on a phone after a workout or on a desktop.
 
 Energy comes from type scale, bold flat colour and 2px Soft Cherry outlines, never from texture or ornament. The ground is plain white so bibs, numerals and the two pops carry the screen. Black Cherry does the emphasis work a shadow or a heavier weight would do elsewhere. The theme is light only.
 
-The Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, campaign create and join, goals, and login run on it; goals are flat bibs in a grid, and every goal form (join, "Add a goal", create's last step, the goals editor) is the same Goal Builder. Login and the auth callback share a bare shell (navbar-sized Bungee wordmark, one column (400px, 480px from 600px, 520px from 900px) that centres vertically at every size, lifted to the optical centre, "Powered by Strava") around a flat "Unclaimed" bib, over the one decorative ground in the system: an inline SVG pattern of interlocked dumbbells in flat Hairline grey, turned 45° into a full chain-link lattice. Running shoes (SVG Repo "sports-shoes-2", inlined), drawn bicycles and drawn kettlebells fill the large diamond gaps only, each type in its own vertical column and always upright (a three-column repeat on a 444px tile); the small gaps between dumbbell ends stay empty. It is aria-hidden, never Tangerine or Cool Blue. Its band is Cool Blue here, so Tangerine never competes with the official Connect with Strava button in its body; the title is the page's largest type, and the tear-off tab states what Fitter reads and who sees it. Login errors are Cool Blue notices; callback errors sit in the bib.
+The Bib Stack (your bib in front, friends ahead and behind peeking) is the composition of the campaign detail surface; the Start List (one outlined sheet per race state, a fixed number / race / gap column grid, a tear-off footer) is the composition of the campaigns list. The bib anatomy, palette, type pairing and outline language are the global system. Campaign detail, the campaigns list, campaign create and join, goals, and login run on it; goals are flat bibs in a grid, and every goal form (join, "Add a goal", create's last step, the goals editor) is the same Goal Builder. Login and the auth callback share a bare shell (navbar-sized Bungee wordmark, one column (400px, 480px from 600px, 520px from 900px) that centres vertically at every size, lifted to the optical centre, "Powered by Strava") around a flat "Unclaimed" bib, over the one decorative ground in the system: an inline SVG pattern of interlocked dumbbells in flat Hairline grey, turned 45° into a full chain-link lattice. Running shoes (SVG Repo "sports-shoes-2", inlined), drawn bicycles and drawn kettlebells fill the large diamond gaps only, each type in its own vertical column and always upright (a three-column repeat on a 444px tile); the small gaps between dumbbell ends stay empty. It is aria-hidden, never Tangerine or Cool Blue. Its band is Cool Blue here, so Tangerine never competes with the official Connect with Strava button in its body; the title is the page's largest type, and the tear-off tab states what Kombeweeg reads and who sees it. Login errors are Cool Blue notices; callback errors sit in the bib.
 
 **Key Characteristics:**
 - White ground, Black Cherry ink, Soft Cherry outlines, Tangerine and Cool Blue as flat pops.
@@ -199,7 +199,7 @@ A white ground with one deep warm-brown ink and two saturated pops, each with on
 
 ### Hierarchy
 - **Display** (Bungee 400, clamp(4.5rem, 24vw, 6.5rem), 0.85): the rank numeral on the front bib. Drops to clamp(3rem, 15vw, 4rem) for two-digit ranks and percentages, and to 2.75rem on peek bibs. The flat bib (previews and goal bibs, where the numeral is the percentage done) uses clamp(4rem, 20vw, 5.5rem). Start-list numbers are 2.5rem (line-height 0.9), dropping to 1.5rem past two characters ("64%", "12D").
-- **Headline** (Bungee 400, clamp(1.625rem, 6.5vw, 2.5rem), 1.05, uppercase, balanced wrap): campaign titles. The wordmark uses Bungee at 1.25rem. The login and callback titles ("Get your bib", "Signing you in…", "Not signed in") use Bungee at clamp(2rem, 10vw, 3.25rem), line-height 1, uppercase, balanced, wrapping anywhere so long words never clip; their lead sentence is Hanken 1.0625rem at 1.45.
+- **Headline** (Bungee 400, clamp(1.625rem, 6.5vw, 2.5rem), 1.05, uppercase, balanced wrap): campaign titles. The wordmark ("KOMBEWEEG") uses Bungee at 1.25rem and never wraps; in the navbar the signed-in name ellipsizes first to make room. The app icon is a lowercase serif "kb" on a gradient: purple for staging, orange for production. Each environment's icons and web app manifest live in `app/ui/public/icons/<staging|prod>/` and are picked at build time by `VITE_APP_ENV`, so new artwork is a file swap. The login and callback titles ("Get your bib", "Signing you in…", "Not signed in") use Bungee at clamp(2rem, 10vw, 3.25rem), line-height 1, uppercase, balanced, wrapping anywhere so long words never clip; their lead sentence is Hanken 1.0625rem at 1.45.
 - **Title** (Bungee 400, 1.625rem, 1.1): the progress value on the front bib (1.125rem when longer than nine characters), "Get your bib" on a campaign's unclaimed bib and other in-page Bungee headings such as create's step titles and "Not racing yet" and the goals page's "No goals yet" (1.5rem). Bungee 1.625rem also sets the claim pair "No. —", values on preview bibs, and the target input. A goal-builder condition value is set in Bungee 1.25rem (line-height 1.1) in a 7.5rem input, its unit in Hanken 700 0.9375rem beside it.
 - **Label** (Bungee 400, 0.75rem, 1.3, uppercase): bib and sheet band text ("AHEAD", "+8.2 KM", "START LIST · RACING") and start-list column labels (NO. / RACE / NEXT GAP, line-height 1.2, Muted Ink). The FINISHER tag uses 0.6875rem; rank chips use 0.9375rem; create's "n / 4" step count is 0.875rem in Muted Ink. Group labels over standings and charts ("Together", "All sports", "Run · Pace") are Bungee 0.875rem uppercase, line-height 1.3, in Black Cherry.
 - **Body** (Hanken Grotesk 400, 1rem; 700 for names, values and controls at 0.875 to 1rem): names, activity lines, buttons, tabs, field labels, start-list race names and gap values, the tear-off tab and footer (700, 0.9375rem). Descriptions cap at 65ch.
@@ -321,6 +321,6 @@ ECharts draws on canvas, so the chart reads the colour tokens from `:root` at re
 ### Don't:
 - **Don't** set text in Tangerine on white, or white text on Tangerine.
 - **Don't** set people's names, activity titles or other user-written reading text in Bungee.
-- **Don't** introduce green, or Strava orange `#fc4c02`, into Fitter's own UI.
+- **Don't** introduce green, or Strava orange `#fc4c02`, into Kombeweeg's own UI.
 - **Don't** drift into a dark neon fitness-tracker look or a generic white-card dashboard.
 - **Don't** add texture, gradients or soft shadows. Depth is outline plus the single front-bib offset.

@@ -165,7 +165,7 @@ func TestSubmitFeedback(t *testing.T) {
 		t.Fatalf("SubmitFeedback: %v", err)
 	}
 	m := (*sent)[len(*sent)-1]
-	if m.To != "dev@example.com" || m.ReplyTo != "sam@example.com" || m.Subject != "[Fitter staging] Bug from sam" {
+	if m.To != "dev@example.com" || m.ReplyTo != "sam@example.com" || m.Subject != "[Kombeweeg staging] Bug from sam" {
 		t.Fatalf("mail = %+v", m)
 	}
 	if !strings.HasPrefix(m.Body, "The feed is blank\n") || !strings.Contains(m.Body, "Release: 2026-11-22") {

@@ -101,7 +101,7 @@ router.afterEach((to) => {
   } catch {
     // No storage: the one-reload guard just can't reset.
   }
-  document.title = typeof to.meta.title === "string" ? `${to.meta.title} · Fitter` : "Fitter";
+  document.title = typeof to.meta.title === "string" ? `${to.meta.title} · Kombeweeg` : "Kombeweeg";
 });
 
 export default router;

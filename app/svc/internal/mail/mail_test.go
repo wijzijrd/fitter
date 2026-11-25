@@ -8,7 +8,7 @@ import (
 
 func TestBuild(t *testing.T) {
 	long := strings.Repeat("é", 600) // 1200 bytes on one line: must be wrapped, and stay UTF-8
-	got := string(Build("Fitter <no-reply@staging.kombeweeg.com>", "fitter-staging", Message{
+	got := string(Build("Kombeweeg <no-reply@staging.kombeweeg.com>", "fitter-staging", Message{
 		To:      "dev@example.com",
 		ReplyTo: "sam@example.com",
 		Subject: "Idea from Zoë\r\nBcc: victim@example.com",
@@ -20,7 +20,7 @@ func TestBuild(t *testing.T) {
 		t.Fatalf("no blank line between headers and body:\n%s", got)
 	}
 	for _, want := range []string{
-		"From: Fitter <no-reply@staging.kombeweeg.com>\r\n",
+		"From: Kombeweeg <no-reply@staging.kombeweeg.com>\r\n",
 		"To: dev@example.com\r\n",
 		"Reply-To: sam@example.com\r\n",
 		"Subject: =?utf-8?q?Idea_from_Zo=C3=AB_Bcc:_victim@example.com?=\r\n",

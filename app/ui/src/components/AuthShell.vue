@@ -73,7 +73,7 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
       <rect width="100%" height="100%" fill="url(#weights-tile)" />
     </svg>
     <div class="auth-col">
-      <h1>Fitter</h1>
+      <h1>Kombeweeg</h1>
       <slot />
       <footer class="attribution">
         <img :src="poweredByStrava" alt="Powered by Strava" width="158" height="16" />

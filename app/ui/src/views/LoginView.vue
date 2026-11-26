@@ -15,6 +15,7 @@ const messages: Record<string, string> = {
   access_denied: "You cancelled on Strava, so nothing was connected. Try again when you're ready.",
   state: "Sign-in timed out or your browser blocked a cookie. Try connecting again.",
   banned: "This account has been banned from Kombeweeg.",
+  invite_only: "Kombeweeg is invite-only right now, and your Strava account isn't on the list. Use kombeweeg.com instead.",
   scope: "Kombeweeg needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
   capacity: "Kombeweeg is full right now. Ask the organiser to make room.",
   rate_limited: "Strava is busy right now. Wait a few minutes and try again.",

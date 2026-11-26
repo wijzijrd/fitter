@@ -28,6 +28,18 @@ test("catalog delete asks first and keeps focus in the list", async ({ page }) =
   expect((await focused(page)).text).toContain("Climbing");
 });
 
+test("sign-ups: invite-only takes an athlete id and removes it again", async ({ page }) => {
+  await expect(page.getByRole("heading", { name: "Sign-ups" })).toBeVisible();
+  await page.locator("#reg-mode").selectOption("invite_only");
+  await expect(page.getByText("Nobody invited.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Invite athlete" })).toBeDisabled();
+  await page.locator("#allow-id").fill("424242");
+  await page.getByRole("button", { name: "Invite athlete" }).click();
+  await expect(page.getByText("Strava athlete 424242")).toBeVisible();
+  await page.getByRole("button", { name: "Remove athlete 424242" }).click();
+  await expect(page.getByText("Strava athlete 424242")).toBeHidden();
+});
+
 test("ban form takes focus and gives it back on Cancel", async ({ page }) => {
   await page.locator('[data-ban="u2"]').click();
   expect((await focused(page)).id).toBe("ban-u2");

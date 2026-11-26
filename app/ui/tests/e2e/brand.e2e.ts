@@ -24,6 +24,13 @@ test("login says Kombeweeg and keeps the Strava marks", async ({ page }) => {
   expect(await overflowsX(page)).toBe(false);
 });
 
+test("an invite-only refusal says where to go instead", async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem("fitter_token"));
+  await page.goto("/login?error=invite_only");
+  await expect(page.getByText("Kombeweeg is invite-only right now")).toBeVisible();
+  await expect(page.getByText("kombeweeg.com instead")).toBeVisible();
+});
+
 test.describe("release notes", () => {
   test.use({ seen: "2026-11-22" });
 

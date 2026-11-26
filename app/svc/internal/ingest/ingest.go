@@ -10,6 +10,7 @@ package ingest
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -133,6 +134,10 @@ func Backfill(ctx context.Context, q *db.Queries, c *strava.Client, u db.User, a
 	return count, nil
 }
 
+// ErrNotConnected means the user has no Strava tokens yet: a copied beta user who hasn't
+// signed in on this database. Callers skip them; the next Strava sign-in fills the tokens.
+var ErrNotConnected = errors.New("no strava tokens yet; the user must sign in again")
+
 // EnsureFreshAccessToken returns a Strava access token for u guaranteed
 // valid for at least refreshBuffer, refreshing and persisting it first if
 // needed. This is the single implementation — it used to be duplicated in
@@ -148,6 +153,9 @@ func EnsureFreshAccessToken(ctx context.Context, q *db.Queries, c *strava.Client
 		if time.Now().Add(refreshBuffer).Before(time.Unix(u.TokenExpiresAt, 0)) {
 			return u.AccessToken, nil
 		}
+	}
+	if u.RefreshToken == "" {
+		return "", ErrNotConnected
 	}
 	tok, err := c.RefreshAccessToken(ctx, u.RefreshToken)
 	if err != nil {

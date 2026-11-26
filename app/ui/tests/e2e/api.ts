@@ -5,6 +5,7 @@ import { CURRENT } from "../../src/lib/releases";
 // Each test gets fresh data; deletes mutate it so list reloads reflect them.
 // Signed-in users have already dismissed the current splash unless a test says otherwise.
 function fixtures(seen: string) {
+  let registration = { mode: "open", allowed: [] as { stravaAthleteId: string; addedAt: string }[] };
   let sports = [
     { id: "s1", key: "powerlifting", label: "Powerlifting" },
     { id: "s2", key: "climbing", label: "Climbing" },
@@ -127,6 +128,10 @@ function fixtures(seen: string) {
     "AdminService/BanUser": (b: any) => (setUser(b.id, { status: "banned", banReason: b.reason, bannedAt: "2026-11-22T08:00:00Z" }), {}),
     "AdminService/UnbanUser": (b: any) => (setUser(b.id, { status: "active", banReason: "" }), {}),
     "AdminService/SetUserRole": (b: any) => (setUser(b.id, { role: b.role }), {}),
+    "AdminService/GetRegistration": () => registration,
+    "AdminService/SetRegistrationMode": (b: any) => (registration.mode = b.mode, {}),
+    "AdminService/AllowAthlete": (b: any) => (registration.allowed.push({ stravaAthleteId: String(b.stravaAthleteId), addedAt: "2026-11-26T08:00:00Z" }), {}),
+    "AdminService/RevokeAthlete": (b: any) => (registration.allowed = registration.allowed.filter((a) => a.stravaAthleteId !== String(b.stravaAthleteId)), {}),
     "AdminService/ListCustomSports": () => ({ sports }),
     "AdminService/CreateCustomSport": (b: any) => {
       const sport = { id: `s${++seq}`, key: b.key, label: b.label };

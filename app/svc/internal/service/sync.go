@@ -51,7 +51,9 @@ func (s *ActivityService) SyncActivities(ctx context.Context, _ *connect.Request
 	if after < 0 {
 		after = 0
 	}
-	if _, err := ingest.Backfill(ctx, s.Queries, s.Strava, u, after); err != nil {
+	if _, err := ingest.Backfill(ctx, s.Queries, s.Strava, u, after); errors.Is(err, ingest.ErrNotConnected) {
+		return connect.NewResponse(&fitterv1.SyncActivitiesResponse{}), nil // signing in fetches history
+	} else if err != nil {
 		slog.Error("sync activities failed", "user_id", userID, "err", err)
 		return nil, connect.NewError(connect.CodeUnavailable, errors.New("couldn't reach Strava"))
 	}

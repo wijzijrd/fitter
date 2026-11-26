@@ -80,6 +80,9 @@ func (d *Deps) processActivityEvent(ownerID, activityID int64, aspectType string
 	}
 
 	accessToken, err := ingest.EnsureFreshAccessToken(ctx, d.Queries, d.Strava, u)
+	if errors.Is(err, ingest.ErrNotConnected) {
+		return // copied beta user, not yet signed in here; their history is fetched on sign-in
+	}
 	if err != nil {
 		slog.Error("webhook refresh token failed", "user_id", u.ID, "err", err)
 		return

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"log/slog"
@@ -22,12 +23,13 @@ const oauthStateCookie = "fitter_oauth_state"
 
 // Codes Callback sends back to the frontend. LoginView.vue `messages` maps these.
 const (
-	errState     = "state"
-	errScope     = "scope"
-	errExchange  = "exchange"
-	errServer    = "server"
-	errCapacity  = "capacity"
-	errRateLimit = "rate_limited"
+	errState      = "state"
+	errScope      = "scope"
+	errExchange   = "exchange"
+	errServer     = "server"
+	errCapacity   = "capacity"
+	errRateLimit  = "rate_limited"
+	errInviteOnly = "invite_only"
 )
 
 // Login redirects the browser to Strava's OAuth consent screen.
@@ -86,6 +88,17 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	admitted, vouched, err := d.admitAthlete(r.Context(), tok.Athlete.ID)
+	if err != nil {
+		slog.Error("registration check failed", "err", err)
+		d.loginError(w, r, errServer)
+		return
+	}
+	if !admitted {
+		d.loginError(w, r, errInviteOnly)
+		return
+	}
+
 	var u db.User
 	if d.isBootstrapAdmin(tok.Athlete.ID) {
 		// Explicitly (re-)grants admin on every login for a listed athlete
@@ -125,6 +138,13 @@ func (d *Deps) Callback(w http.ResponseWriter, r *http.Request) {
 	if u.Status == "banned" {
 		d.loginError(w, r, "banned")
 		return
+	}
+	if vouched && u.Status == "pending" {
+		if err := d.Queries.SetUserStatus(r.Context(), db.SetUserStatusParams{ID: u.ID, Status: "active"}); err != nil {
+			slog.Error("approve allowlisted user failed", "err", err)
+			d.loginError(w, r, errServer)
+			return
+		}
 	}
 	go d.backfillActivities(u)
 
@@ -176,6 +196,37 @@ func (d *Deps) backfillActivities(u db.User) {
 		return
 	}
 	slog.Info("backfill activities complete", "user_id", u.ID, "count", count)
+}
+
+// admitAthlete applies the registration mode to a Strava sign-in. admitted=false means
+// refuse. vouched=true means the allowlist (or the bootstrap admin list) lets them in
+// without the approval queue. An existing account always gets in here; banned is checked later.
+func (d *Deps) admitAthlete(ctx context.Context, athleteID int64) (admitted, vouched bool, err error) {
+	if d.isBootstrapAdmin(athleteID) {
+		return true, true, nil
+	}
+	mode, err := d.Queries.GetRegistrationMode(ctx)
+	if err != nil {
+		return false, false, err
+	}
+	if mode == "open" {
+		return true, false, nil
+	}
+	listed, err := d.Queries.IsAthleteAllowlisted(ctx, athleteID)
+	if err != nil {
+		return false, false, err
+	}
+	if listed {
+		return true, true, nil
+	}
+	_, err = d.Queries.GetUserByStravaID(ctx, athleteID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, false, nil
+	}
+	if err != nil {
+		return false, false, err
+	}
+	return true, false, nil
 }
 
 // isBootstrapAdmin reports whether athleteID is in ADMIN_STRAVA_ATHLETE_IDS.

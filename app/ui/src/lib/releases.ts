@@ -26,6 +26,20 @@ export const kindLabels: Record<ReleaseKind, string> = {
 // Newest first. Plain sentences, no jargon, no PR numbers.
 export const releases: Release[] = [
   {
+    version: "1.0.0",
+    date: "2026-11-26",
+    notes: [
+      {
+        title: "Welcome to Kombeweeg",
+        body: "Kombeweeg has its own home now at kombeweeg.com. Your account, lifts, custom exercises and feed settings come with you: sign in with Strava and you'll find them where you left them. Your Strava activities are fetched again after you sign in.",
+      },
+      {
+        title: "Goals start fresh",
+        body: "Goals didn't move over, so create the ones you want again. Campaigns were recreated by the owner, not copied.",
+      },
+    ],
+  },
+  {
     version: "0.8.2",
     date: "2026-11-25",
     notes: [

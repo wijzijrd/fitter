@@ -1923,6 +1923,388 @@ func (x *SetExerciseArchivedResponse) GetExercise() *Exercise {
 	return nil
 }
 
+// Registration decides who may create an account at Strava sign-in. "open" creates a
+// pending account for approval; "invite_only" refuses athletes who aren't on the allowlist.
+type RegistrationAllowance struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	StravaAthleteId int64                  `protobuf:"varint,1,opt,name=strava_athlete_id,json=stravaAthleteId,proto3" json:"strava_athlete_id,omitempty"`
+	AddedAt         *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=added_at,json=addedAt,proto3" json:"added_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *RegistrationAllowance) Reset() {
+	*x = RegistrationAllowance{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegistrationAllowance) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegistrationAllowance) ProtoMessage() {}
+
+func (x *RegistrationAllowance) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegistrationAllowance.ProtoReflect.Descriptor instead.
+func (*RegistrationAllowance) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *RegistrationAllowance) GetStravaAthleteId() int64 {
+	if x != nil {
+		return x.StravaAthleteId
+	}
+	return 0
+}
+
+func (x *RegistrationAllowance) GetAddedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AddedAt
+	}
+	return nil
+}
+
+type GetRegistrationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRegistrationRequest) Reset() {
+	*x = GetRegistrationRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRegistrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRegistrationRequest) ProtoMessage() {}
+
+func (x *GetRegistrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRegistrationRequest.ProtoReflect.Descriptor instead.
+func (*GetRegistrationRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{37}
+}
+
+type GetRegistrationResponse struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Mode          string                   `protobuf:"bytes,1,opt,name=mode,proto3" json:"mode,omitempty"` // "open" | "invite_only"
+	Allowed       []*RegistrationAllowance `protobuf:"bytes,2,rep,name=allowed,proto3" json:"allowed,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRegistrationResponse) Reset() {
+	*x = GetRegistrationResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRegistrationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRegistrationResponse) ProtoMessage() {}
+
+func (x *GetRegistrationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRegistrationResponse.ProtoReflect.Descriptor instead.
+func (*GetRegistrationResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetRegistrationResponse) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+func (x *GetRegistrationResponse) GetAllowed() []*RegistrationAllowance {
+	if x != nil {
+		return x.Allowed
+	}
+	return nil
+}
+
+type SetRegistrationModeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Mode          string                 `protobuf:"bytes,1,opt,name=mode,proto3" json:"mode,omitempty"` // "open" | "invite_only"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetRegistrationModeRequest) Reset() {
+	*x = SetRegistrationModeRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetRegistrationModeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRegistrationModeRequest) ProtoMessage() {}
+
+func (x *SetRegistrationModeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRegistrationModeRequest.ProtoReflect.Descriptor instead.
+func (*SetRegistrationModeRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *SetRegistrationModeRequest) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+type SetRegistrationModeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetRegistrationModeResponse) Reset() {
+	*x = SetRegistrationModeResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetRegistrationModeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRegistrationModeResponse) ProtoMessage() {}
+
+func (x *SetRegistrationModeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRegistrationModeResponse.ProtoReflect.Descriptor instead.
+func (*SetRegistrationModeResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{40}
+}
+
+type AllowAthleteRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	StravaAthleteId int64                  `protobuf:"varint,1,opt,name=strava_athlete_id,json=stravaAthleteId,proto3" json:"strava_athlete_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AllowAthleteRequest) Reset() {
+	*x = AllowAthleteRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AllowAthleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AllowAthleteRequest) ProtoMessage() {}
+
+func (x *AllowAthleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AllowAthleteRequest.ProtoReflect.Descriptor instead.
+func (*AllowAthleteRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *AllowAthleteRequest) GetStravaAthleteId() int64 {
+	if x != nil {
+		return x.StravaAthleteId
+	}
+	return 0
+}
+
+type AllowAthleteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AllowAthleteResponse) Reset() {
+	*x = AllowAthleteResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AllowAthleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AllowAthleteResponse) ProtoMessage() {}
+
+func (x *AllowAthleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AllowAthleteResponse.ProtoReflect.Descriptor instead.
+func (*AllowAthleteResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{42}
+}
+
+type RevokeAthleteRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	StravaAthleteId int64                  `protobuf:"varint,1,opt,name=strava_athlete_id,json=stravaAthleteId,proto3" json:"strava_athlete_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *RevokeAthleteRequest) Reset() {
+	*x = RevokeAthleteRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAthleteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAthleteRequest) ProtoMessage() {}
+
+func (x *RevokeAthleteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAthleteRequest.ProtoReflect.Descriptor instead.
+func (*RevokeAthleteRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *RevokeAthleteRequest) GetStravaAthleteId() int64 {
+	if x != nil {
+		return x.StravaAthleteId
+	}
+	return 0
+}
+
+type RevokeAthleteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAthleteResponse) Reset() {
+	*x = RevokeAthleteResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAthleteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAthleteResponse) ProtoMessage() {}
+
+func (x *RevokeAthleteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAthleteResponse.ProtoReflect.Descriptor instead.
+func (*RevokeAthleteResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{44}
+}
+
 var File_fitter_v1_admin_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_admin_proto_rawDesc = "" +
@@ -2048,7 +2430,23 @@ const file_fitter_v1_admin_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\barchived\x18\x02 \x01(\bR\barchived\"N\n" +
 	"\x1bSetExerciseArchivedResponse\x12/\n" +
-	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise2\x87\v\n" +
+	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise\"z\n" +
+	"\x15RegistrationAllowance\x12*\n" +
+	"\x11strava_athlete_id\x18\x01 \x01(\x03R\x0fstravaAthleteId\x125\n" +
+	"\badded_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\aaddedAt\"\x18\n" +
+	"\x16GetRegistrationRequest\"i\n" +
+	"\x17GetRegistrationResponse\x12\x12\n" +
+	"\x04mode\x18\x01 \x01(\tR\x04mode\x12:\n" +
+	"\aallowed\x18\x02 \x03(\v2 .fitter.v1.RegistrationAllowanceR\aallowed\"0\n" +
+	"\x1aSetRegistrationModeRequest\x12\x12\n" +
+	"\x04mode\x18\x01 \x01(\tR\x04mode\"\x1d\n" +
+	"\x1bSetRegistrationModeResponse\"A\n" +
+	"\x13AllowAthleteRequest\x12*\n" +
+	"\x11strava_athlete_id\x18\x01 \x01(\x03R\x0fstravaAthleteId\"\x16\n" +
+	"\x14AllowAthleteResponse\"B\n" +
+	"\x14RevokeAthleteRequest\x12*\n" +
+	"\x11strava_athlete_id\x18\x01 \x01(\x03R\x0fstravaAthleteId\"\x17\n" +
+	"\x15RevokeAthleteResponse2\xec\r\n" +
 	"\fAdminService\x12F\n" +
 	"\tListUsers\x12\x1b.fitter.v1.ListUsersRequest\x1a\x1c.fitter.v1.ListUsersResponse\x12L\n" +
 	"\vApproveUser\x12\x1d.fitter.v1.ApproveUserRequest\x1a\x1e.fitter.v1.ApproveUserResponse\x12@\n" +
@@ -2065,7 +2463,11 @@ const file_fitter_v1_admin_proto_rawDesc = "" +
 	"\x0eUpdateExercise\x12 .fitter.v1.UpdateExerciseRequest\x1a!.fitter.v1.UpdateExerciseResponse\x12U\n" +
 	"\x0eDeleteExercise\x12 .fitter.v1.DeleteExerciseRequest\x1a!.fitter.v1.DeleteExerciseResponse\x12U\n" +
 	"\x0eMergeExercises\x12 .fitter.v1.MergeExercisesRequest\x1a!.fitter.v1.MergeExercisesResponse\x12d\n" +
-	"\x13SetExerciseArchived\x12%.fitter.v1.SetExerciseArchivedRequest\x1a&.fitter.v1.SetExerciseArchivedResponseB\x8e\x01\n" +
+	"\x13SetExerciseArchived\x12%.fitter.v1.SetExerciseArchivedRequest\x1a&.fitter.v1.SetExerciseArchivedResponse\x12X\n" +
+	"\x0fGetRegistration\x12!.fitter.v1.GetRegistrationRequest\x1a\".fitter.v1.GetRegistrationResponse\x12d\n" +
+	"\x13SetRegistrationMode\x12%.fitter.v1.SetRegistrationModeRequest\x1a&.fitter.v1.SetRegistrationModeResponse\x12O\n" +
+	"\fAllowAthlete\x12\x1e.fitter.v1.AllowAthleteRequest\x1a\x1f.fitter.v1.AllowAthleteResponse\x12R\n" +
+	"\rRevokeAthlete\x12\x1f.fitter.v1.RevokeAthleteRequest\x1a .fitter.v1.RevokeAthleteResponseB\x8e\x01\n" +
 	"\rcom.fitter.v1B\n" +
 	"AdminProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
@@ -2082,7 +2484,7 @@ func file_fitter_v1_admin_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_admin_proto_rawDescData
 }
 
-var file_fitter_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
+var file_fitter_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
 var file_fitter_v1_admin_proto_goTypes = []any{
 	(*CustomSport)(nil),                 // 0: fitter.v1.CustomSport
 	(*CustomMetric)(nil),                // 1: fitter.v1.CustomMetric
@@ -2120,65 +2522,84 @@ var file_fitter_v1_admin_proto_goTypes = []any{
 	(*MergeExercisesResponse)(nil),      // 33: fitter.v1.MergeExercisesResponse
 	(*SetExerciseArchivedRequest)(nil),  // 34: fitter.v1.SetExerciseArchivedRequest
 	(*SetExerciseArchivedResponse)(nil), // 35: fitter.v1.SetExerciseArchivedResponse
-	(*timestamppb.Timestamp)(nil),       // 36: google.protobuf.Timestamp
-	(ExerciseMeasure)(0),                // 37: fitter.v1.ExerciseMeasure
-	(Muscle)(0),                         // 38: fitter.v1.Muscle
-	(*Exercise)(nil),                    // 39: fitter.v1.Exercise
+	(*RegistrationAllowance)(nil),       // 36: fitter.v1.RegistrationAllowance
+	(*GetRegistrationRequest)(nil),      // 37: fitter.v1.GetRegistrationRequest
+	(*GetRegistrationResponse)(nil),     // 38: fitter.v1.GetRegistrationResponse
+	(*SetRegistrationModeRequest)(nil),  // 39: fitter.v1.SetRegistrationModeRequest
+	(*SetRegistrationModeResponse)(nil), // 40: fitter.v1.SetRegistrationModeResponse
+	(*AllowAthleteRequest)(nil),         // 41: fitter.v1.AllowAthleteRequest
+	(*AllowAthleteResponse)(nil),        // 42: fitter.v1.AllowAthleteResponse
+	(*RevokeAthleteRequest)(nil),        // 43: fitter.v1.RevokeAthleteRequest
+	(*RevokeAthleteResponse)(nil),       // 44: fitter.v1.RevokeAthleteResponse
+	(*timestamppb.Timestamp)(nil),       // 45: google.protobuf.Timestamp
+	(ExerciseMeasure)(0),                // 46: fitter.v1.ExerciseMeasure
+	(Muscle)(0),                         // 47: fitter.v1.Muscle
+	(*Exercise)(nil),                    // 48: fitter.v1.Exercise
 }
 var file_fitter_v1_admin_proto_depIdxs = []int32{
-	36, // 0: fitter.v1.CustomSport.created_at:type_name -> google.protobuf.Timestamp
-	36, // 1: fitter.v1.CustomMetric.created_at:type_name -> google.protobuf.Timestamp
+	45, // 0: fitter.v1.CustomSport.created_at:type_name -> google.protobuf.Timestamp
+	45, // 1: fitter.v1.CustomMetric.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: fitter.v1.CreateCustomSportResponse.sport:type_name -> fitter.v1.CustomSport
 	0,  // 3: fitter.v1.ListCustomSportsResponse.sports:type_name -> fitter.v1.CustomSport
 	1,  // 4: fitter.v1.CreateCustomMetricResponse.metric:type_name -> fitter.v1.CustomMetric
 	1,  // 5: fitter.v1.ListCustomMetricsResponse.metrics:type_name -> fitter.v1.CustomMetric
-	36, // 6: fitter.v1.AdminUser.banned_at:type_name -> google.protobuf.Timestamp
-	36, // 7: fitter.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
-	36, // 8: fitter.v1.AdminAction.created_at:type_name -> google.protobuf.Timestamp
+	45, // 6: fitter.v1.AdminUser.banned_at:type_name -> google.protobuf.Timestamp
+	45, // 7: fitter.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
+	45, // 8: fitter.v1.AdminAction.created_at:type_name -> google.protobuf.Timestamp
 	14, // 9: fitter.v1.ListUsersResponse.users:type_name -> fitter.v1.AdminUser
 	15, // 10: fitter.v1.ListAdminActionsResponse.actions:type_name -> fitter.v1.AdminAction
-	37, // 11: fitter.v1.UpdateExerciseRequest.measure:type_name -> fitter.v1.ExerciseMeasure
-	38, // 12: fitter.v1.UpdateExerciseRequest.muscles:type_name -> fitter.v1.Muscle
-	39, // 13: fitter.v1.UpdateExerciseResponse.exercise:type_name -> fitter.v1.Exercise
-	39, // 14: fitter.v1.MergeExercisesResponse.exercise:type_name -> fitter.v1.Exercise
-	39, // 15: fitter.v1.SetExerciseArchivedResponse.exercise:type_name -> fitter.v1.Exercise
-	16, // 16: fitter.v1.AdminService.ListUsers:input_type -> fitter.v1.ListUsersRequest
-	18, // 17: fitter.v1.AdminService.ApproveUser:input_type -> fitter.v1.ApproveUserRequest
-	20, // 18: fitter.v1.AdminService.BanUser:input_type -> fitter.v1.BanUserRequest
-	22, // 19: fitter.v1.AdminService.UnbanUser:input_type -> fitter.v1.UnbanUserRequest
-	24, // 20: fitter.v1.AdminService.SetUserRole:input_type -> fitter.v1.SetUserRoleRequest
-	26, // 21: fitter.v1.AdminService.ListAdminActions:input_type -> fitter.v1.ListAdminActionsRequest
-	2,  // 22: fitter.v1.AdminService.CreateCustomSport:input_type -> fitter.v1.CreateCustomSportRequest
-	4,  // 23: fitter.v1.AdminService.ListCustomSports:input_type -> fitter.v1.ListCustomSportsRequest
-	6,  // 24: fitter.v1.AdminService.DeleteCustomSport:input_type -> fitter.v1.DeleteCustomSportRequest
-	8,  // 25: fitter.v1.AdminService.CreateCustomMetric:input_type -> fitter.v1.CreateCustomMetricRequest
-	10, // 26: fitter.v1.AdminService.ListCustomMetrics:input_type -> fitter.v1.ListCustomMetricsRequest
-	12, // 27: fitter.v1.AdminService.DeleteCustomMetric:input_type -> fitter.v1.DeleteCustomMetricRequest
-	28, // 28: fitter.v1.AdminService.UpdateExercise:input_type -> fitter.v1.UpdateExerciseRequest
-	30, // 29: fitter.v1.AdminService.DeleteExercise:input_type -> fitter.v1.DeleteExerciseRequest
-	32, // 30: fitter.v1.AdminService.MergeExercises:input_type -> fitter.v1.MergeExercisesRequest
-	34, // 31: fitter.v1.AdminService.SetExerciseArchived:input_type -> fitter.v1.SetExerciseArchivedRequest
-	17, // 32: fitter.v1.AdminService.ListUsers:output_type -> fitter.v1.ListUsersResponse
-	19, // 33: fitter.v1.AdminService.ApproveUser:output_type -> fitter.v1.ApproveUserResponse
-	21, // 34: fitter.v1.AdminService.BanUser:output_type -> fitter.v1.BanUserResponse
-	23, // 35: fitter.v1.AdminService.UnbanUser:output_type -> fitter.v1.UnbanUserResponse
-	25, // 36: fitter.v1.AdminService.SetUserRole:output_type -> fitter.v1.SetUserRoleResponse
-	27, // 37: fitter.v1.AdminService.ListAdminActions:output_type -> fitter.v1.ListAdminActionsResponse
-	3,  // 38: fitter.v1.AdminService.CreateCustomSport:output_type -> fitter.v1.CreateCustomSportResponse
-	5,  // 39: fitter.v1.AdminService.ListCustomSports:output_type -> fitter.v1.ListCustomSportsResponse
-	7,  // 40: fitter.v1.AdminService.DeleteCustomSport:output_type -> fitter.v1.DeleteCustomSportResponse
-	9,  // 41: fitter.v1.AdminService.CreateCustomMetric:output_type -> fitter.v1.CreateCustomMetricResponse
-	11, // 42: fitter.v1.AdminService.ListCustomMetrics:output_type -> fitter.v1.ListCustomMetricsResponse
-	13, // 43: fitter.v1.AdminService.DeleteCustomMetric:output_type -> fitter.v1.DeleteCustomMetricResponse
-	29, // 44: fitter.v1.AdminService.UpdateExercise:output_type -> fitter.v1.UpdateExerciseResponse
-	31, // 45: fitter.v1.AdminService.DeleteExercise:output_type -> fitter.v1.DeleteExerciseResponse
-	33, // 46: fitter.v1.AdminService.MergeExercises:output_type -> fitter.v1.MergeExercisesResponse
-	35, // 47: fitter.v1.AdminService.SetExerciseArchived:output_type -> fitter.v1.SetExerciseArchivedResponse
-	32, // [32:48] is the sub-list for method output_type
-	16, // [16:32] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	46, // 11: fitter.v1.UpdateExerciseRequest.measure:type_name -> fitter.v1.ExerciseMeasure
+	47, // 12: fitter.v1.UpdateExerciseRequest.muscles:type_name -> fitter.v1.Muscle
+	48, // 13: fitter.v1.UpdateExerciseResponse.exercise:type_name -> fitter.v1.Exercise
+	48, // 14: fitter.v1.MergeExercisesResponse.exercise:type_name -> fitter.v1.Exercise
+	48, // 15: fitter.v1.SetExerciseArchivedResponse.exercise:type_name -> fitter.v1.Exercise
+	45, // 16: fitter.v1.RegistrationAllowance.added_at:type_name -> google.protobuf.Timestamp
+	36, // 17: fitter.v1.GetRegistrationResponse.allowed:type_name -> fitter.v1.RegistrationAllowance
+	16, // 18: fitter.v1.AdminService.ListUsers:input_type -> fitter.v1.ListUsersRequest
+	18, // 19: fitter.v1.AdminService.ApproveUser:input_type -> fitter.v1.ApproveUserRequest
+	20, // 20: fitter.v1.AdminService.BanUser:input_type -> fitter.v1.BanUserRequest
+	22, // 21: fitter.v1.AdminService.UnbanUser:input_type -> fitter.v1.UnbanUserRequest
+	24, // 22: fitter.v1.AdminService.SetUserRole:input_type -> fitter.v1.SetUserRoleRequest
+	26, // 23: fitter.v1.AdminService.ListAdminActions:input_type -> fitter.v1.ListAdminActionsRequest
+	2,  // 24: fitter.v1.AdminService.CreateCustomSport:input_type -> fitter.v1.CreateCustomSportRequest
+	4,  // 25: fitter.v1.AdminService.ListCustomSports:input_type -> fitter.v1.ListCustomSportsRequest
+	6,  // 26: fitter.v1.AdminService.DeleteCustomSport:input_type -> fitter.v1.DeleteCustomSportRequest
+	8,  // 27: fitter.v1.AdminService.CreateCustomMetric:input_type -> fitter.v1.CreateCustomMetricRequest
+	10, // 28: fitter.v1.AdminService.ListCustomMetrics:input_type -> fitter.v1.ListCustomMetricsRequest
+	12, // 29: fitter.v1.AdminService.DeleteCustomMetric:input_type -> fitter.v1.DeleteCustomMetricRequest
+	28, // 30: fitter.v1.AdminService.UpdateExercise:input_type -> fitter.v1.UpdateExerciseRequest
+	30, // 31: fitter.v1.AdminService.DeleteExercise:input_type -> fitter.v1.DeleteExerciseRequest
+	32, // 32: fitter.v1.AdminService.MergeExercises:input_type -> fitter.v1.MergeExercisesRequest
+	34, // 33: fitter.v1.AdminService.SetExerciseArchived:input_type -> fitter.v1.SetExerciseArchivedRequest
+	37, // 34: fitter.v1.AdminService.GetRegistration:input_type -> fitter.v1.GetRegistrationRequest
+	39, // 35: fitter.v1.AdminService.SetRegistrationMode:input_type -> fitter.v1.SetRegistrationModeRequest
+	41, // 36: fitter.v1.AdminService.AllowAthlete:input_type -> fitter.v1.AllowAthleteRequest
+	43, // 37: fitter.v1.AdminService.RevokeAthlete:input_type -> fitter.v1.RevokeAthleteRequest
+	17, // 38: fitter.v1.AdminService.ListUsers:output_type -> fitter.v1.ListUsersResponse
+	19, // 39: fitter.v1.AdminService.ApproveUser:output_type -> fitter.v1.ApproveUserResponse
+	21, // 40: fitter.v1.AdminService.BanUser:output_type -> fitter.v1.BanUserResponse
+	23, // 41: fitter.v1.AdminService.UnbanUser:output_type -> fitter.v1.UnbanUserResponse
+	25, // 42: fitter.v1.AdminService.SetUserRole:output_type -> fitter.v1.SetUserRoleResponse
+	27, // 43: fitter.v1.AdminService.ListAdminActions:output_type -> fitter.v1.ListAdminActionsResponse
+	3,  // 44: fitter.v1.AdminService.CreateCustomSport:output_type -> fitter.v1.CreateCustomSportResponse
+	5,  // 45: fitter.v1.AdminService.ListCustomSports:output_type -> fitter.v1.ListCustomSportsResponse
+	7,  // 46: fitter.v1.AdminService.DeleteCustomSport:output_type -> fitter.v1.DeleteCustomSportResponse
+	9,  // 47: fitter.v1.AdminService.CreateCustomMetric:output_type -> fitter.v1.CreateCustomMetricResponse
+	11, // 48: fitter.v1.AdminService.ListCustomMetrics:output_type -> fitter.v1.ListCustomMetricsResponse
+	13, // 49: fitter.v1.AdminService.DeleteCustomMetric:output_type -> fitter.v1.DeleteCustomMetricResponse
+	29, // 50: fitter.v1.AdminService.UpdateExercise:output_type -> fitter.v1.UpdateExerciseResponse
+	31, // 51: fitter.v1.AdminService.DeleteExercise:output_type -> fitter.v1.DeleteExerciseResponse
+	33, // 52: fitter.v1.AdminService.MergeExercises:output_type -> fitter.v1.MergeExercisesResponse
+	35, // 53: fitter.v1.AdminService.SetExerciseArchived:output_type -> fitter.v1.SetExerciseArchivedResponse
+	38, // 54: fitter.v1.AdminService.GetRegistration:output_type -> fitter.v1.GetRegistrationResponse
+	40, // 55: fitter.v1.AdminService.SetRegistrationMode:output_type -> fitter.v1.SetRegistrationModeResponse
+	42, // 56: fitter.v1.AdminService.AllowAthlete:output_type -> fitter.v1.AllowAthleteResponse
+	44, // 57: fitter.v1.AdminService.RevokeAthlete:output_type -> fitter.v1.RevokeAthleteResponse
+	38, // [38:58] is the sub-list for method output_type
+	18, // [18:38] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_admin_proto_init() }
@@ -2193,7 +2614,7 @@ func file_fitter_v1_admin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_admin_proto_rawDesc), len(file_fitter_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   36,
+			NumMessages:   45,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

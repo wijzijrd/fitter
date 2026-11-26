@@ -163,6 +163,17 @@ type GoalClause struct {
 	Exercise   sql.NullString `json:"exercise"`
 }
 
+type RegistrationAllowlist struct {
+	StravaAthleteID int64  `json:"strava_athlete_id"`
+	AddedBy         string `json:"added_by"`
+	AddedAt         int64  `json:"added_at"`
+}
+
+type RegistrationSetting struct {
+	ID   bool   `json:"id"`
+	Mode string `json:"mode"`
+}
+
 type User struct {
 	ID              string         `json:"id"`
 	StravaAthleteID int64          `json:"strava_athlete_id"`

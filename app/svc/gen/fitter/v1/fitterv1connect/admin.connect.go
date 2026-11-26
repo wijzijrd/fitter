@@ -78,6 +78,18 @@ const (
 	// AdminServiceSetExerciseArchivedProcedure is the fully-qualified name of the AdminService's
 	// SetExerciseArchived RPC.
 	AdminServiceSetExerciseArchivedProcedure = "/fitter.v1.AdminService/SetExerciseArchived"
+	// AdminServiceGetRegistrationProcedure is the fully-qualified name of the AdminService's
+	// GetRegistration RPC.
+	AdminServiceGetRegistrationProcedure = "/fitter.v1.AdminService/GetRegistration"
+	// AdminServiceSetRegistrationModeProcedure is the fully-qualified name of the AdminService's
+	// SetRegistrationMode RPC.
+	AdminServiceSetRegistrationModeProcedure = "/fitter.v1.AdminService/SetRegistrationMode"
+	// AdminServiceAllowAthleteProcedure is the fully-qualified name of the AdminService's AllowAthlete
+	// RPC.
+	AdminServiceAllowAthleteProcedure = "/fitter.v1.AdminService/AllowAthlete"
+	// AdminServiceRevokeAthleteProcedure is the fully-qualified name of the AdminService's
+	// RevokeAthlete RPC.
+	AdminServiceRevokeAthleteProcedure = "/fitter.v1.AdminService/RevokeAthlete"
 )
 
 // AdminServiceClient is a client for the fitter.v1.AdminService service.
@@ -98,6 +110,10 @@ type AdminServiceClient interface {
 	DeleteExercise(context.Context, *connect.Request[v1.DeleteExerciseRequest]) (*connect.Response[v1.DeleteExerciseResponse], error)
 	MergeExercises(context.Context, *connect.Request[v1.MergeExercisesRequest]) (*connect.Response[v1.MergeExercisesResponse], error)
 	SetExerciseArchived(context.Context, *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error)
+	GetRegistration(context.Context, *connect.Request[v1.GetRegistrationRequest]) (*connect.Response[v1.GetRegistrationResponse], error)
+	SetRegistrationMode(context.Context, *connect.Request[v1.SetRegistrationModeRequest]) (*connect.Response[v1.SetRegistrationModeResponse], error)
+	AllowAthlete(context.Context, *connect.Request[v1.AllowAthleteRequest]) (*connect.Response[v1.AllowAthleteResponse], error)
+	RevokeAthlete(context.Context, *connect.Request[v1.RevokeAthleteRequest]) (*connect.Response[v1.RevokeAthleteResponse], error)
 }
 
 // NewAdminServiceClient constructs a client for the fitter.v1.AdminService service. By default, it
@@ -207,6 +223,30 @@ func NewAdminServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(adminServiceMethods.ByName("SetExerciseArchived")),
 			connect.WithClientOptions(opts...),
 		),
+		getRegistration: connect.NewClient[v1.GetRegistrationRequest, v1.GetRegistrationResponse](
+			httpClient,
+			baseURL+AdminServiceGetRegistrationProcedure,
+			connect.WithSchema(adminServiceMethods.ByName("GetRegistration")),
+			connect.WithClientOptions(opts...),
+		),
+		setRegistrationMode: connect.NewClient[v1.SetRegistrationModeRequest, v1.SetRegistrationModeResponse](
+			httpClient,
+			baseURL+AdminServiceSetRegistrationModeProcedure,
+			connect.WithSchema(adminServiceMethods.ByName("SetRegistrationMode")),
+			connect.WithClientOptions(opts...),
+		),
+		allowAthlete: connect.NewClient[v1.AllowAthleteRequest, v1.AllowAthleteResponse](
+			httpClient,
+			baseURL+AdminServiceAllowAthleteProcedure,
+			connect.WithSchema(adminServiceMethods.ByName("AllowAthlete")),
+			connect.WithClientOptions(opts...),
+		),
+		revokeAthlete: connect.NewClient[v1.RevokeAthleteRequest, v1.RevokeAthleteResponse](
+			httpClient,
+			baseURL+AdminServiceRevokeAthleteProcedure,
+			connect.WithSchema(adminServiceMethods.ByName("RevokeAthlete")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -228,6 +268,10 @@ type adminServiceClient struct {
 	deleteExercise      *connect.Client[v1.DeleteExerciseRequest, v1.DeleteExerciseResponse]
 	mergeExercises      *connect.Client[v1.MergeExercisesRequest, v1.MergeExercisesResponse]
 	setExerciseArchived *connect.Client[v1.SetExerciseArchivedRequest, v1.SetExerciseArchivedResponse]
+	getRegistration     *connect.Client[v1.GetRegistrationRequest, v1.GetRegistrationResponse]
+	setRegistrationMode *connect.Client[v1.SetRegistrationModeRequest, v1.SetRegistrationModeResponse]
+	allowAthlete        *connect.Client[v1.AllowAthleteRequest, v1.AllowAthleteResponse]
+	revokeAthlete       *connect.Client[v1.RevokeAthleteRequest, v1.RevokeAthleteResponse]
 }
 
 // ListUsers calls fitter.v1.AdminService.ListUsers.
@@ -310,6 +354,26 @@ func (c *adminServiceClient) SetExerciseArchived(ctx context.Context, req *conne
 	return c.setExerciseArchived.CallUnary(ctx, req)
 }
 
+// GetRegistration calls fitter.v1.AdminService.GetRegistration.
+func (c *adminServiceClient) GetRegistration(ctx context.Context, req *connect.Request[v1.GetRegistrationRequest]) (*connect.Response[v1.GetRegistrationResponse], error) {
+	return c.getRegistration.CallUnary(ctx, req)
+}
+
+// SetRegistrationMode calls fitter.v1.AdminService.SetRegistrationMode.
+func (c *adminServiceClient) SetRegistrationMode(ctx context.Context, req *connect.Request[v1.SetRegistrationModeRequest]) (*connect.Response[v1.SetRegistrationModeResponse], error) {
+	return c.setRegistrationMode.CallUnary(ctx, req)
+}
+
+// AllowAthlete calls fitter.v1.AdminService.AllowAthlete.
+func (c *adminServiceClient) AllowAthlete(ctx context.Context, req *connect.Request[v1.AllowAthleteRequest]) (*connect.Response[v1.AllowAthleteResponse], error) {
+	return c.allowAthlete.CallUnary(ctx, req)
+}
+
+// RevokeAthlete calls fitter.v1.AdminService.RevokeAthlete.
+func (c *adminServiceClient) RevokeAthlete(ctx context.Context, req *connect.Request[v1.RevokeAthleteRequest]) (*connect.Response[v1.RevokeAthleteResponse], error) {
+	return c.revokeAthlete.CallUnary(ctx, req)
+}
+
 // AdminServiceHandler is an implementation of the fitter.v1.AdminService service.
 type AdminServiceHandler interface {
 	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
@@ -328,6 +392,10 @@ type AdminServiceHandler interface {
 	DeleteExercise(context.Context, *connect.Request[v1.DeleteExerciseRequest]) (*connect.Response[v1.DeleteExerciseResponse], error)
 	MergeExercises(context.Context, *connect.Request[v1.MergeExercisesRequest]) (*connect.Response[v1.MergeExercisesResponse], error)
 	SetExerciseArchived(context.Context, *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error)
+	GetRegistration(context.Context, *connect.Request[v1.GetRegistrationRequest]) (*connect.Response[v1.GetRegistrationResponse], error)
+	SetRegistrationMode(context.Context, *connect.Request[v1.SetRegistrationModeRequest]) (*connect.Response[v1.SetRegistrationModeResponse], error)
+	AllowAthlete(context.Context, *connect.Request[v1.AllowAthleteRequest]) (*connect.Response[v1.AllowAthleteResponse], error)
+	RevokeAthlete(context.Context, *connect.Request[v1.RevokeAthleteRequest]) (*connect.Response[v1.RevokeAthleteResponse], error)
 }
 
 // NewAdminServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -433,6 +501,30 @@ func NewAdminServiceHandler(svc AdminServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(adminServiceMethods.ByName("SetExerciseArchived")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminServiceGetRegistrationHandler := connect.NewUnaryHandler(
+		AdminServiceGetRegistrationProcedure,
+		svc.GetRegistration,
+		connect.WithSchema(adminServiceMethods.ByName("GetRegistration")),
+		connect.WithHandlerOptions(opts...),
+	)
+	adminServiceSetRegistrationModeHandler := connect.NewUnaryHandler(
+		AdminServiceSetRegistrationModeProcedure,
+		svc.SetRegistrationMode,
+		connect.WithSchema(adminServiceMethods.ByName("SetRegistrationMode")),
+		connect.WithHandlerOptions(opts...),
+	)
+	adminServiceAllowAthleteHandler := connect.NewUnaryHandler(
+		AdminServiceAllowAthleteProcedure,
+		svc.AllowAthlete,
+		connect.WithSchema(adminServiceMethods.ByName("AllowAthlete")),
+		connect.WithHandlerOptions(opts...),
+	)
+	adminServiceRevokeAthleteHandler := connect.NewUnaryHandler(
+		AdminServiceRevokeAthleteProcedure,
+		svc.RevokeAthlete,
+		connect.WithSchema(adminServiceMethods.ByName("RevokeAthlete")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/fitter.v1.AdminService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AdminServiceListUsersProcedure:
@@ -467,6 +559,14 @@ func NewAdminServiceHandler(svc AdminServiceHandler, opts ...connect.HandlerOpti
 			adminServiceMergeExercisesHandler.ServeHTTP(w, r)
 		case AdminServiceSetExerciseArchivedProcedure:
 			adminServiceSetExerciseArchivedHandler.ServeHTTP(w, r)
+		case AdminServiceGetRegistrationProcedure:
+			adminServiceGetRegistrationHandler.ServeHTTP(w, r)
+		case AdminServiceSetRegistrationModeProcedure:
+			adminServiceSetRegistrationModeHandler.ServeHTTP(w, r)
+		case AdminServiceAllowAthleteProcedure:
+			adminServiceAllowAthleteHandler.ServeHTTP(w, r)
+		case AdminServiceRevokeAthleteProcedure:
+			adminServiceRevokeAthleteHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -538,4 +638,20 @@ func (UnimplementedAdminServiceHandler) MergeExercises(context.Context, *connect
 
 func (UnimplementedAdminServiceHandler) SetExerciseArchived(context.Context, *connect.Request[v1.SetExerciseArchivedRequest]) (*connect.Response[v1.SetExerciseArchivedResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.SetExerciseArchived is not implemented"))
+}
+
+func (UnimplementedAdminServiceHandler) GetRegistration(context.Context, *connect.Request[v1.GetRegistrationRequest]) (*connect.Response[v1.GetRegistrationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.GetRegistration is not implemented"))
+}
+
+func (UnimplementedAdminServiceHandler) SetRegistrationMode(context.Context, *connect.Request[v1.SetRegistrationModeRequest]) (*connect.Response[v1.SetRegistrationModeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.SetRegistrationMode is not implemented"))
+}
+
+func (UnimplementedAdminServiceHandler) AllowAthlete(context.Context, *connect.Request[v1.AllowAthleteRequest]) (*connect.Response[v1.AllowAthleteResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.AllowAthlete is not implemented"))
+}
+
+func (UnimplementedAdminServiceHandler) RevokeAthlete(context.Context, *connect.Request[v1.RevokeAthleteRequest]) (*connect.Response[v1.RevokeAthleteResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.AdminService.RevokeAthlete is not implemented"))
 }

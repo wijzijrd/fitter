@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { adminClient, exerciseClient } from "../lib/connect";
 import { errorMessage } from "../lib/errors";
 import { toDate } from "../lib/timestamp";
-import type { AdminAction, AdminUser, CustomMetric, CustomSport } from "../gen/fitter/v1/admin_pb";
+import type { AdminAction, AdminUser, CustomMetric, CustomSport, RegistrationAllowance } from "../gen/fitter/v1/admin_pb";
 import { ExerciseMeasure, type Exercise, type Muscle } from "../gen/fitter/v1/exercise_pb";
 import { measureLabels, measureOrder, muscleLabels, muscleOrder } from "../lib/labels";
 import { useAuthStore } from "../stores/auth";
@@ -54,8 +54,13 @@ async function run(fn: () => Promise<unknown>, reload: () => Promise<void>): Pro
   }
 }
 
+const regMode = ref("open");
+const regAllowed = ref<RegistrationAllowance[]>([]);
 async function loadUsers(): Promise<void> {
-  users.value = (await adminClient.listUsers({})).users;
+  const [list, reg] = await Promise.all([adminClient.listUsers({}), adminClient.getRegistration({})]);
+  users.value = list.users;
+  regMode.value = reg.mode;
+  regAllowed.value = reg.allowed;
 }
 async function loadCatalog(): Promise<void> {
   const [s, m] = await Promise.all([adminClient.listCustomSports({}), adminClient.listCustomMetrics({})]);
@@ -104,6 +109,15 @@ function cancelBan(u: AdminUser): void {
   banning.value = "";
   focusNthOr(`[data-ban="${u.id}"]`, 0, "#admin-panel");
 }
+
+const setMode = (mode: string) => act(() => adminClient.setRegistrationMode({ mode }));
+const allowId = ref("");
+const allowIdValid = computed(() => /^\d{1,18}$/.test(allowId.value.trim()) && BigInt(allowId.value.trim()) > BigInt(0));
+async function allowAthlete(): Promise<void> {
+  await act(() => adminClient.allowAthlete({ stravaAthleteId: BigInt(allowId.value.trim()) }));
+  if (!error.value) allowId.value = "";
+}
+const revokeAthlete = (a: RegistrationAllowance) => act(() => adminClient.revokeAthlete({ stravaAthleteId: a.stravaAthleteId }));
 
 const sportForm = reactive({ key: "", label: "" });
 const metricForm = reactive({
@@ -244,6 +258,31 @@ const isSelf = (u: AdminUser) => u.id === auth.user?.id;
 
     <div id="admin-panel" role="tabpanel" tabindex="-1" :aria-labelledby="`admin-tab-${tab}`">
     <section v-if="tab === 'users'">
+      <h2>Sign-ups</h2>
+      <div class="rb-field">
+        <label for="reg-mode">Who can join</label>
+        <select id="reg-mode" class="input" :value="regMode" :disabled="busy" @change="setMode(($event.target as HTMLSelectElement).value)">
+          <option value="open">Anyone who signs in with Strava, after approval</option>
+          <option value="invite_only">Invite only: athletes listed below</option>
+        </select>
+      </div>
+      <template v-if="regMode === 'invite_only'">
+        <p v-if="!regAllowed.length" class="quiet">Nobody invited. Everyone new is refused at sign-in.</p>
+        <ul class="rows">
+          <li v-for="a in regAllowed" :key="a.stravaAthleteId.toString()">
+            <span class="who"><span class="name">Strava athlete {{ a.stravaAthleteId }}</span><span class="meta">Invited {{ fmtDate(a.addedAt) }}</span></span>
+            <button type="button" class="pill" v-busy="busy" @click="revokeAthlete(a)">Remove<span class="visually-hidden"> athlete {{ a.stravaAthleteId }}</span></button>
+          </li>
+        </ul>
+        <form class="form" @submit.prevent="allowAthlete">
+          <div class="rb-field">
+            <label for="allow-id">Strava athlete id</label>
+            <input id="allow-id" v-model="allowId" class="input" inputmode="numeric" autocomplete="off" placeholder="1234567" />
+          </div>
+          <button type="submit" class="pill pill--primary" v-busy="busy || !allowIdValid">Invite athlete</button>
+        </form>
+      </template>
+
       <h2>Pending ({{ pending.length }})</h2>
       <p v-if="!pending.length" class="quiet">Nobody waiting.</p>
       <ul class="rows">

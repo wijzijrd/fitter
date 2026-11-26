@@ -73,7 +73,7 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
       <rect width="100%" height="100%" fill="url(#weights-tile)" />
     </svg>
     <div class="auth-col">
-      <h1>Fitter</h1>
+      <h1>Kombeweeg</h1>
       <slot />
       <footer class="attribution">
         <img :src="poweredByStrava" alt="Powered by Strava" width="158" height="16" />
@@ -112,7 +112,7 @@ import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black
 }
 /* Same size as the navbar wordmark: the bib below is the page's hero. */
 h1 {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-5);
   font: 400 1.25rem / 1.1 var(--font-display);
   text-transform: uppercase;
 }
@@ -129,7 +129,7 @@ h1 {
 .attribution {
   display: flex;
   justify-content: flex-end;
-  margin-top: 1.25rem;
+  margin-top: var(--space-6);
 }
 .attribution img {
   display: block;

@@ -23,6 +23,8 @@ enum ActivityMetric {
   ACTIVITY_METRIC_CALORIES = 15;
   ACTIVITY_METRIC_AVERAGE_CADENCE = 16;
   ACTIVITY_METRIC_SUFFER_SCORE = 17;
+  ACTIVITY_METRIC_MAX_WEIGHT_KG = 18;
+  ACTIVITY_METRIC_ACTIVE_DAYS = 19;
 }
 
 // ClauseScope controls whether a goal clause is evaluated per-activity or
@@ -38,6 +40,16 @@ enum Comparator {
   COMPARATOR_UNSPECIFIED = 0;
   COMPARATOR_GTE = 1;
   COMPARATOR_LTE = 2;
+}
+
+// Recurrence splits a goal's period into repeating buckets (local calendar
+// day, ISO week starting Monday, or month); the clauses must hold in each.
+enum Recurrence {
+  RECURRENCE_UNSPECIFIED = 0; // same as NONE
+  RECURRENCE_NONE = 1;
+  RECURRENCE_DAILY = 2;
+  RECURRENCE_WEEKLY = 3;
+  RECURRENCE_MONTHLY = 4;
 }
 
 // MetricAggregation identifies how an ActivityMetric combines multiple
@@ -66,6 +78,7 @@ enum MetricUnit {
   METRIC_UNIT_RPM = 9;
   METRIC_UNIT_COUNT = 10;
   METRIC_UNIT_SCORE = 11;
+  METRIC_UNIT_KG = 12;
 }
 
 // SportSelector: an entirely unset message (neither oneof branch present)

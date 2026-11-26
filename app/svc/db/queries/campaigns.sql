@@ -21,7 +21,9 @@ DELETE FROM campaign_members WHERE campaign_id = $1 AND user_id = $2;
 SELECT EXISTS(SELECT 1 FROM campaign_members WHERE campaign_id = $1 AND user_id = $2) AS is_member;
 
 -- name: CountCampaignMembers :one
-SELECT COUNT(*) AS member_count FROM campaign_members WHERE campaign_id = $1;
+SELECT COUNT(*) AS member_count FROM campaign_members cm
+JOIN users u ON u.id = cm.user_id AND u.status <> 'banned'
+WHERE cm.campaign_id = $1;
 
 -- name: GetCampaignMember :one
 SELECT * FROM campaign_members WHERE campaign_id = $1 AND user_id = $2;
@@ -30,7 +32,7 @@ SELECT * FROM campaign_members WHERE campaign_id = $1 AND user_id = $2;
 SELECT cm.campaign_id, cm.user_id, cm.joined_at,
        u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM campaign_members cm
-JOIN users u ON u.id = cm.user_id
+JOIN users u ON u.id = cm.user_id AND u.status <> 'banned'
 WHERE cm.campaign_id = $1;
 
 -- name: ListJoinedCampaignIDsForUser :many
@@ -41,3 +43,6 @@ SELECT COUNT(*) FROM goals WHERE campaign_id = $1;
 
 -- name: DeleteGoalsForUserInCampaign :exec
 DELETE FROM goals WHERE campaign_id = $1 AND user_id = $2;
+
+-- name: MarkFeedSeen :exec
+UPDATE campaign_members SET feed_seen_at = $3 WHERE campaign_id = $1 AND user_id = $2;

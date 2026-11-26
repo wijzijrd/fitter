@@ -31,6 +31,8 @@ const (
 	Calories             Key = "calories"
 	AverageCadence       Key = "average_cadence"
 	SufferScore          Key = "suffer_score"
+	MaxWeightKg          Key = "max_weight_kg"
+	ActiveDays           Key = "active_days"
 )
 
 // Activity is the engine's own narrow view of an activity — deliberately
@@ -46,6 +48,9 @@ type Activity struct {
 	Type             string
 	SportType        string
 	StartDate        int64 // unix seconds
+	// StartDateLocal is the wall-clock start encoded as unix seconds as if it
+	// were UTC. 0 = unknown (pre-backfill row); LocalStart falls back to UTC.
+	StartDateLocal   int64
 	DistanceM        float64
 	ElevationM       float64
 	MovingTimeS      float64
@@ -70,6 +75,18 @@ type Activity struct {
 	// logged manually and from manual_entries/synthetic activities for
 	// custom ones (Task 5).
 	Custom map[Key]float64
+	// Lifts is the heaviest logged weight in kg per normalised exercise name
+	// (manual strength entries only). Nil or absent key = not lifted.
+	Lifts map[string]float64
+}
+
+// LocalStart is the wall-clock start (see StartDateLocal), falling back to
+// the UTC start when the local time was never recorded.
+func (a Activity) LocalStart() int64 {
+	if a.StartDateLocal != 0 {
+		return a.StartDateLocal
+	}
+	return a.StartDate
 }
 
 // Aggregation identifies how an Accumulator combines activities into one
@@ -100,6 +117,7 @@ const (
 	UnitRPM
 	UnitCount
 	UnitScore
+	UnitKilograms
 )
 
 // Accumulator folds activities into one aggregate value. Result() is
@@ -178,6 +196,17 @@ func buildDefs() []Def {
 	kilojoules := nullable(func(a Activity) *float64 { return a.Kilojoules })
 	calories := nullable(func(a Activity) *float64 { return a.Calories })
 	averageCadence := nullable(func(a Activity) *float64 { return a.AverageCadence })
+	// Without an exercise (the registry entry) the heaviest lift of any kind counts;
+	// a clause names its exercise via NewMaxWeightDef.
+	maxWeight := extractor(func(a Activity) (float64, bool) {
+		best, ok := 0.0, false
+		for _, w := range a.Lifts {
+			if !ok || w > best {
+				best, ok = w, true
+			}
+		}
+		return best, ok
+	})
 	sufferScore := nullable(func(a Activity) *float64 { return a.SufferScore })
 	pace := extractor(func(a Activity) (float64, bool) {
 		if a.DistanceM <= 0 {
@@ -277,6 +306,19 @@ func buildDefs() []Def {
 			Key: SufferScore, Label: "Relative effort", Unit: UnitScore, Aggregation: AggSum, Nullable: true,
 			SupportsSingle: true, SupportsAggregate: true,
 			Single: sufferScore, NewAcc: func() Accumulator { return &sumAcc{nullable: true, extract: sufferScore} },
+		},
+		{
+			Key: MaxWeightKg, Label: "Max weight", Unit: UnitKilograms, Aggregation: AggMax, Nullable: true,
+			SupportsSingle: true, SupportsAggregate: true,
+			Single: maxWeight, NewAcc: func() Accumulator { return &maxAcc{extract: maxWeight} },
+		},
+		{
+			// Distinct local calendar days with at least one activity — "gym 4
+			// days a week". Like ActivityCount, a per-activity value is meaningless.
+			Key: ActiveDays, Label: "Active days", Unit: UnitCount, Aggregation: AggCount,
+			SupportsSingle: false, SupportsAggregate: true,
+			Single: func(a Activity) (float64, bool) { return 1, true },
+			NewAcc: func() Accumulator { return &daysAcc{days: map[int64]struct{}{}} },
 		},
 	}
 }

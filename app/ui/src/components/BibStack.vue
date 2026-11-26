@@ -4,7 +4,7 @@ import type { LeaderboardEntry, LeaderboardGroup, PooledContribution } from "../
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import { useCatalogStore } from "../stores/catalog";
 import { ordinal } from "../lib/labels";
-import { amount, firstName, gap, lead, myEntries, pickGroup, primary, share } from "../lib/standings";
+import { TOGETHER, amount, firstName, gap, lead, myEntries, groupKey, peekBand as peekBandFor, pickGroup, primary, share } from "../lib/standings";
 import type { Gap } from "../lib/standings";
 import { formatRelative } from "../lib/timestamp";
 
@@ -26,27 +26,27 @@ const props = defineProps<{
 
 const catalog = useCatalogStore();
 const fmt = catalog.format;
-const TOGETHER = "__together__";
 
 const mine = computed(() => myEntries(props.groups, props.meId));
 const myLead = computed(() => lead(mine.value));
 const options = computed(() => [
   ...(props.pooled ? [{ key: TOGETHER, label: "Together" }] : []),
-  ...props.groups.map((g) => ({ key: g.sportGroup, label: g.sportGroupLabel })),
+  ...props.groups.map((g) => ({ key: groupKey(g), label: g.sportGroupLabel })),
 ]);
 
-// null until a group is chosen: "" is a real key (goals with no sport filter), so it can't stand for "unset".
-const selected = ref<string | null>(null);
+// The group on the bib. The parent owns it (v-model:group) and draws the picker, so it survives
+// the stack re-mounting. null until chosen: "" is a real key (goals with no sport filter).
+const selected = defineModel<string | null>("group", { default: null });
 // Open on your best standing, else the group target, else the first group.
 watch(
   options,
   () => {
-    selected.value = pickGroup(options.value.map((o) => o.key), selected.value, myLead.value?.group.sportGroup);
+    selected.value = pickGroup(options.value.map((o) => o.key), selected.value, myLead.value && groupKey(myLead.value.group));
   },
   { immediate: true },
 );
 
-const group = computed(() => props.groups.find((g) => g.sportGroup === selected.value));
+const group = computed(() => props.groups.find((g) => groupKey(g) === selected.value));
 const entries = computed(() => group.value?.entries ?? []);
 const together = computed(() => selected.value === TOGETHER);
 // Your best entry in the selected group, if you have one there.
@@ -73,7 +73,7 @@ function step(to: "ahead" | "behind"): void {
 function focusGoal(goalId: string): void {
   const g = props.groups.find((g) => g.entries.some((e) => e.goalId === goalId));
   if (!g) return;
-  selected.value = g.sportGroup;
+  selected.value = groupKey(g);
   const i = g.entries.findIndex((e) => e.goalId === goalId);
   if (!browsable.value || i === focus.value) return;
   direction.value = i < focus.value ? "ahead" : "behind";
@@ -175,10 +175,7 @@ function peekNote(e: LeaderboardEntry): string {
 
 function peekBand(slot: "ahead" | "behind", e: LeaderboardEntry): [string, string] {
   if (!browsable.value) return [slot === "ahead" ? "Top" : "2nd", primary(e, fmt)];
-  const f = front.value!;
-  const d = Math.abs(e.progressRatio - f.progressRatio);
-  const delta = d > 0 ? `${slot === "ahead" ? "+" : "−"}${amount(f, d, fmt, e)}` : "Level";
-  return [slot === "ahead" ? "Ahead" : "Behind", delta];
+  return peekBandFor(slot, front.value!, e, fmt, isMe(front.value));
 }
 
 // What a peek shows, whether it stands for a neighbour in the field or a top contributor.
@@ -246,13 +243,6 @@ function tap(to: "ahead" | "behind"): void {
 
 <template>
   <div class="bibs">
-    <div v-if="joined && options.length > 1" class="switch" role="radiogroup" aria-label="Group shown on the bib">
-      <label v-for="o in options" :key="o.key" class="choice choice--pill">
-        <input v-model="selected" type="radio" name="bib-group" :value="o.key" />
-        <span>{{ o.label }}</span>
-      </label>
-    </div>
-
     <!-- The group's progress, once, where it can be read without picking the Together bib. -->
     <p v-if="joined && pooled && !together" class="group-line">
       <b>Together</b>
@@ -325,7 +315,7 @@ function tap(to: "ahead" | "behind"): void {
           <span v-else class="join-body">
             <b>Set your goal</b>
             <small>You're in. Pick what you're chasing to take a place in the standings.</small>
-            <router-link :to="`/campaigns/${campaignId}/join`" class="pill pill--primary">Set your goal</router-link>
+            <router-link :to="`/goals/new?campaign=${campaignId}`" class="pill pill--primary">Set your goal</router-link>
           </span>
         </div>
 
@@ -379,7 +369,7 @@ function tap(to: "ahead" | "behind"): void {
   position: absolute;
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
   background: var(--paper);
@@ -396,8 +386,10 @@ function tap(to: "ahead" | "behind"): void {
 button.peek {
   cursor: pointer;
 }
-button.peek:hover {
-  background: var(--cool-blue-soft);
+@media (hover: hover) {
+  button.peek:hover {
+    background: var(--cool-blue-soft);
+  }
 }
 .peek--ahead {
   top: 0;
@@ -411,8 +403,8 @@ button.peek:hover {
 .band {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.3rem 0.75rem;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-4);
   background: var(--tangerine);
   font: 400 0.75rem/1.3 var(--font-display);
   text-transform: uppercase;
@@ -433,8 +425,8 @@ button.peek:hover {
 .peek-row {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.75rem 0.5rem;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4) var(--space-3);
   min-width: 0;
 }
 .peek-who {
@@ -453,7 +445,7 @@ button.peek:hover {
   font-size: 0.8125rem;
 }
 .peek--lead .peek-row {
-  padding-block: 0.75rem;
+  padding-block: var(--space-4);
 }
 
 .numeral {
@@ -477,7 +469,7 @@ button.peek:hover {
   min-height: 176px;
   z-index: 1;
   /* The one lift in the system: only the bib in focus sits on top of the stack. */
-  box-shadow: 0 6px 0 var(--ink);
+  box-shadow: 0 6px 0 var(--line);
 }
 
 .bib-main {
@@ -485,8 +477,8 @@ button.peek:hover {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.5rem 0.9rem 0.5rem;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--bib-inset) var(--space-3);
 }
 .bib-value {
   display: flex;
@@ -511,29 +503,31 @@ button.peek:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-3);
   width: 100%;
   border: 0;
-  border-top: 2px dashed var(--ink);
+  border-top: 2px dashed var(--line);
   background: var(--cool-blue);
   color: var(--ink);
-  padding: 0.5rem 0.9rem;
+  padding: var(--space-3) var(--bib-inset);
   font: 700 0.9375rem var(--font-body);
   text-align: left;
 }
 button.tab {
   cursor: pointer;
 }
-button.tab:hover {
-  background: var(--cool-blue-deep);
+@media (hover: hover) {
+  button.tab:hover {
+    background: var(--cool-blue-deep);
+  }
 }
 
 .bib--join .join-body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.4rem;
-  padding: 0.75rem 0.9rem 0.9rem;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--bib-inset) var(--bib-inset);
 }
 .join-body b {
   font: 400 1.5rem/1.1 var(--font-display);
@@ -544,15 +538,15 @@ button.tab:hover {
 }
 
 .join-body .pill {
-  margin-top: 0.25rem;
+  margin-top: var(--space-1);
 }
 
 .group-line {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0 0 0.9rem;
+  gap: var(--space-4);
+  margin: 0 0 var(--bib-inset);
   font-variant-numeric: tabular-nums;
 }
 .group-line b {
@@ -564,19 +558,12 @@ button.tab:hover {
   font-size: 0.9375rem;
 }
 
-.switch {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-}
-
 .steps {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 0.6rem;
-  padding: 1.25rem 0 0.25rem;
+  gap: var(--space-3);
+  padding: var(--space-6) 0 var(--space-1);
 }
 
 svg {

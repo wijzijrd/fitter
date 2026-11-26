@@ -10,6 +10,8 @@ export interface ClauseInput {
   metric: ActivityMetric;
   comparator: Comparator;
   value: number;
+  // Which lift a MAX_WEIGHT_KG clause tracks.
+  exercise?: string;
 }
 
 // additiveMetrics add up across activities (SUM/COUNT aggregation in

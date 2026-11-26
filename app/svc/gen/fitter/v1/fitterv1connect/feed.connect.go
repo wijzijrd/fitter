@@ -36,6 +36,9 @@ const (
 	// FeedServiceGetCampaignFeedProcedure is the fully-qualified name of the FeedService's
 	// GetCampaignFeed RPC.
 	FeedServiceGetCampaignFeedProcedure = "/fitter.v1.FeedService/GetCampaignFeed"
+	// FeedServiceMarkFeedSeenProcedure is the fully-qualified name of the FeedService's MarkFeedSeen
+	// RPC.
+	FeedServiceMarkFeedSeenProcedure = "/fitter.v1.FeedService/MarkFeedSeen"
 	// FeedServiceGetCampaignLeaderboardProcedure is the fully-qualified name of the FeedService's
 	// GetCampaignLeaderboard RPC.
 	FeedServiceGetCampaignLeaderboardProcedure = "/fitter.v1.FeedService/GetCampaignLeaderboard"
@@ -47,6 +50,8 @@ const (
 // FeedServiceClient is a client for the fitter.v1.FeedService service.
 type FeedServiceClient interface {
 	GetCampaignFeed(context.Context, *connect.Request[v1.GetCampaignFeedRequest]) (*connect.Response[v1.GetCampaignFeedResponse], error)
+	// MarkFeedSeen records that the caller has now looked at the campaign's feed.
+	MarkFeedSeen(context.Context, *connect.Request[v1.MarkFeedSeenRequest]) (*connect.Response[v1.MarkFeedSeenResponse], error)
 	GetCampaignLeaderboard(context.Context, *connect.Request[v1.GetCampaignLeaderboardRequest]) (*connect.Response[v1.GetCampaignLeaderboardResponse], error)
 	GetCampaignTimeline(context.Context, *connect.Request[v1.GetCampaignTimelineRequest]) (*connect.Response[v1.GetCampaignTimelineResponse], error)
 }
@@ -68,6 +73,12 @@ func NewFeedServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(feedServiceMethods.ByName("GetCampaignFeed")),
 			connect.WithClientOptions(opts...),
 		),
+		markFeedSeen: connect.NewClient[v1.MarkFeedSeenRequest, v1.MarkFeedSeenResponse](
+			httpClient,
+			baseURL+FeedServiceMarkFeedSeenProcedure,
+			connect.WithSchema(feedServiceMethods.ByName("MarkFeedSeen")),
+			connect.WithClientOptions(opts...),
+		),
 		getCampaignLeaderboard: connect.NewClient[v1.GetCampaignLeaderboardRequest, v1.GetCampaignLeaderboardResponse](
 			httpClient,
 			baseURL+FeedServiceGetCampaignLeaderboardProcedure,
@@ -86,6 +97,7 @@ func NewFeedServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 // feedServiceClient implements FeedServiceClient.
 type feedServiceClient struct {
 	getCampaignFeed        *connect.Client[v1.GetCampaignFeedRequest, v1.GetCampaignFeedResponse]
+	markFeedSeen           *connect.Client[v1.MarkFeedSeenRequest, v1.MarkFeedSeenResponse]
 	getCampaignLeaderboard *connect.Client[v1.GetCampaignLeaderboardRequest, v1.GetCampaignLeaderboardResponse]
 	getCampaignTimeline    *connect.Client[v1.GetCampaignTimelineRequest, v1.GetCampaignTimelineResponse]
 }
@@ -93,6 +105,11 @@ type feedServiceClient struct {
 // GetCampaignFeed calls fitter.v1.FeedService.GetCampaignFeed.
 func (c *feedServiceClient) GetCampaignFeed(ctx context.Context, req *connect.Request[v1.GetCampaignFeedRequest]) (*connect.Response[v1.GetCampaignFeedResponse], error) {
 	return c.getCampaignFeed.CallUnary(ctx, req)
+}
+
+// MarkFeedSeen calls fitter.v1.FeedService.MarkFeedSeen.
+func (c *feedServiceClient) MarkFeedSeen(ctx context.Context, req *connect.Request[v1.MarkFeedSeenRequest]) (*connect.Response[v1.MarkFeedSeenResponse], error) {
+	return c.markFeedSeen.CallUnary(ctx, req)
 }
 
 // GetCampaignLeaderboard calls fitter.v1.FeedService.GetCampaignLeaderboard.
@@ -108,6 +125,8 @@ func (c *feedServiceClient) GetCampaignTimeline(ctx context.Context, req *connec
 // FeedServiceHandler is an implementation of the fitter.v1.FeedService service.
 type FeedServiceHandler interface {
 	GetCampaignFeed(context.Context, *connect.Request[v1.GetCampaignFeedRequest]) (*connect.Response[v1.GetCampaignFeedResponse], error)
+	// MarkFeedSeen records that the caller has now looked at the campaign's feed.
+	MarkFeedSeen(context.Context, *connect.Request[v1.MarkFeedSeenRequest]) (*connect.Response[v1.MarkFeedSeenResponse], error)
 	GetCampaignLeaderboard(context.Context, *connect.Request[v1.GetCampaignLeaderboardRequest]) (*connect.Response[v1.GetCampaignLeaderboardResponse], error)
 	GetCampaignTimeline(context.Context, *connect.Request[v1.GetCampaignTimelineRequest]) (*connect.Response[v1.GetCampaignTimelineResponse], error)
 }
@@ -123,6 +142,12 @@ func NewFeedServiceHandler(svc FeedServiceHandler, opts ...connect.HandlerOption
 		FeedServiceGetCampaignFeedProcedure,
 		svc.GetCampaignFeed,
 		connect.WithSchema(feedServiceMethods.ByName("GetCampaignFeed")),
+		connect.WithHandlerOptions(opts...),
+	)
+	feedServiceMarkFeedSeenHandler := connect.NewUnaryHandler(
+		FeedServiceMarkFeedSeenProcedure,
+		svc.MarkFeedSeen,
+		connect.WithSchema(feedServiceMethods.ByName("MarkFeedSeen")),
 		connect.WithHandlerOptions(opts...),
 	)
 	feedServiceGetCampaignLeaderboardHandler := connect.NewUnaryHandler(
@@ -141,6 +166,8 @@ func NewFeedServiceHandler(svc FeedServiceHandler, opts ...connect.HandlerOption
 		switch r.URL.Path {
 		case FeedServiceGetCampaignFeedProcedure:
 			feedServiceGetCampaignFeedHandler.ServeHTTP(w, r)
+		case FeedServiceMarkFeedSeenProcedure:
+			feedServiceMarkFeedSeenHandler.ServeHTTP(w, r)
 		case FeedServiceGetCampaignLeaderboardProcedure:
 			feedServiceGetCampaignLeaderboardHandler.ServeHTTP(w, r)
 		case FeedServiceGetCampaignTimelineProcedure:
@@ -156,6 +183,10 @@ type UnimplementedFeedServiceHandler struct{}
 
 func (UnimplementedFeedServiceHandler) GetCampaignFeed(context.Context, *connect.Request[v1.GetCampaignFeedRequest]) (*connect.Response[v1.GetCampaignFeedResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.FeedService.GetCampaignFeed is not implemented"))
+}
+
+func (UnimplementedFeedServiceHandler) MarkFeedSeen(context.Context, *connect.Request[v1.MarkFeedSeenRequest]) (*connect.Response[v1.MarkFeedSeenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.FeedService.MarkFeedSeen is not implemented"))
 }
 
 func (UnimplementedFeedServiceHandler) GetCampaignLeaderboard(context.Context, *connect.Request[v1.GetCampaignLeaderboardRequest]) (*connect.Response[v1.GetCampaignLeaderboardResponse], error) {

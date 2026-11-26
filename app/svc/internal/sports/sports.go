@@ -15,6 +15,7 @@ const (
 	GroupWinter   Group = "winter"
 	GroupWater    Group = "water"
 	GroupStrength Group = "strength"
+	GroupCircuits Group = "circuits"
 	GroupOther    Group = "other"
 )
 
@@ -74,8 +75,14 @@ var groups = []GroupDef{
 		Group: GroupStrength,
 		Label: "Strength",
 		SportTypes: []string{
-			"WeightTraining", "Workout", "Crossfit", "HighIntensityIntervalTraining",
-			"Pilates", "Yoga", "Elliptical", "StairStepper",
+			"WeightTraining", "Pilates", "Yoga", "Elliptical", "StairStepper",
+		},
+	},
+	{
+		Group: GroupCircuits,
+		Label: "HIIT & circuits",
+		SportTypes: []string{
+			"Workout", "Crossfit", "HighIntensityIntervalTraining",
 		},
 	},
 	{
@@ -106,10 +113,13 @@ var labelByGroup = func() map[Group]string {
 }()
 
 // Groups returns the curated group definitions in stable, user-visible
-// order. Callers must not mutate the returned slice or its SportTypes.
+// order. The result is a deep copy, so a caller can't corrupt the table.
 func Groups() []GroupDef {
 	out := make([]GroupDef, len(groups))
-	copy(out, groups)
+	for i, g := range groups {
+		g.SportTypes = append([]string(nil), g.SportTypes...)
+		out[i] = g
+	}
 	return out
 }
 

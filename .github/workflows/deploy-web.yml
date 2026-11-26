@@ -83,6 +83,10 @@ jobs:
         env:
           # app/ui reads VITE_API_BASE_URL; the infra repo publishes it as PUBLIC_API_BASE_URL.
           VITE_API_BASE_URL: ${{ vars.PUBLIC_API_BASE_URL }}
+          # Developer feedback shows only when the environment's FEEDBACK_ENABLED variable is "true".
+          VITE_FEEDBACK_ENABLED: ${{ vars.FEEDBACK_ENABLED }}
+          # Selects the icon set and app name in app/ui/public/icons/<staging|prod>/.
+          VITE_APP_ENV: ${{ vars.SSM_ENV }}
         run: npm run build
 
       - uses: actions/upload-artifact@v7

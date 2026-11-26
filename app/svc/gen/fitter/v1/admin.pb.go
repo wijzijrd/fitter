@@ -807,11 +807,1127 @@ func (*DeleteCustomMetricResponse) Descriptor() ([]byte, []int) {
 	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{13}
 }
 
+type AdminUser struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	AvatarUrl       string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	StravaAthleteId int64                  `protobuf:"varint,4,opt,name=strava_athlete_id,json=stravaAthleteId,proto3" json:"strava_athlete_id,omitempty"`
+	Role            string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
+	Status          string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	BanReason       string                 `protobuf:"bytes,7,opt,name=ban_reason,json=banReason,proto3" json:"ban_reason,omitempty"`
+	BannedBy        string                 `protobuf:"bytes,8,opt,name=banned_by,json=bannedBy,proto3" json:"banned_by,omitempty"`
+	BannedAt        *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=banned_at,json=bannedAt,proto3" json:"banned_at,omitempty"`
+	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AdminUser) Reset() {
+	*x = AdminUser{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminUser) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminUser) ProtoMessage() {}
+
+func (x *AdminUser) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminUser.ProtoReflect.Descriptor instead.
+func (*AdminUser) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *AdminUser) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AdminUser) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AdminUser) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *AdminUser) GetStravaAthleteId() int64 {
+	if x != nil {
+		return x.StravaAthleteId
+	}
+	return 0
+}
+
+func (x *AdminUser) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *AdminUser) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *AdminUser) GetBanReason() string {
+	if x != nil {
+		return x.BanReason
+	}
+	return ""
+}
+
+func (x *AdminUser) GetBannedBy() string {
+	if x != nil {
+		return x.BannedBy
+	}
+	return ""
+}
+
+func (x *AdminUser) GetBannedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.BannedAt
+	}
+	return nil
+}
+
+func (x *AdminUser) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type AdminAction struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ActorId       string                 `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	ActorName     string                 `protobuf:"bytes,3,opt,name=actor_name,json=actorName,proto3" json:"actor_name,omitempty"`
+	Action        string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
+	TargetId      string                 `protobuf:"bytes,5,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	Detail        string                 `protobuf:"bytes,6,opt,name=detail,proto3" json:"detail,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminAction) Reset() {
+	*x = AdminAction{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminAction) ProtoMessage() {}
+
+func (x *AdminAction) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminAction.ProtoReflect.Descriptor instead.
+func (*AdminAction) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *AdminAction) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AdminAction) GetActorId() string {
+	if x != nil {
+		return x.ActorId
+	}
+	return ""
+}
+
+func (x *AdminAction) GetActorName() string {
+	if x != nil {
+		return x.ActorName
+	}
+	return ""
+}
+
+func (x *AdminAction) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *AdminAction) GetTargetId() string {
+	if x != nil {
+		return x.TargetId
+	}
+	return ""
+}
+
+func (x *AdminAction) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+func (x *AdminAction) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type ListUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // empty = all
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersRequest) Reset() {
+	*x = ListUsersRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersRequest) ProtoMessage() {}
+
+func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
+func (*ListUsersRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ListUsersRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type ListUsersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Users         []*AdminUser           `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersResponse) Reset() {
+	*x = ListUsersResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersResponse) ProtoMessage() {}
+
+func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
+func (*ListUsersResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ListUsersResponse) GetUsers() []*AdminUser {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+type ApproveUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApproveUserRequest) Reset() {
+	*x = ApproveUserRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApproveUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApproveUserRequest) ProtoMessage() {}
+
+func (x *ApproveUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApproveUserRequest.ProtoReflect.Descriptor instead.
+func (*ApproveUserRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ApproveUserRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type ApproveUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ApproveUserResponse) Reset() {
+	*x = ApproveUserResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ApproveUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApproveUserResponse) ProtoMessage() {}
+
+func (x *ApproveUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApproveUserResponse.ProtoReflect.Descriptor instead.
+func (*ApproveUserResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{19}
+}
+
+type BanUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // required, max 500 chars
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BanUserRequest) Reset() {
+	*x = BanUserRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BanUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BanUserRequest) ProtoMessage() {}
+
+func (x *BanUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BanUserRequest.ProtoReflect.Descriptor instead.
+func (*BanUserRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *BanUserRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *BanUserRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type BanUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BanUserResponse) Reset() {
+	*x = BanUserResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BanUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BanUserResponse) ProtoMessage() {}
+
+func (x *BanUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BanUserResponse.ProtoReflect.Descriptor instead.
+func (*BanUserResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{21}
+}
+
+type UnbanUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnbanUserRequest) Reset() {
+	*x = UnbanUserRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnbanUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnbanUserRequest) ProtoMessage() {}
+
+func (x *UnbanUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnbanUserRequest.ProtoReflect.Descriptor instead.
+func (*UnbanUserRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *UnbanUserRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UnbanUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnbanUserResponse) Reset() {
+	*x = UnbanUserResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnbanUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnbanUserResponse) ProtoMessage() {}
+
+func (x *UnbanUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnbanUserResponse.ProtoReflect.Descriptor instead.
+func (*UnbanUserResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{23}
+}
+
+type SetUserRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"` // "member" | "admin"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetUserRoleRequest) Reset() {
+	*x = SetUserRoleRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetUserRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetUserRoleRequest) ProtoMessage() {}
+
+func (x *SetUserRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetUserRoleRequest.ProtoReflect.Descriptor instead.
+func (*SetUserRoleRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SetUserRoleRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SetUserRoleRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type SetUserRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetUserRoleResponse) Reset() {
+	*x = SetUserRoleResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetUserRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetUserRoleResponse) ProtoMessage() {}
+
+func (x *SetUserRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetUserRoleResponse.ProtoReflect.Descriptor instead.
+func (*SetUserRoleResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{25}
+}
+
+type ListAdminActionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"` // default 100, max 500
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAdminActionsRequest) Reset() {
+	*x = ListAdminActionsRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAdminActionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAdminActionsRequest) ProtoMessage() {}
+
+func (x *ListAdminActionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAdminActionsRequest.ProtoReflect.Descriptor instead.
+func (*ListAdminActionsRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ListAdminActionsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type ListAdminActionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Actions       []*AdminAction         `protobuf:"bytes,1,rep,name=actions,proto3" json:"actions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAdminActionsResponse) Reset() {
+	*x = ListAdminActionsResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAdminActionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAdminActionsResponse) ProtoMessage() {}
+
+func (x *ListAdminActionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAdminActionsResponse.ProtoReflect.Descriptor instead.
+func (*ListAdminActionsResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ListAdminActionsResponse) GetActions() []*AdminAction {
+	if x != nil {
+		return x.Actions
+	}
+	return nil
+}
+
+type UpdateExerciseRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Measure       ExerciseMeasure        `protobuf:"varint,3,opt,name=measure,proto3,enum=fitter.v1.ExerciseMeasure" json:"measure,omitempty"` // may differ from the stored one only while the exercise is unused
+	Loaded        bool                   `protobuf:"varint,4,opt,name=loaded,proto3" json:"loaded,omitempty"`
+	Muscles       []Muscle               `protobuf:"varint,5,rep,packed,name=muscles,proto3,enum=fitter.v1.Muscle" json:"muscles,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateExerciseRequest) Reset() {
+	*x = UpdateExerciseRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateExerciseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateExerciseRequest) ProtoMessage() {}
+
+func (x *UpdateExerciseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateExerciseRequest.ProtoReflect.Descriptor instead.
+func (*UpdateExerciseRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *UpdateExerciseRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateExerciseRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateExerciseRequest) GetMeasure() ExerciseMeasure {
+	if x != nil {
+		return x.Measure
+	}
+	return ExerciseMeasure_EXERCISE_MEASURE_UNSPECIFIED
+}
+
+func (x *UpdateExerciseRequest) GetLoaded() bool {
+	if x != nil {
+		return x.Loaded
+	}
+	return false
+}
+
+func (x *UpdateExerciseRequest) GetMuscles() []Muscle {
+	if x != nil {
+		return x.Muscles
+	}
+	return nil
+}
+
+type UpdateExerciseResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Exercise      *Exercise              `protobuf:"bytes,1,opt,name=exercise,proto3" json:"exercise,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateExerciseResponse) Reset() {
+	*x = UpdateExerciseResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateExerciseResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateExerciseResponse) ProtoMessage() {}
+
+func (x *UpdateExerciseResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateExerciseResponse.ProtoReflect.Descriptor instead.
+func (*UpdateExerciseResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *UpdateExerciseResponse) GetExercise() *Exercise {
+	if x != nil {
+		return x.Exercise
+	}
+	return nil
+}
+
+type DeleteExerciseRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // refused while any station uses it; merge instead
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteExerciseRequest) Reset() {
+	*x = DeleteExerciseRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteExerciseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteExerciseRequest) ProtoMessage() {}
+
+func (x *DeleteExerciseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteExerciseRequest.ProtoReflect.Descriptor instead.
+func (*DeleteExerciseRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *DeleteExerciseRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteExerciseResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteExerciseResponse) Reset() {
+	*x = DeleteExerciseResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteExerciseResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteExerciseResponse) ProtoMessage() {}
+
+func (x *DeleteExerciseResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteExerciseResponse.ProtoReflect.Descriptor instead.
+func (*DeleteExerciseResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{31}
+}
+
+// MergeExercisesRequest moves every station, goal clause and legacy lift from
+// source to target, then removes source.
+type MergeExercisesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceId      string                 `protobuf:"bytes,1,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"`
+	TargetId      string                 `protobuf:"bytes,2,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MergeExercisesRequest) Reset() {
+	*x = MergeExercisesRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MergeExercisesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MergeExercisesRequest) ProtoMessage() {}
+
+func (x *MergeExercisesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MergeExercisesRequest.ProtoReflect.Descriptor instead.
+func (*MergeExercisesRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *MergeExercisesRequest) GetSourceId() string {
+	if x != nil {
+		return x.SourceId
+	}
+	return ""
+}
+
+func (x *MergeExercisesRequest) GetTargetId() string {
+	if x != nil {
+		return x.TargetId
+	}
+	return ""
+}
+
+type MergeExercisesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Exercise      *Exercise              `protobuf:"bytes,1,opt,name=exercise,proto3" json:"exercise,omitempty"` // the target
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MergeExercisesResponse) Reset() {
+	*x = MergeExercisesResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MergeExercisesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MergeExercisesResponse) ProtoMessage() {}
+
+func (x *MergeExercisesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MergeExercisesResponse.ProtoReflect.Descriptor instead.
+func (*MergeExercisesResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *MergeExercisesResponse) GetExercise() *Exercise {
+	if x != nil {
+		return x.Exercise
+	}
+	return nil
+}
+
+// SetExerciseArchived retires an exercise (hidden from new logs and goal suggestions, history
+// keeps it) or restores one. Used exercises are archived instead of deleted.
+type SetExerciseArchivedRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Archived      bool                   `protobuf:"varint,2,opt,name=archived,proto3" json:"archived,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetExerciseArchivedRequest) Reset() {
+	*x = SetExerciseArchivedRequest{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetExerciseArchivedRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetExerciseArchivedRequest) ProtoMessage() {}
+
+func (x *SetExerciseArchivedRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetExerciseArchivedRequest.ProtoReflect.Descriptor instead.
+func (*SetExerciseArchivedRequest) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *SetExerciseArchivedRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SetExerciseArchivedRequest) GetArchived() bool {
+	if x != nil {
+		return x.Archived
+	}
+	return false
+}
+
+type SetExerciseArchivedResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Exercise      *Exercise              `protobuf:"bytes,1,opt,name=exercise,proto3" json:"exercise,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetExerciseArchivedResponse) Reset() {
+	*x = SetExerciseArchivedResponse{}
+	mi := &file_fitter_v1_admin_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetExerciseArchivedResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetExerciseArchivedResponse) ProtoMessage() {}
+
+func (x *SetExerciseArchivedResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fitter_v1_admin_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetExerciseArchivedResponse.ProtoReflect.Descriptor instead.
+func (*SetExerciseArchivedResponse) Descriptor() ([]byte, []int) {
+	return file_fitter_v1_admin_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *SetExerciseArchivedResponse) GetExercise() *Exercise {
+	if x != nil {
+		return x.Exercise
+	}
+	return nil
+}
+
 var File_fitter_v1_admin_proto protoreflect.FileDescriptor
 
 const file_fitter_v1_admin_proto_rawDesc = "" +
 	"\n" +
-	"\x15fitter/v1/admin.proto\x12\tfitter.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9f\x01\n" +
+	"\x15fitter/v1/admin.proto\x12\tfitter.v1\x1a\x18fitter/v1/exercise.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9f\x01\n" +
 	"\vCustomSport\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03key\x18\x02 \x01(\tR\x03key\x12\x14\n" +
@@ -864,14 +1980,92 @@ const file_fitter_v1_admin_proto_rawDesc = "" +
 	"\ametrics\x18\x01 \x03(\v2\x17.fitter.v1.CustomMetricR\ametrics\"+\n" +
 	"\x19DeleteCustomMetricRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1c\n" +
-	"\x1aDeleteCustomMetricResponse2\xd1\x04\n" +
-	"\fAdminService\x12^\n" +
+	"\x1aDeleteCustomMetricResponse\"\xd6\x02\n" +
+	"\tAdminUser\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12*\n" +
+	"\x11strava_athlete_id\x18\x04 \x01(\x03R\x0fstravaAthleteId\x12\x12\n" +
+	"\x04role\x18\x05 \x01(\tR\x04role\x12\x16\n" +
+	"\x06status\x18\x06 \x01(\tR\x06status\x12\x1d\n" +
+	"\n" +
+	"ban_reason\x18\a \x01(\tR\tbanReason\x12\x1b\n" +
+	"\tbanned_by\x18\b \x01(\tR\bbannedBy\x127\n" +
+	"\tbanned_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\bbannedAt\x129\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xdf\x01\n" +
+	"\vAdminAction\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
+	"\bactor_id\x18\x02 \x01(\tR\aactorId\x12\x1d\n" +
+	"\n" +
+	"actor_name\x18\x03 \x01(\tR\tactorName\x12\x16\n" +
+	"\x06action\x18\x04 \x01(\tR\x06action\x12\x1b\n" +
+	"\ttarget_id\x18\x05 \x01(\tR\btargetId\x12\x16\n" +
+	"\x06detail\x18\x06 \x01(\tR\x06detail\x129\n" +
+	"\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"*\n" +
+	"\x10ListUsersRequest\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\"?\n" +
+	"\x11ListUsersResponse\x12*\n" +
+	"\x05users\x18\x01 \x03(\v2\x14.fitter.v1.AdminUserR\x05users\"$\n" +
+	"\x12ApproveUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x15\n" +
+	"\x13ApproveUserResponse\"8\n" +
+	"\x0eBanUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"\x11\n" +
+	"\x0fBanUserResponse\"\"\n" +
+	"\x10UnbanUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x13\n" +
+	"\x11UnbanUserResponse\"8\n" +
+	"\x12SetUserRoleRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role\"\x15\n" +
+	"\x13SetUserRoleResponse\"/\n" +
+	"\x17ListAdminActionsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\"L\n" +
+	"\x18ListAdminActionsResponse\x120\n" +
+	"\aactions\x18\x01 \x03(\v2\x16.fitter.v1.AdminActionR\aactions\"\xb6\x01\n" +
+	"\x15UpdateExerciseRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x124\n" +
+	"\ameasure\x18\x03 \x01(\x0e2\x1a.fitter.v1.ExerciseMeasureR\ameasure\x12\x16\n" +
+	"\x06loaded\x18\x04 \x01(\bR\x06loaded\x12+\n" +
+	"\amuscles\x18\x05 \x03(\x0e2\x11.fitter.v1.MuscleR\amuscles\"I\n" +
+	"\x16UpdateExerciseResponse\x12/\n" +
+	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise\"'\n" +
+	"\x15DeleteExerciseRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x18\n" +
+	"\x16DeleteExerciseResponse\"Q\n" +
+	"\x15MergeExercisesRequest\x12\x1b\n" +
+	"\tsource_id\x18\x01 \x01(\tR\bsourceId\x12\x1b\n" +
+	"\ttarget_id\x18\x02 \x01(\tR\btargetId\"I\n" +
+	"\x16MergeExercisesResponse\x12/\n" +
+	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise\"H\n" +
+	"\x1aSetExerciseArchivedRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\barchived\x18\x02 \x01(\bR\barchived\"N\n" +
+	"\x1bSetExerciseArchivedResponse\x12/\n" +
+	"\bexercise\x18\x01 \x01(\v2\x13.fitter.v1.ExerciseR\bexercise2\x87\v\n" +
+	"\fAdminService\x12F\n" +
+	"\tListUsers\x12\x1b.fitter.v1.ListUsersRequest\x1a\x1c.fitter.v1.ListUsersResponse\x12L\n" +
+	"\vApproveUser\x12\x1d.fitter.v1.ApproveUserRequest\x1a\x1e.fitter.v1.ApproveUserResponse\x12@\n" +
+	"\aBanUser\x12\x19.fitter.v1.BanUserRequest\x1a\x1a.fitter.v1.BanUserResponse\x12F\n" +
+	"\tUnbanUser\x12\x1b.fitter.v1.UnbanUserRequest\x1a\x1c.fitter.v1.UnbanUserResponse\x12L\n" +
+	"\vSetUserRole\x12\x1d.fitter.v1.SetUserRoleRequest\x1a\x1e.fitter.v1.SetUserRoleResponse\x12[\n" +
+	"\x10ListAdminActions\x12\".fitter.v1.ListAdminActionsRequest\x1a#.fitter.v1.ListAdminActionsResponse\x12^\n" +
 	"\x11CreateCustomSport\x12#.fitter.v1.CreateCustomSportRequest\x1a$.fitter.v1.CreateCustomSportResponse\x12[\n" +
 	"\x10ListCustomSports\x12\".fitter.v1.ListCustomSportsRequest\x1a#.fitter.v1.ListCustomSportsResponse\x12^\n" +
 	"\x11DeleteCustomSport\x12#.fitter.v1.DeleteCustomSportRequest\x1a$.fitter.v1.DeleteCustomSportResponse\x12a\n" +
 	"\x12CreateCustomMetric\x12$.fitter.v1.CreateCustomMetricRequest\x1a%.fitter.v1.CreateCustomMetricResponse\x12^\n" +
 	"\x11ListCustomMetrics\x12#.fitter.v1.ListCustomMetricsRequest\x1a$.fitter.v1.ListCustomMetricsResponse\x12a\n" +
-	"\x12DeleteCustomMetric\x12$.fitter.v1.DeleteCustomMetricRequest\x1a%.fitter.v1.DeleteCustomMetricResponseB\x8e\x01\n" +
+	"\x12DeleteCustomMetric\x12$.fitter.v1.DeleteCustomMetricRequest\x1a%.fitter.v1.DeleteCustomMetricResponse\x12U\n" +
+	"\x0eUpdateExercise\x12 .fitter.v1.UpdateExerciseRequest\x1a!.fitter.v1.UpdateExerciseResponse\x12U\n" +
+	"\x0eDeleteExercise\x12 .fitter.v1.DeleteExerciseRequest\x1a!.fitter.v1.DeleteExerciseResponse\x12U\n" +
+	"\x0eMergeExercises\x12 .fitter.v1.MergeExercisesRequest\x1a!.fitter.v1.MergeExercisesResponse\x12d\n" +
+	"\x13SetExerciseArchived\x12%.fitter.v1.SetExerciseArchivedRequest\x1a&.fitter.v1.SetExerciseArchivedResponseB\x8e\x01\n" +
 	"\rcom.fitter.v1B\n" +
 	"AdminProtoP\x01Z,github.com/fitter/svc/gen/fitter/v1;fitterv1\xa2\x02\x03FXX\xaa\x02\tFitter.V1\xca\x02\tFitter\\V1\xe2\x02\x15Fitter\\V1\\GPBMetadata\xea\x02\n" +
 	"Fitter::V1b\x06proto3"
@@ -888,48 +2082,103 @@ func file_fitter_v1_admin_proto_rawDescGZIP() []byte {
 	return file_fitter_v1_admin_proto_rawDescData
 }
 
-var file_fitter_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_fitter_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_fitter_v1_admin_proto_goTypes = []any{
-	(*CustomSport)(nil),                // 0: fitter.v1.CustomSport
-	(*CustomMetric)(nil),               // 1: fitter.v1.CustomMetric
-	(*CreateCustomSportRequest)(nil),   // 2: fitter.v1.CreateCustomSportRequest
-	(*CreateCustomSportResponse)(nil),  // 3: fitter.v1.CreateCustomSportResponse
-	(*ListCustomSportsRequest)(nil),    // 4: fitter.v1.ListCustomSportsRequest
-	(*ListCustomSportsResponse)(nil),   // 5: fitter.v1.ListCustomSportsResponse
-	(*DeleteCustomSportRequest)(nil),   // 6: fitter.v1.DeleteCustomSportRequest
-	(*DeleteCustomSportResponse)(nil),  // 7: fitter.v1.DeleteCustomSportResponse
-	(*CreateCustomMetricRequest)(nil),  // 8: fitter.v1.CreateCustomMetricRequest
-	(*CreateCustomMetricResponse)(nil), // 9: fitter.v1.CreateCustomMetricResponse
-	(*ListCustomMetricsRequest)(nil),   // 10: fitter.v1.ListCustomMetricsRequest
-	(*ListCustomMetricsResponse)(nil),  // 11: fitter.v1.ListCustomMetricsResponse
-	(*DeleteCustomMetricRequest)(nil),  // 12: fitter.v1.DeleteCustomMetricRequest
-	(*DeleteCustomMetricResponse)(nil), // 13: fitter.v1.DeleteCustomMetricResponse
-	(*timestamppb.Timestamp)(nil),      // 14: google.protobuf.Timestamp
+	(*CustomSport)(nil),                 // 0: fitter.v1.CustomSport
+	(*CustomMetric)(nil),                // 1: fitter.v1.CustomMetric
+	(*CreateCustomSportRequest)(nil),    // 2: fitter.v1.CreateCustomSportRequest
+	(*CreateCustomSportResponse)(nil),   // 3: fitter.v1.CreateCustomSportResponse
+	(*ListCustomSportsRequest)(nil),     // 4: fitter.v1.ListCustomSportsRequest
+	(*ListCustomSportsResponse)(nil),    // 5: fitter.v1.ListCustomSportsResponse
+	(*DeleteCustomSportRequest)(nil),    // 6: fitter.v1.DeleteCustomSportRequest
+	(*DeleteCustomSportResponse)(nil),   // 7: fitter.v1.DeleteCustomSportResponse
+	(*CreateCustomMetricRequest)(nil),   // 8: fitter.v1.CreateCustomMetricRequest
+	(*CreateCustomMetricResponse)(nil),  // 9: fitter.v1.CreateCustomMetricResponse
+	(*ListCustomMetricsRequest)(nil),    // 10: fitter.v1.ListCustomMetricsRequest
+	(*ListCustomMetricsResponse)(nil),   // 11: fitter.v1.ListCustomMetricsResponse
+	(*DeleteCustomMetricRequest)(nil),   // 12: fitter.v1.DeleteCustomMetricRequest
+	(*DeleteCustomMetricResponse)(nil),  // 13: fitter.v1.DeleteCustomMetricResponse
+	(*AdminUser)(nil),                   // 14: fitter.v1.AdminUser
+	(*AdminAction)(nil),                 // 15: fitter.v1.AdminAction
+	(*ListUsersRequest)(nil),            // 16: fitter.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),           // 17: fitter.v1.ListUsersResponse
+	(*ApproveUserRequest)(nil),          // 18: fitter.v1.ApproveUserRequest
+	(*ApproveUserResponse)(nil),         // 19: fitter.v1.ApproveUserResponse
+	(*BanUserRequest)(nil),              // 20: fitter.v1.BanUserRequest
+	(*BanUserResponse)(nil),             // 21: fitter.v1.BanUserResponse
+	(*UnbanUserRequest)(nil),            // 22: fitter.v1.UnbanUserRequest
+	(*UnbanUserResponse)(nil),           // 23: fitter.v1.UnbanUserResponse
+	(*SetUserRoleRequest)(nil),          // 24: fitter.v1.SetUserRoleRequest
+	(*SetUserRoleResponse)(nil),         // 25: fitter.v1.SetUserRoleResponse
+	(*ListAdminActionsRequest)(nil),     // 26: fitter.v1.ListAdminActionsRequest
+	(*ListAdminActionsResponse)(nil),    // 27: fitter.v1.ListAdminActionsResponse
+	(*UpdateExerciseRequest)(nil),       // 28: fitter.v1.UpdateExerciseRequest
+	(*UpdateExerciseResponse)(nil),      // 29: fitter.v1.UpdateExerciseResponse
+	(*DeleteExerciseRequest)(nil),       // 30: fitter.v1.DeleteExerciseRequest
+	(*DeleteExerciseResponse)(nil),      // 31: fitter.v1.DeleteExerciseResponse
+	(*MergeExercisesRequest)(nil),       // 32: fitter.v1.MergeExercisesRequest
+	(*MergeExercisesResponse)(nil),      // 33: fitter.v1.MergeExercisesResponse
+	(*SetExerciseArchivedRequest)(nil),  // 34: fitter.v1.SetExerciseArchivedRequest
+	(*SetExerciseArchivedResponse)(nil), // 35: fitter.v1.SetExerciseArchivedResponse
+	(*timestamppb.Timestamp)(nil),       // 36: google.protobuf.Timestamp
+	(ExerciseMeasure)(0),                // 37: fitter.v1.ExerciseMeasure
+	(Muscle)(0),                         // 38: fitter.v1.Muscle
+	(*Exercise)(nil),                    // 39: fitter.v1.Exercise
 }
 var file_fitter_v1_admin_proto_depIdxs = []int32{
-	14, // 0: fitter.v1.CustomSport.created_at:type_name -> google.protobuf.Timestamp
-	14, // 1: fitter.v1.CustomMetric.created_at:type_name -> google.protobuf.Timestamp
+	36, // 0: fitter.v1.CustomSport.created_at:type_name -> google.protobuf.Timestamp
+	36, // 1: fitter.v1.CustomMetric.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: fitter.v1.CreateCustomSportResponse.sport:type_name -> fitter.v1.CustomSport
 	0,  // 3: fitter.v1.ListCustomSportsResponse.sports:type_name -> fitter.v1.CustomSport
 	1,  // 4: fitter.v1.CreateCustomMetricResponse.metric:type_name -> fitter.v1.CustomMetric
 	1,  // 5: fitter.v1.ListCustomMetricsResponse.metrics:type_name -> fitter.v1.CustomMetric
-	2,  // 6: fitter.v1.AdminService.CreateCustomSport:input_type -> fitter.v1.CreateCustomSportRequest
-	4,  // 7: fitter.v1.AdminService.ListCustomSports:input_type -> fitter.v1.ListCustomSportsRequest
-	6,  // 8: fitter.v1.AdminService.DeleteCustomSport:input_type -> fitter.v1.DeleteCustomSportRequest
-	8,  // 9: fitter.v1.AdminService.CreateCustomMetric:input_type -> fitter.v1.CreateCustomMetricRequest
-	10, // 10: fitter.v1.AdminService.ListCustomMetrics:input_type -> fitter.v1.ListCustomMetricsRequest
-	12, // 11: fitter.v1.AdminService.DeleteCustomMetric:input_type -> fitter.v1.DeleteCustomMetricRequest
-	3,  // 12: fitter.v1.AdminService.CreateCustomSport:output_type -> fitter.v1.CreateCustomSportResponse
-	5,  // 13: fitter.v1.AdminService.ListCustomSports:output_type -> fitter.v1.ListCustomSportsResponse
-	7,  // 14: fitter.v1.AdminService.DeleteCustomSport:output_type -> fitter.v1.DeleteCustomSportResponse
-	9,  // 15: fitter.v1.AdminService.CreateCustomMetric:output_type -> fitter.v1.CreateCustomMetricResponse
-	11, // 16: fitter.v1.AdminService.ListCustomMetrics:output_type -> fitter.v1.ListCustomMetricsResponse
-	13, // 17: fitter.v1.AdminService.DeleteCustomMetric:output_type -> fitter.v1.DeleteCustomMetricResponse
-	12, // [12:18] is the sub-list for method output_type
-	6,  // [6:12] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	36, // 6: fitter.v1.AdminUser.banned_at:type_name -> google.protobuf.Timestamp
+	36, // 7: fitter.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
+	36, // 8: fitter.v1.AdminAction.created_at:type_name -> google.protobuf.Timestamp
+	14, // 9: fitter.v1.ListUsersResponse.users:type_name -> fitter.v1.AdminUser
+	15, // 10: fitter.v1.ListAdminActionsResponse.actions:type_name -> fitter.v1.AdminAction
+	37, // 11: fitter.v1.UpdateExerciseRequest.measure:type_name -> fitter.v1.ExerciseMeasure
+	38, // 12: fitter.v1.UpdateExerciseRequest.muscles:type_name -> fitter.v1.Muscle
+	39, // 13: fitter.v1.UpdateExerciseResponse.exercise:type_name -> fitter.v1.Exercise
+	39, // 14: fitter.v1.MergeExercisesResponse.exercise:type_name -> fitter.v1.Exercise
+	39, // 15: fitter.v1.SetExerciseArchivedResponse.exercise:type_name -> fitter.v1.Exercise
+	16, // 16: fitter.v1.AdminService.ListUsers:input_type -> fitter.v1.ListUsersRequest
+	18, // 17: fitter.v1.AdminService.ApproveUser:input_type -> fitter.v1.ApproveUserRequest
+	20, // 18: fitter.v1.AdminService.BanUser:input_type -> fitter.v1.BanUserRequest
+	22, // 19: fitter.v1.AdminService.UnbanUser:input_type -> fitter.v1.UnbanUserRequest
+	24, // 20: fitter.v1.AdminService.SetUserRole:input_type -> fitter.v1.SetUserRoleRequest
+	26, // 21: fitter.v1.AdminService.ListAdminActions:input_type -> fitter.v1.ListAdminActionsRequest
+	2,  // 22: fitter.v1.AdminService.CreateCustomSport:input_type -> fitter.v1.CreateCustomSportRequest
+	4,  // 23: fitter.v1.AdminService.ListCustomSports:input_type -> fitter.v1.ListCustomSportsRequest
+	6,  // 24: fitter.v1.AdminService.DeleteCustomSport:input_type -> fitter.v1.DeleteCustomSportRequest
+	8,  // 25: fitter.v1.AdminService.CreateCustomMetric:input_type -> fitter.v1.CreateCustomMetricRequest
+	10, // 26: fitter.v1.AdminService.ListCustomMetrics:input_type -> fitter.v1.ListCustomMetricsRequest
+	12, // 27: fitter.v1.AdminService.DeleteCustomMetric:input_type -> fitter.v1.DeleteCustomMetricRequest
+	28, // 28: fitter.v1.AdminService.UpdateExercise:input_type -> fitter.v1.UpdateExerciseRequest
+	30, // 29: fitter.v1.AdminService.DeleteExercise:input_type -> fitter.v1.DeleteExerciseRequest
+	32, // 30: fitter.v1.AdminService.MergeExercises:input_type -> fitter.v1.MergeExercisesRequest
+	34, // 31: fitter.v1.AdminService.SetExerciseArchived:input_type -> fitter.v1.SetExerciseArchivedRequest
+	17, // 32: fitter.v1.AdminService.ListUsers:output_type -> fitter.v1.ListUsersResponse
+	19, // 33: fitter.v1.AdminService.ApproveUser:output_type -> fitter.v1.ApproveUserResponse
+	21, // 34: fitter.v1.AdminService.BanUser:output_type -> fitter.v1.BanUserResponse
+	23, // 35: fitter.v1.AdminService.UnbanUser:output_type -> fitter.v1.UnbanUserResponse
+	25, // 36: fitter.v1.AdminService.SetUserRole:output_type -> fitter.v1.SetUserRoleResponse
+	27, // 37: fitter.v1.AdminService.ListAdminActions:output_type -> fitter.v1.ListAdminActionsResponse
+	3,  // 38: fitter.v1.AdminService.CreateCustomSport:output_type -> fitter.v1.CreateCustomSportResponse
+	5,  // 39: fitter.v1.AdminService.ListCustomSports:output_type -> fitter.v1.ListCustomSportsResponse
+	7,  // 40: fitter.v1.AdminService.DeleteCustomSport:output_type -> fitter.v1.DeleteCustomSportResponse
+	9,  // 41: fitter.v1.AdminService.CreateCustomMetric:output_type -> fitter.v1.CreateCustomMetricResponse
+	11, // 42: fitter.v1.AdminService.ListCustomMetrics:output_type -> fitter.v1.ListCustomMetricsResponse
+	13, // 43: fitter.v1.AdminService.DeleteCustomMetric:output_type -> fitter.v1.DeleteCustomMetricResponse
+	29, // 44: fitter.v1.AdminService.UpdateExercise:output_type -> fitter.v1.UpdateExerciseResponse
+	31, // 45: fitter.v1.AdminService.DeleteExercise:output_type -> fitter.v1.DeleteExerciseResponse
+	33, // 46: fitter.v1.AdminService.MergeExercises:output_type -> fitter.v1.MergeExercisesResponse
+	35, // 47: fitter.v1.AdminService.SetExerciseArchived:output_type -> fitter.v1.SetExerciseArchivedResponse
+	32, // [32:48] is the sub-list for method output_type
+	16, // [16:32] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_fitter_v1_admin_proto_init() }
@@ -937,13 +2186,14 @@ func file_fitter_v1_admin_proto_init() {
 	if File_fitter_v1_admin_proto != nil {
 		return
 	}
+	file_fitter_v1_exercise_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fitter_v1_admin_proto_rawDesc), len(file_fitter_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

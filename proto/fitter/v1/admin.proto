@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package fitter.v1;
 
+import "fitter/v1/exercise.proto";
 import "google/protobuf/timestamp.proto";
 
 // AdminService manages the custom-sport/custom-metric taxonomy an admin can
@@ -85,11 +86,109 @@ message DeleteCustomMetricRequest {
 
 message DeleteCustomMetricResponse {}
 
+message AdminUser {
+  string id = 1;
+  string name = 2;
+  string avatar_url = 3;
+  int64 strava_athlete_id = 4;
+  string role = 5;
+  string status = 6;
+  string ban_reason = 7;
+  string banned_by = 8;
+  google.protobuf.Timestamp banned_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message AdminAction {
+  string id = 1;
+  string actor_id = 2;
+  string actor_name = 3;
+  string action = 4;
+  string target_id = 5;
+  string detail = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message ListUsersRequest {
+  string status = 1; // empty = all
+}
+message ListUsersResponse {
+  repeated AdminUser users = 1;
+}
+message ApproveUserRequest {
+  string id = 1;
+}
+message ApproveUserResponse {}
+message BanUserRequest {
+  string id = 1;
+  string reason = 2; // required, max 500 chars
+}
+message BanUserResponse {}
+message UnbanUserRequest {
+  string id = 1;
+}
+message UnbanUserResponse {}
+message SetUserRoleRequest {
+  string id = 1;
+  string role = 2; // "member" | "admin"
+}
+message SetUserRoleResponse {}
+message ListAdminActionsRequest {
+  int32 limit = 1; // default 100, max 500
+}
+message ListAdminActionsResponse {
+  repeated AdminAction actions = 1;
+}
+
+message UpdateExerciseRequest {
+  string id = 1;
+  string name = 2;
+  ExerciseMeasure measure = 3; // may differ from the stored one only while the exercise is unused
+  bool loaded = 4;
+  repeated Muscle muscles = 5;
+}
+message UpdateExerciseResponse {
+  Exercise exercise = 1;
+}
+message DeleteExerciseRequest {
+  string id = 1; // refused while any station uses it; merge instead
+}
+message DeleteExerciseResponse {}
+// MergeExercisesRequest moves every station, goal clause and legacy lift from
+// source to target, then removes source.
+message MergeExercisesRequest {
+  string source_id = 1;
+  string target_id = 2;
+}
+message MergeExercisesResponse {
+  Exercise exercise = 1; // the target
+}
+
+// SetExerciseArchived retires an exercise (hidden from new logs and goal suggestions, history
+// keeps it) or restores one. Used exercises are archived instead of deleted.
+message SetExerciseArchivedRequest {
+  string id = 1;
+  bool archived = 2;
+}
+message SetExerciseArchivedResponse {
+  Exercise exercise = 1;
+}
+
 service AdminService {
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc ApproveUser(ApproveUserRequest) returns (ApproveUserResponse);
+  rpc BanUser(BanUserRequest) returns (BanUserResponse);
+  rpc UnbanUser(UnbanUserRequest) returns (UnbanUserResponse);
+  rpc SetUserRole(SetUserRoleRequest) returns (SetUserRoleResponse);
+  rpc ListAdminActions(ListAdminActionsRequest) returns (ListAdminActionsResponse);
   rpc CreateCustomSport(CreateCustomSportRequest) returns (CreateCustomSportResponse);
   rpc ListCustomSports(ListCustomSportsRequest) returns (ListCustomSportsResponse);
   rpc DeleteCustomSport(DeleteCustomSportRequest) returns (DeleteCustomSportResponse);
   rpc CreateCustomMetric(CreateCustomMetricRequest) returns (CreateCustomMetricResponse);
   rpc ListCustomMetrics(ListCustomMetricsRequest) returns (ListCustomMetricsResponse);
   rpc DeleteCustomMetric(DeleteCustomMetricRequest) returns (DeleteCustomMetricResponse);
+  rpc UpdateExercise(UpdateExerciseRequest) returns (UpdateExerciseResponse);
+  rpc DeleteExercise(DeleteExerciseRequest) returns (DeleteExerciseResponse);
+  rpc MergeExercises(MergeExercisesRequest) returns (MergeExercisesResponse);
+  rpc SetExerciseArchived(SetExerciseArchivedRequest) returns (SetExerciseArchivedResponse);
 }

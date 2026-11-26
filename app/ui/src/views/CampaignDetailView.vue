@@ -1,21 +1,28 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import { useSyncStore } from "../stores/sync";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
+import { LeaderboardWindow } from "../gen/fitter/v1/feed_pb";
 import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { activityMetricValue } from "../lib/labels";
-import { lead, myEntries, primary, share, unitClause } from "../lib/standings";
+import { TOGETHER, groupKey, lead, myEntries, primary, share, unitClause } from "../lib/standings";
 import { toDate, formatRelative } from "../lib/timestamp";
 import { plural } from "../lib/schedule";
-import TimelineChart from "../components/charts/TimelineChart.vue";
+import { detailParts, groupByDay, isNew, liftLines, pulse, recent } from "../lib/feed";
 import BibStack from "../components/BibStack.vue";
 import { ActivityMetric } from "../gen/fitter/v1/common_pb";
-import type { FeedActivity, LeaderboardEntry, TimelineSeries } from "../gen/fitter/v1/feed_pb";
+import { create } from "@bufbuild/protobuf";
+import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1/feed_pb";
+import type { FeedActivity, LeaderboardEntry, LeaderboardGroup, TimelineSeries } from "../gen/fitter/v1/feed_pb";
 import { errorMessage } from "../lib/errors";
 import poweredByStrava from "../assets/strava/api_logo_pwrdBy_strava_horiz_black.svg";
+
+// Async: the chart and ECharts load only when the Timeline tab first renders.
+const TimelineChart = defineAsyncComponent(() => import("../components/charts/TimelineChart.vue"));
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -33,11 +40,77 @@ const tabs: { id: Tab; label: string }[] = [
   { id: "timeline", label: "Timeline" },
 ];
 const tab = ref<Tab>("standings");
+
+// Feed tab: last week's rows by day, what is new since the caller last looked, and the detail
+// line they chose in Settings. The looked-at time moves on when they leave the tab.
+const now = ref(new Date());
+const recentRows = computed(() => recent(feed.value.activities, now.value.getTime()));
+const newRows = computed(() => recentRows.value.filter((a) => isNew(a, feed.value.seenAt, meId.value)));
+const feedDays = computed(() => groupByDay(recentRows.value, now.value));
+const pulseText = computed(() => pulse(newRows.value));
+const lastNew = computed(() => newRows.value.at(-1));
+const details = (a: FeedActivity) => detailParts(a, auth.feedSettings).join(" · ");
+const lifts = (a: FeedActivity) => (auth.feedSettings.showLifts ? liftLines(a.blocks) : []);
+let feedViewed = false;
+watch(tab, (now, was) => {
+  if (now === "feed") feedViewed = true;
+  else if (was === "feed") void feedStore.markSeen(props.id);
+});
+onBeforeUnmount(() => {
+  if (tab.value === "feed" && feedViewed) void feedStore.markSeen(props.id);
+});
 const loadError = ref("");
 const leaving = ref(false);
 const confirmLeave = ref(false);
 const leaveError = ref("");
 const stack = ref<InstanceType<typeof BibStack> | null>(null);
+
+// The bib stack can show one bib per goal (by sport group) or one per person.
+const windows = [
+  { id: LeaderboardWindow.WEEK, label: "Week" },
+  { id: LeaderboardWindow.MONTH, label: "Month" },
+  { id: LeaderboardWindow.CAMPAIGN, label: "Campaign" },
+];
+const windowError = ref("");
+async function pickWindow(ev: Event): Promise<void> {
+  const el = ev.target as HTMLSelectElement;
+  // One board at a time: a second pick mid-load could land out of order, so it snaps back.
+  if (feed.value.windowLoading) {
+    el.value = String(feed.value.window);
+    return;
+  }
+  const w = Number(el.value) as LeaderboardWindow;
+  windowError.value = "";
+  try {
+    await feedStore.setWindow(props.id, w);
+  } catch {
+    windowError.value = "That board didn't load. Try again.";
+  }
+}
+
+const bibMode = ref<"goal" | "person">("goal");
+// The sport group on the bib (BibStack picks the default); the picker lives in the controls row.
+const bibGroup = ref<string | null>(null);
+const groupOptions = computed(() => [
+  ...(pooled.value ? [{ key: TOGETHER, label: "Together" }] : []),
+  ...bibGroups.value.map((g) => ({ key: groupKey(g), label: g.sportGroupLabel })),
+]);
+const bibGroups = computed<LeaderboardGroup[]>(() => {
+  if (bibMode.value === "goal" || !feed.value.people.length) return feed.value.leaderboardGroups;
+  const entries = feed.value.people.map((p) =>
+    create(LeaderboardEntrySchema, {
+      userId: p.userId,
+      userName: p.userName,
+      userAvatarUrl: p.userAvatarUrl,
+      goalId: `person:${p.userId}`,
+      goalName: `${p.goalsSatisfied} of ${p.goalCount} ${p.goalCount === 1 ? "goal" : "goals"}`,
+      progressRatio: p.averageRatio,
+      satisfied: p.goalCount > 0 && p.goalsSatisfied === p.goalCount,
+      rank: p.rank,
+    }),
+  );
+  return [create(LeaderboardGroupSchema, { sportGroup: "", sportGroupLabel: "Everyone", entries })];
+});
 const stackEl = ref<HTMLElement | null>(null);
 
 const campaign = computed(() => campaignsStore.campaigns.find((c) => c.id === props.id));
@@ -108,7 +181,8 @@ const feedMetric = computed(
 );
 function activityValue(a: FeedActivity): string {
   const v = activityMetricValue(a, feedMetric.value);
-  return v === undefined ? fmt(ActivityMetric.MOVING_TIME, Number(a.movingTimeS)) : fmt(feedMetric.value, v);
+  // A session with none of the measure (a gym session against a distance goal) shows its time instead of "0 km".
+  return !v ? fmt(ActivityMetric.MOVING_TIME, Number(a.movingTimeS)) : fmt(feedMetric.value, v);
 }
 
 const goalNames = computed(() => {
@@ -168,11 +242,14 @@ function showBib(ev: MouseEvent, goalId: string): void {
   el.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
 }
 
+const goalsOf = (userId: string) =>
+  feed.value.leaderboardGroups.flatMap((g) => g.entries).filter((e) => e.userId === userId);
+
 function rowNote(e: LeaderboardEntry): string {
   const last = lastActive.value.get(e.userId);
   // The feed only carries recent activities, so progress without one in it is just older.
-  if (last) return `${e.goalName} · active ${formatRelative(last)}`;
-  return e.progressRatio > 0 ? e.goalName : `${e.goalName} · no activity yet`;
+  if (last) return `active ${formatRelative(last)}`;
+  return e.progressRatio > 0 ? "" : "no activity yet";
 }
 
 // Once the campaign is over, the top three ranks that actually scored get a Cool Blue chip.
@@ -190,6 +267,9 @@ function contributionNote(userId: string, value: number): string {
 
 // Units on the left already say how far; the share says how far along the goal that is.
 const rowShare = (e: LeaderboardEntry) => (unitClause(e) ? `${share(e.progressRatio, 1)}%` : "");
+
+// New Strava activities arrived: show them.
+watch(() => useSyncStore().imported, load);
 
 onMounted(() => {
   load();
@@ -240,11 +320,34 @@ onMounted(() => {
           </div>
 
           <section ref="stackEl" class="cd-stack" :class="{ 'is-off': campaign.joined && tab !== 'standings' }" aria-label="Bib stack">
+            <!-- One line of pickers: which group, which period, which view. -->
+            <div v-if="campaign.joined && feed.loaded" class="bib-controls" :aria-busy="feed.windowLoading">
+              <template v-if="groupOptions.length > 1">
+                <label for="bib-group" class="visually-hidden">Group</label>
+                <select id="bib-group" v-model="bibGroup" class="input">
+                  <option v-for="o in groupOptions" :key="o.key" :value="o.key">{{ o.label }}</option>
+                </select>
+              </template>
+              <label for="bib-window" class="visually-hidden">Period</label>
+              <select id="bib-window" class="input" :value="feed.window" @change="pickWindow">
+                <option v-for="w in windows" :key="w.id" :value="w.id">{{ w.label }}</option>
+              </select>
+              <template v-if="feed.people.length > 1">
+                <label for="bib-view" class="visually-hidden">View</label>
+                <select id="bib-view" v-model="bibMode" class="input">
+                  <option value="goal">By goal</option>
+                  <option value="person">By person</option>
+                </select>
+              </template>
+            </div>
+            <p v-if="windowError" class="field-error" role="alert">{{ windowError }}</p>
             <p v-if="feed.loading && !feed.loaded" class="quiet">Loading standings…</p>
+            <template v-else>
             <BibStack
-              v-else
+              :key="bibMode"
               ref="stack"
-              :groups="feed.leaderboardGroups"
+              v-model:group="bibGroup"
+              :groups="bibGroups"
               :pooled="pooled"
               :contributions="feed.pooledContributions"
               :campaign-id="campaign.id"
@@ -255,8 +358,9 @@ onMounted(() => {
               :ended="schedule.ended"
               :last-active="lastActive"
             />
+            </template>
             <!-- Without a goal and without a group target, the bib itself asks for one. -->
-            <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+            <router-link v-if="campaign.joined && !schedule.ended && !mine.length && pooled" :to="`/goals/new?campaign=${campaign.id}`" class="pill add-goal">
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Set your goal
             </router-link>
             <p v-if="privateGoal && campaign.joined" class="private">
@@ -285,45 +389,68 @@ onMounted(() => {
                   </li>
                 </ol>
               </section>
-              <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">No goals set yet. Standings appear once members set theirs.</p>
-              <section v-for="g in feed.leaderboardGroups" :key="g.sportGroup" class="standings-group">
-                <h2 v-if="feed.leaderboardGroups.length > 1 || pooled">{{ g.sportGroupLabel }}</h2>
-                <ol class="rows">
-                  <li v-for="e in g.entries" :key="e.goalId" :class="{ me: e.userId === meId, podium: onPodium(e.rank, e.progressRatio) }">
-                    <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
-                      <span class="chip">{{ e.rank }}</span>
-                      <span class="who">
-                        <b>{{ e.userId === meId ? "You" : e.userName }}</b>
-                        <small>{{ rowNote(e) }}</small>
-                        <small v-if="e.satisfied" class="finisher">Finisher</small>
-                      </span>
-                      <span class="val">
-                        {{ primary(e, catalog.format) }}
-                        <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
-                      </span>
-                    </button>
-                  </li>
-                </ol>
-              </section>
-              <router-link v-if="mine.length && !schedule.ended" :to="`/campaigns/${campaign.id}/join`" class="pill add-goal">
+              <p v-if="!feed.leaderboardGroups.length && !feed.loading" class="quiet">{{ feed.window === LeaderboardWindow.CAMPAIGN ? "No goals set yet. Standings appear once members set theirs." : "Nothing to score in this period yet." }}</p>
+              <ol v-if="feed.people.length" class="rows standings-group">
+                <li v-for="p in feed.people" :key="p.userId" :class="{ me: p.userId === meId, podium: onPodium(p.rank, p.averageRatio) }">
+                  <div class="row">
+                    <span class="chip">{{ p.rank }}</span>
+                    <span class="who">
+                      <b>{{ p.userId === meId ? "You" : p.userName }}</b>
+                      <small>{{ p.goalsSatisfied }} of {{ p.goalCount }} {{ p.goalCount === 1 ? "goal" : "goals" }} done</small>
+                      <small v-if="p.goalCount && p.goalsSatisfied === p.goalCount" class="finisher">Finisher</small>
+                      <small v-if="p.earlyFinishes" class="finisher">Early finish</small>
+                    </span>
+                    <span class="val">{{ Math.floor(p.averageRatio * 100 + 1e-9) }}%<small>average</small></span>
+                  </div>
+                  <ul class="goal-rows">
+                    <li v-for="e in goalsOf(p.userId)" :key="e.goalId">
+                      <button type="button" class="row" :aria-current="stack?.frontGoalId === e.goalId ? 'true' : undefined" @click="showBib($event, e.goalId)">
+                        <span />
+                        <span class="who">
+                          <b>{{ e.goalName }}</b>
+                          <small>{{ rowNote(e) }}</small>
+                        </span>
+                        <span class="val">
+                          {{ primary(e, catalog.format) }}
+                          <small v-if="rowShare(e)">{{ rowShare(e) }}</small>
+                        </span>
+                      </button>
+                    </li>
+                  </ul>
+                </li>
+              </ol>
+              <router-link v-if="mine.length && !schedule.ended" :to="`/goals/new?campaign=${campaign.id}`" class="pill add-goal">
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>Add a goal
               </router-link>
             </template>
 
             <template v-else-if="tab === 'feed'">
-              <p v-if="!feed.activities.length" class="quiet">
-                No activities yet. Members' Strava uploads appear here as they sync.
+              <p v-if="!recentRows.length" class="quiet">
+                {{ feed.activities.length ? "Nothing in the last 7 days." : "No activities yet. Members' Strava uploads appear here as they sync." }}
               </p>
-              <ol v-else class="rows">
-                <li v-for="a in feed.activities" :key="String(a.stravaActivityId)" class="activity">
-                  <span class="who">
-                    <b>{{ a.userId === meId ? "You" : a.userName }}</b>
-                    <span class="act-name">{{ a.name }}</span>
-                    <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}</small>
-                  </span>
-                  <span class="val">{{ activityValue(a) }}</span>
-                </li>
-              </ol>
+              <template v-else>
+                <p v-if="pulseText" class="pulse">{{ pulseText }}</p>
+                <p v-else-if="feed.seenAt" class="pulse">You're caught up.</p>
+                <section v-for="g in feedDays" :key="g.label" class="day">
+                  <h2>{{ g.label }}</h2>
+                  <ol class="rows">
+                    <template v-for="a in g.rows" :key="String(a.stravaActivityId)">
+                      <li class="activity" :class="{ mine: a.userId === meId }">
+                        <span class="who">
+                          <b>{{ a.userId === meId ? "You" : a.userName }}</b>
+                          <span class="act-name">{{ a.name }}</span>
+                          <small>{{ a.sportType || a.type }} · {{ toDate(a.startDate) ? formatRelative(toDate(a.startDate)!) : "" }}<template v-if="a.source === 'manual'"> · logged manually</template></small>
+                          <small v-if="details(a)">{{ details(a) }}</small>
+                          <small v-for="line in lifts(a)" :key="line" class="lift-line">{{ line }}</small>
+                        </span>
+                        <span class="val">{{ activityValue(a) }}</span>
+                      </li>
+                      <li v-if="lastNew === a" class="tear" aria-hidden="true"><span>{{ newRows.length }} new since you looked</span></li>
+                    </template>
+                  </ol>
+                </section>
+                <p class="feed-foot"><router-link to="/settings/permissions">Choose which details show</router-link></p>
+              </template>
             </template>
 
             <template v-else>
@@ -356,7 +483,7 @@ onMounted(() => {
             <p>Leave {{ campaign.name }}? Your activities stop counting here.</p>
             <span class="leave-actions">
               <button type="button" class="pill" @click="confirmLeave = false">Stay</button>
-              <button type="button" class="pill pill--primary" :disabled="leaving" @click="leave">
+              <button type="button" class="pill pill--primary" v-busy="leaving" @click="leave">
                 {{ leaving ? "Leaving…" : "Leave" }}
               </button>
             </span>
@@ -373,33 +500,16 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.cd-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cd {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: var(--space-5) var(--gutter) var(--space-8);
   font-family: var(--font-body);
   color: var(--ink);
 }
 
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  min-height: 2.5rem;
-  color: var(--ink-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.back:hover {
-  color: var(--ink);
-}
-
 .cd-head {
-  margin: 0.75rem 0 1rem;
+  margin: var(--space-4) 0 var(--space-5);
 }
 h1 {
   margin: 0;
@@ -409,13 +519,13 @@ h1 {
   overflow-wrap: anywhere;
 }
 .meta {
-  margin: 0.4rem 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
 }
 .desc {
-  margin: 0.5rem 0 0;
+  margin: var(--space-3) 0 0;
   max-width: 65ch;
 }
 
@@ -426,14 +536,15 @@ h1 {
 .cd-tabs {
   grid-area: tabs;
   display: flex;
-  gap: 1.5rem;
+  gap: var(--space-7);
   border-bottom: 2px solid var(--hairline);
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-5);
 }
 .cd-tabs button {
+  min-width: 2.75rem;
   border: 0;
   background: none;
-  padding: 0.6rem 0 0.7rem;
+  padding: var(--space-3) 0 var(--row);
   margin-bottom: -2px;
   border-bottom: 3px solid transparent;
   color: var(--ink-muted);
@@ -458,19 +569,19 @@ h1 {
     display: none;
   }
   .cd-stack {
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--space-6);
   }
 }
 
 @media (min-width: 900px) {
   .cd {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
   .cd-body {
     grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
     grid-template-areas: "stack tabs" "stack panel";
     grid-template-rows: auto 1fr;
-    column-gap: 3rem;
+    column-gap: var(--pane-gap);
     align-items: start;
   }
   .cd-stack {
@@ -491,14 +602,14 @@ h1 {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-4);
   /* The inline padding gives the selected fill room without moving the columns. */
   width: calc(100% + 1rem);
-  margin-inline: -0.5rem;
+  margin-inline: calc(var(--space-3) * -1);
   border: 0;
   border-radius: 6px;
   background: none;
-  padding: 0.7rem 0.5rem;
+  padding: var(--row) var(--space-3);
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -519,7 +630,7 @@ button.row {
   display: grid;
   place-items: center;
   height: 2rem;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 6px;
   font: 400 0.9375rem var(--font-display);
   font-variant-numeric: tabular-nums;
@@ -546,10 +657,45 @@ button.row {
   color: var(--ink-muted);
   font-size: 0.8125rem;
 }
+/* Compact selects sharing one row; each grows to its label, and the row wraps only if it must. */
+.bib-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+.bib-controls .input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: var(--space-1) 1.9rem var(--space-1) var(--space-3);
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+@media (pointer: coarse) {
+  .bib-controls .input {
+    min-height: 2.75rem;
+  }
+}
+.goal-rows {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+}
+.goal-rows li {
+  border-bottom: 0;
+}
+.goal-rows .row {
+  padding-block: var(--space-2);
+}
 .who small.finisher {
   align-self: flex-start;
   margin-top: 0.15rem;
-  padding: 0.05rem 0.4rem;
+  margin-right: var(--space-1);
+  padding: 0.05rem var(--space-2);
   border-radius: 4px;
   background: var(--cool-blue);
   color: var(--ink);
@@ -573,33 +719,84 @@ button.row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.7rem 0;
+  gap: var(--space-4);
+  padding: var(--row) 0 var(--row) var(--space-4);
+  border-left: 4px solid transparent;
+}
+/* Yours, as everywhere: a Tangerine stroke, never text. */
+.activity.mine {
+  border-left-color: var(--tangerine);
+}
+.who small.lift-line {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.pulse {
+  margin: 0 0 var(--space-4);
+  color: var(--ink-muted);
+  font-size: 0.875rem;
+}
+.day + .day {
+  margin-top: var(--group-gap);
+}
+/* The tear-off motif again: a dashed rule with a Cool Blue tab, under the rows that are new. */
+.rows li.tear {
+  display: block;
+  padding: 0;
+  border-bottom: 0;
+  border-top: 2px dashed var(--line);
+  margin: var(--space-2) 0;
+}
+.tear span {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 0 0 6px 6px;
+  background: var(--cool-blue);
+  font: 400 0.75rem/1.3 var(--font-display);
+  text-transform: uppercase;
+}
+.feed-foot {
+  margin: var(--space-6) 0 0;
+  font-size: 0.875rem;
+}
+.feed-foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  color: var(--ink-muted);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (pointer: coarse) {
+  .feed-foot a {
+    min-height: 2.75rem;
+  }
 }
 
 .add-goal {
-  margin-top: 1rem;
+  margin-top: var(--space-5);
 }
 .add-goal svg {
   width: 1rem;
   height: 1rem;
 }
 h2 {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
   font: 400 0.875rem/1.3 var(--font-display);
   text-transform: uppercase;
 }
 .standings-group + .standings-group,
 .chart + .chart {
-  margin-top: 1.75rem;
+  margin-top: var(--group-gap);
 }
 .private {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 1rem 0 0;
-  padding: 0.6rem 0.75rem;
-  border: 2px dashed var(--ink);
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border: 2px dashed var(--line);
   border-radius: 10px;
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
@@ -612,17 +809,17 @@ h2 {
 
 .quiet {
   color: var(--ink-muted);
-  padding: 1rem 0;
+  padding: var(--space-5) 0;
 }
 .notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--ink);
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
 }
@@ -630,7 +827,7 @@ h2 {
   margin: 0;
 }
 .notice-inline {
-  margin: 1rem 0 0;
+  margin: var(--space-5) 0 0;
   font-weight: 700;
 }
 .leave {
@@ -638,10 +835,10 @@ h2 {
 }
 .leave-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 .attribution {
-  margin-top: 2rem;
+  margin-top: var(--space-8);
 }
 .attribution img {
   display: block;
@@ -657,7 +854,6 @@ svg {
   stroke-linejoin: round;
 }
 
-.back:focus-visible,
 .cd-tabs button:focus-visible,
 .row:focus-visible {
   outline: 3px solid var(--ink);

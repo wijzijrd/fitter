@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fitter/svc/internal/db"
+	"github.com/fitter/svc/internal/mail"
 	"github.com/fitter/svc/internal/strava"
 )
 
@@ -23,6 +24,10 @@ type Deps struct {
 	Strava    *strava.Client
 	JWTSecret []byte
 	JWTTTL    time.Duration
+
+	Mail       mail.Sender // verification codes and developer feedback
+	FeedbackTo string      // the developer's inbox; feedback is sent there
+	AppEnv     string      // "staging" | "prod" | "" locally; tags feedback subjects
 }
 
 type UserService struct{ *Deps }
@@ -31,6 +36,8 @@ type GoalService struct{ *Deps }
 type FeedService struct{ *Deps }
 type CatalogService struct{ *Deps }
 type AdminService struct{ *Deps }
+type ActivityService struct{ *Deps }
+type ExerciseService struct{ *Deps }
 
 func NewUserService(d *Deps) *UserService         { return &UserService{d} }
 func NewCampaignService(d *Deps) *CampaignService { return &CampaignService{d} }
@@ -38,3 +45,5 @@ func NewGoalService(d *Deps) *GoalService         { return &GoalService{d} }
 func NewFeedService(d *Deps) *FeedService         { return &FeedService{d} }
 func NewCatalogService(d *Deps) *CatalogService   { return &CatalogService{d} }
 func NewAdminService(d *Deps) *AdminService       { return &AdminService{d} }
+func NewActivityService(d *Deps) *ActivityService { return &ActivityService{d} }
+func NewExerciseService(d *Deps) *ExerciseService { return &ExerciseService{d} }

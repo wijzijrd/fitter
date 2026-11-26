@@ -8,3 +8,6 @@ SELECT sport_ref FROM custom_metric_sports WHERE metric_id = $1 ORDER BY sport_r
 -- Batch form used by CatalogService.ListMetrics: one query for every custom
 -- metric's applicability rows, instead of one query per metric.
 SELECT * FROM custom_metric_sports WHERE metric_id = ANY(sqlc.arg(metric_ids)::text[]) ORDER BY metric_id, sport_ref;
+
+-- name: CountMetricsScopedToSport :one
+SELECT count(*)::int FROM custom_metric_sports WHERE sport_ref = $1;

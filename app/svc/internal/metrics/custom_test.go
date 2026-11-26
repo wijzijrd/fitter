@@ -147,3 +147,18 @@ func TestNewCustomDef_NonNullableSum(t *testing.T) {
 		t.Fatalf("Result = (%v, %d), want (0, 0)", value, counted)
 	}
 }
+
+func TestNewMaxWeightDef_PerExercise(t *testing.T) {
+	def := metrics.NewMaxWeightDef("bench press")
+	acc := def.NewAcc()
+	acc.Add(metrics.Activity{Lifts: map[string]float64{"bench press": 80, "squat": 140}})
+	acc.Add(metrics.Activity{Lifts: map[string]float64{"bench press": 90}})
+	acc.Add(metrics.Activity{Lifts: map[string]float64{"squat": 150}})
+	v, counted, ok := acc.Result()
+	if !ok || v != 90 || counted != 2 {
+		t.Fatalf("got %v counted=%d ok=%v, want 90 counted=2", v, counted, ok)
+	}
+	if _, ok := def.Single(metrics.Activity{Lifts: map[string]float64{"squat": 150}}); ok {
+		t.Fatal("squat-only activity must not carry a bench press value")
+	}
+}

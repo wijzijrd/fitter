@@ -33,6 +33,43 @@ type Activity struct {
 	SufferScore          sql.NullFloat64 `json:"suffer_score"`
 	CreatedAt            int64           `json:"created_at"`
 	UpdatedAt            int64           `json:"updated_at"`
+	Source               string          `json:"source"`
+	StartDateLocal       sql.NullInt64   `json:"start_date_local"`
+}
+
+type ActivityBlock struct {
+	ID         int64 `json:"id"`
+	ActivityID int64 `json:"activity_id"`
+	Position   int32 `json:"position"`
+	Rounds     int32 `json:"rounds"`
+}
+
+type ActivityLift struct {
+	ID         int64   `json:"id"`
+	ActivityID int64   `json:"activity_id"`
+	Exercise   string  `json:"exercise"`
+	WeightKg   float64 `json:"weight_kg"`
+	Reps       int32   `json:"reps"`
+}
+
+type ActivityStation struct {
+	ID         int64           `json:"id"`
+	BlockID    int64           `json:"block_id"`
+	Position   int32           `json:"position"`
+	ExerciseID string          `json:"exercise_id"`
+	WeightKg   sql.NullFloat64 `json:"weight_kg"`
+	Reps       sql.NullInt32   `json:"reps"`
+	DistanceM  sql.NullFloat64 `json:"distance_m"`
+	DurationS  sql.NullInt64   `json:"duration_s"`
+}
+
+type AdminAction struct {
+	ID        string `json:"id"`
+	ActorID   string `json:"actor_id"`
+	Action    string `json:"action"`
+	TargetID  string `json:"target_id"`
+	Detail    string `json:"detail"`
+	CreatedAt int64  `json:"created_at"`
 }
 
 type Campaign struct {
@@ -48,9 +85,10 @@ type Campaign struct {
 }
 
 type CampaignMember struct {
-	CampaignID string `json:"campaign_id"`
-	UserID     string `json:"user_id"`
-	JoinedAt   int64  `json:"joined_at"`
+	CampaignID string        `json:"campaign_id"`
+	UserID     string        `json:"user_id"`
+	JoinedAt   int64         `json:"joined_at"`
+	FeedSeenAt sql.NullInt64 `json:"feed_seen_at"`
 }
 
 type CustomMetric struct {
@@ -80,6 +118,27 @@ type CustomSport struct {
 	CreatedAt int64  `json:"created_at"`
 }
 
+type EmailVerification struct {
+	UserID    string `json:"user_id"`
+	Email     string `json:"email"`
+	CodeHash  string `json:"code_hash"`
+	Attempts  int32  `json:"attempts"`
+	SentAt    int64  `json:"sent_at"`
+	ExpiresAt int64  `json:"expires_at"`
+}
+
+type Exercise struct {
+	ID         string         `json:"id"`
+	Name       string         `json:"name"`
+	Key        string         `json:"key"`
+	Measure    string         `json:"measure"`
+	Loaded     bool           `json:"loaded"`
+	Muscles    []string       `json:"muscles"`
+	CreatedBy  sql.NullString `json:"created_by"`
+	CreatedAt  int64          `json:"created_at"`
+	ArchivedAt sql.NullInt64  `json:"archived_at"`
+}
+
 type Goal struct {
 	ID          string         `json:"id"`
 	UserID      string         `json:"user_id"`
@@ -90,26 +149,39 @@ type Goal struct {
 	PeriodStart int64          `json:"period_start"`
 	PeriodEnd   int64          `json:"period_end"`
 	CreatedAt   int64          `json:"created_at"`
+	Recurrence  string         `json:"recurrence"`
 }
 
 type GoalClause struct {
-	ID         string  `json:"id"`
-	GoalID     string  `json:"goal_id"`
-	Position   int64   `json:"position"`
-	Scope      string  `json:"scope"`
-	Metric     string  `json:"metric"`
-	Comparator string  `json:"comparator"`
-	Value      float64 `json:"value"`
+	ID         string         `json:"id"`
+	GoalID     string         `json:"goal_id"`
+	Position   int64          `json:"position"`
+	Scope      string         `json:"scope"`
+	Metric     string         `json:"metric"`
+	Comparator string         `json:"comparator"`
+	Value      float64        `json:"value"`
+	Exercise   sql.NullString `json:"exercise"`
 }
 
 type User struct {
-	ID              string `json:"id"`
-	StravaAthleteID int64  `json:"strava_athlete_id"`
-	Name            string `json:"name"`
-	AvatarUrl       string `json:"avatar_url"`
-	AccessToken     string `json:"access_token"`
-	RefreshToken    string `json:"refresh_token"`
-	TokenExpiresAt  int64  `json:"token_expires_at"`
-	CreatedAt       int64  `json:"created_at"`
-	Role            string `json:"role"`
+	ID              string         `json:"id"`
+	StravaAthleteID int64          `json:"strava_athlete_id"`
+	Name            string         `json:"name"`
+	AvatarUrl       string         `json:"avatar_url"`
+	AccessToken     string         `json:"access_token"`
+	RefreshToken    string         `json:"refresh_token"`
+	TokenExpiresAt  int64          `json:"token_expires_at"`
+	CreatedAt       int64          `json:"created_at"`
+	Role            string         `json:"role"`
+	Status          string         `json:"status"`
+	BanReason       string         `json:"ban_reason"`
+	BannedBy        sql.NullString `json:"banned_by"`
+	BannedAt        sql.NullInt64  `json:"banned_at"`
+	FeedShowPace    bool           `json:"feed_show_pace"`
+	FeedShowPower   bool           `json:"feed_show_power"`
+	FeedShowEffort  bool           `json:"feed_show_effort"`
+	FeedShowLifts   bool           `json:"feed_show_lifts"`
+	WhatsNewSeen    string         `json:"whats_new_seen"`
+	LastSyncedAt    int64          `json:"last_synced_at"`
+	Email           string         `json:"email"`
 }

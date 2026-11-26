@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"time"
 
 	"connectrpc.com/connect"
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -53,15 +54,29 @@ func (s *FeedService) requireMember(ctx context.Context, campaignID string) (db.
 }
 
 func (s *FeedService) GetCampaignFeed(ctx context.Context, req *connect.Request[fitterv1.GetCampaignFeedRequest]) (*connect.Response[fitterv1.GetCampaignFeedResponse], error) {
-	c, _, err := s.requireMember(ctx, req.Msg.GetCampaignId())
+	c, userID, err := s.requireMember(ctx, req.Msg.GetCampaignId())
 	if err != nil {
 		return nil, err
+	}
+	member, err := s.Queries.GetCampaignMember(ctx, db.GetCampaignMemberParams{CampaignID: c.ID, UserID: userID})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	rows, err := s.Queries.ListCampaignFeedActivities(ctx, db.ListCampaignFeedActivitiesParams{
 		CampaignID:  c.ID,
 		StartDate:   c.StartDate,
 		StartDate_2: c.EndDate,
 	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	var manualIDs []int64
+	for _, r := range rows {
+		if r.StravaActivityID < 0 {
+			manualIDs = append(manualIDs, r.StravaActivityID)
+		}
+	}
+	blocks, _, err := loadBlocks(ctx, s.Queries, manualIDs)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -80,12 +95,30 @@ func (s *FeedService) GetCampaignFeed(ctx context.Context, req *connect.Request[
 			StravaActivityId: r.StravaActivityID,
 			SportType:        r.SportType,
 			SportGroup:       string(sports.GroupOf(r.SportType, r.Type)),
-			AverageHeartrate: nullFloatPtr(r.AverageHeartrate),
 			AverageWatts:     nullFloatPtr(r.AverageWatts),
 			SufferScore:      nullFloatPtr(r.SufferScore),
+			Source:           r.Source,
+			Blocks:           blocks[r.StravaActivityID],
 		})
 	}
-	return connect.NewResponse(&fitterv1.GetCampaignFeedResponse{Activities: out}), nil
+	resp := &fitterv1.GetCampaignFeedResponse{Activities: out}
+	if member.FeedSeenAt.Valid {
+		resp.SeenAt = unixToTimestamp(member.FeedSeenAt.Int64)
+	}
+	return connect.NewResponse(resp), nil
+}
+
+// MarkFeedSeen records that the caller has now looked at the campaign's feed, so the next view
+// can tell what is new since.
+func (s *FeedService) MarkFeedSeen(ctx context.Context, req *connect.Request[fitterv1.MarkFeedSeenRequest]) (*connect.Response[fitterv1.MarkFeedSeenResponse], error) {
+	c, userID, err := s.requireMember(ctx, req.Msg.GetCampaignId())
+	if err != nil {
+		return nil, err
+	}
+	if err := s.Queries.MarkFeedSeen(ctx, db.MarkFeedSeenParams{CampaignID: c.ID, UserID: userID, FeedSeenAt: sql.NullInt64{Int64: time.Now().Unix(), Valid: true}}); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&fitterv1.MarkFeedSeenResponse{}), nil
 }
 
 // pooledActivities returns every campaign member's activities across the
@@ -112,6 +145,9 @@ func (s *FeedService) pooledActivities(ctx context.Context, c db.Campaign) ([]me
 	acts := make([]metrics.Activity, len(rows))
 	for i, r := range rows {
 		acts[i] = metrics.FromDB(r)
+	}
+	if err := attachLifts(ctx, s.Queries, acts); err != nil {
+		return nil, err
 	}
 	return acts, nil
 }
@@ -194,6 +230,7 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			PeriodStart: r.PeriodStart,
 			PeriodEnd:   r.PeriodEnd,
 			CreatedAt:   r.CreatedAt,
+			Recurrence:  r.Recurrence, // a habit must be scored as a habit, not as a running total
 		}
 		userNameByGoal[r.ID] = r.UserName
 		avatarByGoal[r.ID] = r.UserAvatarUrl
@@ -217,15 +254,29 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 		progressClauses[gid] = pc
 	}
 
-	results, err := s.evaluateGoals(ctx, goals, progressClauses)
+	anchor := time.Now()
+	if req.Msg.Anchor != nil {
+		anchor = req.Msg.GetAnchor().AsTime()
+	}
+	win := leaderboardWindow(req.Msg.GetWindow(), anchor)
+	results, used, err := s.evaluateGoalsIn(ctx, goals, progressClauses, win)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	// Goals the window drops (no overlap, or nothing to judge) leave the board.
+	kept := goals[:0:0]
+	for _, g := range goals {
+		if _, ok := results[g.ID]; ok {
+			kept = append(kept, g)
+		}
+	}
+	goals = kept
 
-	entriesByGroup := make(map[string][]*fitterv1.LeaderboardEntry)
+	entriesByGroup := make(map[leaderboardGroupKey][]*fitterv1.LeaderboardEntry)
 	for _, g := range goals {
 		res := results[g.ID]
-		entriesByGroup[goalGroupKey(g.SportGroup, g.SportType)] = append(entriesByGroup[goalGroupKey(g.SportGroup, g.SportType)], &fitterv1.LeaderboardEntry{
+		key := leaderboardGroupKey{sport: goalGroupKey(g.SportGroup, g.SportType), kind: goalKindOf(g, clausesByGoal[g.ID])}
+		entriesByGroup[key] = append(entriesByGroup[key], &fitterv1.LeaderboardEntry{
 			UserId:                  g.UserID,
 			UserName:                userNameByGoal[g.ID],
 			UserAvatarUrl:           avatarByGoal[g.ID],
@@ -235,16 +286,21 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 			Satisfied:               res.Satisfied,
 			Clauses:                 clauseResultsToProto(res.Clauses),
 			ConsideredActivityCount: int32(res.ConsideredCount),
-			ClauseDefs:              clauseDefsToProto(clausesByGoal[g.ID]),
+			ClauseDefs:              windowedClauseDefs(clausesByGoal[g.ID], used[g.ID], win != nil),
 		})
 	}
 
 	order := sportGroupOrder()
-	keys := make([]string, 0, len(entriesByGroup))
+	keys := make([]leaderboardGroupKey, 0, len(entriesByGroup))
 	for k := range entriesByGroup {
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool { return order[keys[i]] < order[keys[j]] })
+	sort.Slice(keys, func(i, j int) bool {
+		if order[keys[i].sport] != order[keys[j].sport] {
+			return order[keys[i].sport] < order[keys[j].sport]
+		}
+		return kindOrder[keys[i].kind] < kindOrder[keys[j].kind]
+	})
 
 	groups := make([]*fitterv1.LeaderboardGroup, 0, len(keys))
 	for _, k := range keys {
@@ -267,15 +323,23 @@ func (s *FeedService) GetCampaignLeaderboard(ctx context.Context, req *connect.R
 		for i, e := range entries {
 			e.Rank = int32(i + 1)
 		}
+		label := sportGroupLabel(k.sport)
+		if kl := kindLabel[k.kind]; kl != "" {
+			label += " · " + kl
+		}
 		groups = append(groups, &fitterv1.LeaderboardGroup{
-			SportGroup:      k,
-			SportGroupLabel: sportGroupLabel(k),
+			SportGroup:      k.sport,
+			SportGroupLabel: label,
 			Entries:         entries,
+			GoalKind:        k.kind,
 		})
 	}
 
-	resp := &fitterv1.GetCampaignLeaderboardResponse{Groups: groups}
-	if c.TargetValue.Valid {
+	resp := &fitterv1.GetCampaignLeaderboardResponse{Groups: groups, People: rankPeople(goals, results, userNameByGoal, avatarByGoal)}
+	if win != nil {
+		resp.WindowStart, resp.WindowEnd = unixToTimestamp(win.Start), unixToTimestamp(win.End)
+	}
+	if c.TargetValue.Valid && win == nil {
 		def, acts, err := s.pooledTotal(ctx, c)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -387,6 +451,7 @@ func (s *FeedService) GetCampaignTimeline(ctx context.Context, req *connect.Requ
 				// validateClauses. Skip rather than panic on a data bug.
 				continue
 			}
+			def = clauseDef(def, cl)
 			// Label combines the user, goal name, and metric so that a user
 			// with two AGGREGATE clauses (even within the same sport group)
 			// never produces two series with an identical label in the

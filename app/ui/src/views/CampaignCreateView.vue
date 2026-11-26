@@ -2,30 +2,24 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useCampaignsStore } from "../stores/campaigns";
-import { useGoalsStore } from "../stores/goals";
 import { useCatalogStore } from "../stores/catalog";
 import { ActivityMetric, MetricAggregation } from "../gen/fitter/v1/common_pb";
 import { DAY, plural, dateRange, isoDay, localDay } from "../lib/schedule";
 import { editStringToBaseValue, editUnitHint } from "../lib/metricFormat";
-import { blankDraft, draftErrors, draftToInput, unitDraft } from "../lib/goalInput";
-import { clauseText } from "../lib/labels";
 import { errorMessage } from "../lib/errors";
 import CampaignBib from "../components/CampaignBib.vue";
-import GoalBuilder from "../components/GoalBuilder.vue";
 
 const router = useRouter();
 const store = useCampaignsStore();
-const goals = useGoalsStore();
 const catalog = useCatalogStore();
 onMounted(() => catalog.ensureLoaded().catch(() => {}));
 
-const steps = ["Name it", "Set the window", "Group target", "Your goal"] as const;
+const steps = ["Name it", "Set the window", "Group target"] as const;
 const step = ref(0);
 const heading = ref<HTMLElement | null>(null);
 const creating = ref(false);
 const createError = ref("");
 const errors = reactive({ name: "", dates: "", target: "" });
-const showGoalErrors = ref(false);
 
 const form = reactive({
   name: "",
@@ -36,7 +30,6 @@ const form = reactive({
   start: isoDay(new Date()),
   end: isoDay(new Date(Date.now() + 30 * DAY)),
 });
-const goal = ref(blankDraft());
 
 // A group target adds everyone's activities together, so only metrics that sum make sense.
 const targetMetrics = computed(() =>
@@ -54,24 +47,16 @@ const days = computed(() => Math.max(0, Math.round((localDay(form.end).getTime()
 const range = computed(() => dateRange(localDay(form.start), localDay(form.end)));
 const groupLine = computed(() => `${fmt(form.metric, shownTarget.value)} together`);
 
-// goalLine reads the first finished condition of the draft goal.
-const goalLine = computed(() => {
-  const input = draftToInput(goal.value, catalog.unitOf);
-  const c = input.clauses.find((c) => c.value > 0);
-  return c ? clauseText(c, catalog.metricInfo(c.metric), fmt) : "";
-});
-
 const preview = computed(() => {
   const name = form.name.trim() || "Your campaign";
   const length = plural(days.value, "day");
-  if (step.value === 3 || !form.hasTarget) {
-    const c = unitDraft(goal.value);
+  if (!form.hasTarget) {
     return {
       band: [name, "You"] as [string, string],
       numeral: "1",
-      value: c ? fmt(c.metric, 0) : "0%",
-      subs: [goal.value.name.trim() || "Your goal", goalLine.value || length],
-      tab: form.hasTarget ? `Group: ${groupLine.value}` : `Own goals · ${range.value}`,
+      value: "0%",
+      subs: ["Your goal", length],
+      tab: `Own goals · ${range.value}`,
     };
   }
   return {
@@ -92,14 +77,11 @@ function validate(): boolean {
   errors.name = step.value === 0 && !form.name.trim() ? "Give the campaign a name." : "";
   errors.dates = step.value === 1 && form.end < form.start ? "The end date can't be before the start date." : "";
   errors.target = step.value === 2 && form.hasTarget && !(rawTarget.value > 0) ? "Set a target above zero." : "";
-  showGoalErrors.value = step.value === 3;
-  const goalBad = step.value === 3 && draftErrors(goal.value, catalog.unitOf).any;
-  return !errors.name && !errors.dates && !errors.target && !goalBad;
+  return !errors.name && !errors.dates && !errors.target;
 }
 
 async function go(to: number): Promise<void> {
   step.value = to;
-  showGoalErrors.value = false;
   await nextTick();
   heading.value?.focus();
 }
@@ -114,13 +96,12 @@ async function next(): Promise<void> {
     return;
   }
   if (step.value < steps.length - 1) return go(step.value + 1);
-  await create(true);
+  await create();
 }
 
-async function create(withGoal: boolean): Promise<void> {
+async function create(): Promise<void> {
   creating.value = true;
   createError.value = "";
-  let id = "";
   try {
     const c = await store.createCampaign({
       name: form.name.trim(),
@@ -131,12 +112,9 @@ async function create(withGoal: boolean): Promise<void> {
       // The end day counts in full: the server includes activities up to end_date.
       endDate: new Date(localDay(form.end).getTime() + DAY - 1),
     });
-    id = c.id;
-    if (withGoal) await goals.createGoal(draftToInput(goal.value, catalog.unitOf), c.id);
-    router.push(`/campaigns/${c.id}`);
+    // Goals are made in one place: the goal hub, preselected on this campaign.
+    router.push(`/goals/new?campaign=${c.id}`);
   } catch (err) {
-    // The campaign exists but the goal didn't save: send them to add it there.
-    if (id) return void router.push(`/campaigns/${id}/join`);
     createError.value = errorMessage(err, "The campaign wasn't created. Try again.");
   } finally {
     creating.value = false;
@@ -172,7 +150,7 @@ async function create(withGoal: boolean): Promise<void> {
                 :aria-invalid="!!errors.name"
                 aria-describedby="cc-name-error"
               />
-              <span id="cc-name-error" class="field-error" role="alert">{{ errors.name }}</span>
+              <span id="cc-name-error" class="field-error">{{ errors.name }}</span>
             </div>
             <div class="rb-field">
               <label for="cc-desc">Description <small>optional</small></label>
@@ -205,7 +183,7 @@ async function create(withGoal: boolean): Promise<void> {
             </p>
           </template>
 
-          <template v-else-if="step === 2">
+          <template v-else>
             <fieldset class="rb-field">
               <legend>Is there a shared number?</legend>
               <label class="choice">
@@ -236,17 +214,11 @@ async function create(withGoal: boolean): Promise<void> {
                   :aria-invalid="!!errors.target"
                   aria-describedby="cc-target-error"
                 />
-                <span id="cc-target-error" class="field-error" role="alert">{{ errors.target }}</span>
+                <span id="cc-target-error" class="field-error">{{ errors.target }}</span>
               </div>
             </template>
 
             <p class="summary">{{ summary }}</p>
-          </template>
-
-          <template v-else>
-            <p class="lede">You're in from the start. Set what you're chasing; friends see it on the standings.</p>
-            <GoalBuilder v-model="goal" id-prefix="cc-goal" :show-errors="showGoalErrors" />
-            <button type="button" class="pill pill--quiet" :disabled="creating" @click="create(false)">Create without a goal</button>
           </template>
 
           <p v-if="createError" class="notice" role="alert">{{ createError }}</p>
@@ -257,7 +229,7 @@ async function create(withGoal: boolean): Promise<void> {
             </button>
             <router-link v-else to="/" class="pill pill--quiet">Cancel</router-link>
             <span class="count" aria-hidden="true">{{ step + 1 }} / {{ steps.length }}</span>
-            <button type="submit" class="pill pill--primary" :disabled="creating">
+            <button type="submit" class="pill pill--primary" v-busy="creating">
               <template v-if="step < steps.length - 1">
                 Next<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" /></svg>
               </template>
@@ -271,40 +243,21 @@ async function create(withGoal: boolean): Promise<void> {
 </template>
 
 <style scoped>
-.cc-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cc {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 0;
+  padding: var(--space-5) var(--gutter) 0;
   font-family: var(--font-body);
   color: var(--ink);
 }
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: var(--ink-muted);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.back:hover {
-  color: var(--ink);
-}
-.back:focus-visible {
-  outline: 3px solid var(--ink);
-  outline-offset: 2px;
-}
 h1 {
-  margin: 0.75rem 0 1.25rem;
+  margin: var(--space-4) 0 var(--space-6);
   font: 400 clamp(1.625rem, 6.5vw, 2.5rem) / 1.05 var(--font-display);
   text-transform: uppercase;
 }
 
 .preview {
-  margin-bottom: 1.75rem;
+  margin-bottom: var(--group-gap);
 }
 .preview :deep(.main) {
   min-height: 5.5rem;
@@ -317,33 +270,30 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 h2 {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   font: 400 1.5rem/1.1 var(--font-display);
   text-transform: uppercase;
-}
-h2:focus {
-  outline: none;
 }
 
 fieldset.rb-field {
   border: 0;
   margin-inline: 0;
   padding: 0;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 legend {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-3);
 }
 .dates {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  column-gap: 1rem;
+  column-gap: var(--space-5);
 }
 .dates .rb-field {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-3);
 }
 .note {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   color: var(--ink-muted);
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
@@ -361,19 +311,19 @@ legend {
   font: 400 1.625rem/1.1 var(--font-display);
 }
 .lede {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   max-width: 50ch;
 }
 .summary {
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-6);
   max-width: 60ch;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
 }
 .notice {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--ink);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;
@@ -384,10 +334,10 @@ legend {
   bottom: 0;
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin: 0 -1rem;
-  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
-  border-top: 2px solid var(--ink);
+  gap: var(--space-4);
+  margin: 0 calc(var(--space-5) * -1);
+  padding: var(--space-4) var(--space-5) calc(var(--space-4) + env(safe-area-inset-bottom));
+  border-top: 2px solid var(--line);
   background: var(--paper);
 }
 .bar .pill {
@@ -411,12 +361,12 @@ svg {
 
 @media (min-width: 900px) {
   .cc {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
   .cc-body {
     display: grid;
     grid-template-columns: minmax(340px, 400px) minmax(0, 560px);
-    column-gap: 3rem;
+    column-gap: var(--pane-gap);
     align-items: start;
   }
   .preview {
@@ -429,8 +379,8 @@ svg {
   }
   .bar {
     position: static;
-    margin: 0.5rem 0 0;
-    padding: 1.25rem 0 0;
+    margin: var(--space-3) 0 0;
+    padding: var(--space-6) 0 0;
   }
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useAuthStore } from "../stores/auth";
+import { useSyncStore } from "../stores/sync";
 import { useCampaignsStore } from "../stores/campaigns";
 import { useCampaignFeedStore } from "../stores/campaignFeed";
 import { useCatalogStore } from "../stores/catalog";
@@ -66,6 +67,8 @@ async function load(): Promise<void> {
 }
 
 onMounted(load);
+// New Strava activities arrived: show them.
+watch(() => useSyncStore().imported, load);
 
 // target is the campaign's group target, when it has one.
 const target = (c: Campaign) => (c.metric !== undefined && c.targetValue !== undefined ? { metric: c.metric, value: c.targetValue } : undefined);
@@ -220,7 +223,7 @@ function finalResult(c: Campaign): { num: string; numLabel?: string; value: stri
                   <small>Didn't load</small>
                 </span>
                 <span v-else-if="row.setGoal" class="gap">
-                  <router-link :to="`/campaigns/${c.id}/join`" class="pill">Set goal<span class="visually-hidden"> in {{ c.name }}</span></router-link>
+                  <router-link :to="`/goals/new?campaign=${c.id}`" class="pill">Set goal<span class="visually-hidden"> in {{ c.name }}</span></router-link>
                 </span>
                 <span v-else class="gap">{{ row.gap }}<small>{{ row.gapSub }}</small></span>
               </li>
@@ -291,14 +294,10 @@ function finalResult(c: Campaign): { num: string; numLabel?: string; value: stri
 </template>
 
 <style scoped>
-.cl-page {
-  background: var(--paper);
-  min-height: calc(100vh - 58px);
-}
 .cl {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: var(--space-5) var(--gutter) var(--space-8);
   font-family: var(--font-body);
   color: var(--ink);
 }
@@ -307,8 +306,8 @@ function finalResult(c: Campaign): { num: string; numLabel?: string; value: stri
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin: 0.5rem 0 1.25rem;
+  gap: var(--space-5);
+  margin: var(--space-3) 0 var(--space-6);
 }
 .cl-head .pill {
   white-space: nowrap;
@@ -320,19 +319,19 @@ h1 {
 }
 
 .sheet {
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
 }
 .sheet + .sheet {
-  margin-top: 1.25rem;
+  margin-top: var(--space-6);
 }
 .band {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--space-4);
   margin: 0;
-  padding: 0.3rem 0.75rem;
+  padding: var(--space-1) var(--space-4);
   background: var(--tangerine);
   font: 400 0.75rem/1.3 var(--font-display);
   text-transform: uppercase;
@@ -347,12 +346,12 @@ h1 {
   display: grid;
   grid-template-columns: 3.5rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.75rem;
-  padding-inline: 0.75rem;
+  gap: var(--space-4);
+  padding-inline: var(--space-4);
 }
 .cols {
-  padding-block: 0.5rem 0.4rem;
-  border-bottom: 2px solid var(--ink);
+  padding-block: var(--space-3) var(--space-2);
+  border-bottom: 2px solid var(--line);
   color: var(--ink-muted);
   font: 400 0.75rem/1.2 var(--font-display);
   text-transform: uppercase;
@@ -367,7 +366,7 @@ h1 {
 }
 .row {
   position: relative;
-  padding-block: 0.7rem;
+  padding-block: var(--row);
   border-bottom: 1px solid var(--hairline);
   transition: background-color 160ms var(--ease-out-expo);
 }
@@ -427,7 +426,7 @@ h1 {
 .race small.finisher {
   align-self: flex-start;
   margin-top: 0.2rem;
-  padding: 0.05rem 0.4rem;
+  padding: 0.05rem var(--space-2);
   border-radius: 4px;
   background: var(--cool-blue);
   color: var(--ink);
@@ -476,13 +475,13 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-3);
   margin: 0;
   color: var(--ink);
   text-wrap: pretty;
-  border-top: 2px dashed var(--ink);
+  border-top: 2px dashed var(--line);
   background: var(--cool-blue);
-  padding: 0.55rem 0.75rem;
+  padding: var(--space-3) var(--space-4);
   font-weight: 700;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
@@ -509,8 +508,8 @@ a.tear:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.9rem 0.75rem;
+  gap: var(--space-4);
+  padding: var(--bib-inset) var(--space-4);
 }
 .empty-row p {
   margin: 0;
@@ -524,8 +523,8 @@ a.tear:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.4rem;
-  padding-bottom: 0.35rem;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
 }
 .unclaimed b {
   font: 400 1.5rem/1.1 var(--font-display);
@@ -536,21 +535,21 @@ a.tear:focus-visible {
   font-size: 0.875rem;
 }
 .unclaimed .pill {
-  margin-top: 0.4rem;
+  margin-top: var(--space-2);
 }
 
 .quiet {
   color: var(--ink-muted);
-  padding: 1rem 0;
+  padding: var(--space-5) 0;
 }
 .notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--ink);
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
 }
@@ -565,12 +564,12 @@ a.tear:focus-visible {
 }
 
 .side {
-  margin-top: 1.25rem;
+  margin-top: var(--space-6);
 }
 
 @media (min-width: 900px) {
   .cl {
-    padding: 1.5rem 1.5rem 3rem;
+    padding: var(--space-7) var(--gutter) var(--space-9);
   }
   .cl-body {
     display: grid;

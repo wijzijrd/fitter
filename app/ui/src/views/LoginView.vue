@@ -14,7 +14,12 @@ const loginUrl = `${apiBaseUrl}/auth/strava/login`;
 const messages: Record<string, string> = {
   access_denied: "You cancelled on Strava, so nothing was connected. Try again when you're ready.",
   state: "Sign-in timed out or your browser blocked a cookie. Try connecting again.",
-  scope: "Fitter needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
+  banned: "This account has been banned from Kombeweeg.",
+  scope: "Kombeweeg needs to see your activities. Connect again and keep 'View data about your activities' ticked.",
+  capacity: "Kombeweeg is full right now. Ask the organiser to make room.",
+  rate_limited: "Strava is busy right now. Wait a few minutes and try again.",
+  exchange: "Strava didn't accept the sign-in. Try connecting again.",
+  server: "Something went wrong on our side. Try again in a moment.",
 };
 const route = useRoute();
 const error = computed(() => {
@@ -45,9 +50,9 @@ const error = computed(() => {
 
 <style scoped>
 .notice {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--ink);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 2px solid var(--line);
   border-radius: 10px;
   background: var(--cool-blue);
   font-weight: 700;
@@ -57,8 +62,8 @@ const error = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding-block: 0.5rem 0.4rem;
+  gap: var(--space-3);
+  padding-block: var(--space-3) var(--space-2);
 }
 h2 {
   margin: 0;
@@ -68,7 +73,7 @@ h2 {
   text-wrap: balance;
 }
 .claim p {
-  margin: 0 0 0.6rem;
+  margin: 0 0 var(--space-3);
   max-width: 28ch;
   overflow-wrap: anywhere;
   font-size: 1.0625rem;

@@ -23,6 +23,7 @@ type preparedClause struct {
 	scope, comparator string
 	metricKey         metrics.Key
 	value             float64
+	exercise          sql.NullString
 }
 
 // validateClauses validates a full clause list from a Create/UpdateGoal
@@ -61,7 +62,15 @@ func validateClauses(ctx context.Context, q *db.Queries, clauses []*fitterv1.Goa
 		if err != nil {
 			return nil, fmt.Errorf("clause %d: %w", i, err)
 		}
-		out[i] = preparedClause{scope: scope, comparator: comparator, metricKey: metricKey, value: c.GetValue()}
+		var exercise sql.NullString
+		if metricKey == metrics.MaxWeightKg {
+			ex := normalizeExercise(c.GetExercise())
+			if ex == "" {
+				return nil, fmt.Errorf("clause %d: an exercise is required for max weight", i)
+			}
+			exercise = sql.NullString{String: ex, Valid: true}
+		}
+		out[i] = preparedClause{scope: scope, comparator: comparator, metricKey: metricKey, value: c.GetValue(), exercise: exercise}
 	}
 	return out, nil
 }
@@ -107,7 +116,7 @@ func clauseToProgress(ctx context.Context, q *db.Queries, c db.GoalClause) (prog
 		Metric:     key,
 		Comparator: cmp,
 		Value:      c.Value,
-		Def:        def,
+		Def:        clauseDef(def, c),
 	}, nil
 }
 
@@ -189,8 +198,15 @@ func (d *Deps) batchActivitiesByUser(ctx context.Context, goals []db.Goal) (map[
 	}
 
 	actsByUser := make(map[string][]metrics.Activity, len(userSet))
+	acts := make([]metrics.Activity, 0, len(rows))
 	for _, r := range rows {
 		a := metrics.FromDB(r)
+		acts = append(acts, a)
+	}
+	if err := attachLifts(ctx, d.Queries, acts); err != nil {
+		return nil, err
+	}
+	for _, a := range acts {
 		actsByUser[a.UserID] = append(actsByUser[a.UserID], a)
 	}
 	return actsByUser, nil
@@ -203,16 +219,28 @@ func (d *Deps) batchActivitiesByUser(ctx context.Context, goals []db.Goal) (map[
 // what keeps ListGoals and the leaderboard from regressing into the old N+1
 // pattern.
 func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoalID map[string][]progress.Clause) (map[string]progress.Result, error) {
+	results, _, err := d.evaluateGoalsIn(ctx, goals, clausesByGoalID, nil)
+	return results, err
+}
+
+// evaluateGoalsIn is evaluateGoals restricted to a leaderboard window (nil =
+// the whole goal period). It also returns the goals as evaluated (clipped
+// period, pro-rated targets) so callers can show the target actually used;
+// goals the window misses, or that have nothing to judge in it, are absent
+// from both maps.
+func (d *Deps) evaluateGoalsIn(ctx context.Context, goals []db.Goal, clausesByGoalID map[string][]progress.Clause, win *progress.Window) (map[string]progress.Result, map[string]progress.Goal, error) {
 	results := make(map[string]progress.Result, len(goals))
+	used := make(map[string]progress.Goal, len(goals))
 	if len(goals) == 0 {
-		return results, nil
+		return results, used, nil
 	}
 
 	actsByUser, err := d.batchActivitiesByUser(ctx, goals)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
+	now := time.Now().Unix()
 	for _, g := range goals {
 		pg := progress.Goal{
 			ID:          g.ID,
@@ -220,10 +248,26 @@ func (d *Deps) evaluateGoals(ctx context.Context, goals []db.Goal, clausesByGoal
 			PeriodStart: g.PeriodStart,
 			PeriodEnd:   g.PeriodEnd,
 			Clauses:     clausesByGoalID[g.ID],
+			Recurrence:  recurrenceFromDB(g.Recurrence),
+			Now:         now,
 		}
-		results[g.ID] = progress.Evaluate(pg, actsByUser[g.UserID])
+		if win != nil {
+			var ok bool
+			if pg, ok = progress.ForWindow(pg, *win); !ok {
+				continue
+			}
+		}
+		res := progress.Evaluate(pg, actsByUser[g.UserID])
+		if win != nil {
+			if progress.WindowExcluded(pg, res) {
+				continue
+			}
+			res.SatisfiedAt = 0 // "finished early" only means something over the whole period
+		}
+		results[g.ID] = res
+		used[g.ID] = pg
 	}
-	return results, nil
+	return results, used, nil
 }
 
 // clauseDefsToProto maps a goal's persisted clause definitions
@@ -241,6 +285,7 @@ func clauseDefsToProto(clauses []db.GoalClause) []*fitterv1.GoalClause {
 			Metric:     keyToMetric(metrics.Key(c.Metric)),
 			Comparator: comparatorFromDB(c.Comparator),
 			Value:      c.Value,
+			Exercise:   nullStringPtr(c.Exercise),
 		}
 	}
 	return out
@@ -256,6 +301,9 @@ func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitte
 		ProgressRatio:           res.Ratio,
 		Clauses:                 clauseResultsToProto(res.Clauses),
 		ConsideredActivityCount: int32(res.ConsideredCount),
+		PeriodsHit:              int32(res.PeriodsHit),
+		PeriodsElapsed:          int32(res.PeriodsElapsed),
+		PeriodsTotal:            int32(res.PeriodsTotal),
 	}
 	if res.QualifyingActivityID != 0 {
 		v := res.QualifyingActivityID
@@ -282,6 +330,7 @@ func toGoalProto(g db.Goal, clauses []db.GoalClause, res progress.Result) *fitte
 		Clauses:     protoClauses,
 		Progress:    progressProto,
 		CreatedAt:   unixToTimestamp(g.CreatedAt),
+		Recurrence:  recurrenceToProto(g.Recurrence),
 	}
 }
 
@@ -375,6 +424,10 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 		return db.Goal{}, nil, connect.NewError(connect.CodeInvalidArgument, errors.New("period_end must be after period_start"))
 	}
 
+	if err := checkBuckets(msg.GetRecurrence(), periodStart, periodEnd); err != nil {
+		return db.Goal{}, nil, err
+	}
+
 	g, err := qtx.CreateGoal(ctx, db.CreateGoalParams{
 		// Time-ordered, so goal_id order is creation order: the leaderboard's
 		// final tie-break, and the UI's "first created" lead-goal rule.
@@ -387,6 +440,7 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 		PeriodStart: periodStart,
 		PeriodEnd:   periodEnd,
 		CreatedAt:   time.Now().Unix(),
+		Recurrence:  recurrenceToDB(msg.GetRecurrence()),
 	})
 	if err != nil {
 		return db.Goal{}, nil, connect.NewError(connect.CodeInternal, err)
@@ -402,6 +456,7 @@ func (d *Deps) createGoalInTx(ctx context.Context, qtx *db.Queries, userID strin
 			Metric:     string(p.metricKey),
 			Comparator: p.comparator,
 			Value:      p.value,
+			Exercise:   p.exercise,
 		})
 		if err != nil {
 			return db.Goal{}, nil, connect.NewError(connect.CodeInternal, err)
@@ -449,7 +504,13 @@ func (s *GoalService) ListGoals(ctx context.Context, req *connect.Request[fitter
 	}
 
 	var goals []db.Goal
-	if cid := req.Msg.GetCampaignId(); cid != "" {
+	if req.Msg.GetAll() {
+		var err error
+		goals, err = s.Queries.ListAllGoalsForUser(ctx, userID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	} else if cid := req.Msg.GetCampaignId(); cid != "" {
 		isMember, err := s.Queries.IsCampaignMember(ctx, db.IsCampaignMemberParams{CampaignID: cid, UserID: userID})
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -536,11 +597,28 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 
 	// Global Constraints: a campaign goal's period always matches its
 	// campaign's window, so an update can't drift it away — the request's
-	// period is honored only for a personal (non-campaign) goal.
+	// period is honored only for a personal (non-campaign) goal. campaign_id
+	// can move the goal between personal and a joined campaign.
 	periodStart := timestampToUnix(msg.GetPeriodStart())
 	periodEnd := timestampToUnix(msg.GetPeriodEnd())
-	if existing.CampaignID.Valid {
-		c, err := qtx.GetCampaign(ctx, existing.CampaignID.String)
+	campaignID := existing.CampaignID
+	if msg.CampaignId != nil {
+		campaignID = sql.NullString{String: msg.GetCampaignId(), Valid: msg.GetCampaignId() != ""}
+		if campaignID.Valid && campaignID.String != existing.CampaignID.String {
+			isMember, err := qtx.IsCampaignMember(ctx, db.IsCampaignMemberParams{CampaignID: campaignID.String, UserID: userID})
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			if !isMember {
+				return nil, connect.NewError(connect.CodePermissionDenied, errors.New("must join campaign to add a goal to it"))
+			}
+		}
+	}
+	if campaignID.Valid {
+		c, err := qtx.GetCampaign(ctx, campaignID.String)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("campaign not found"))
+		}
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
@@ -551,6 +629,10 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("period_end must be after period_start"))
 	}
 
+	if err := checkBuckets(msg.GetRecurrence(), periodStart, periodEnd); err != nil {
+		return nil, err
+	}
+
 	g, err := qtx.UpdateGoalMeta(ctx, db.UpdateGoalMetaParams{
 		Name:        msg.GetName(),
 		SportGroup:  sportGroup,
@@ -559,6 +641,8 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 		PeriodEnd:   periodEnd,
 		ID:          msg.GetGoalId(),
 		UserID:      userID,
+		CampaignID:  campaignID,
+		Recurrence:  recurrenceToDB(msg.GetRecurrence()),
 	})
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("goal not found"))
@@ -580,6 +664,7 @@ func (s *GoalService) UpdateGoal(ctx context.Context, req *connect.Request[fitte
 			Metric:     string(p.metricKey),
 			Comparator: p.comparator,
 			Value:      p.value,
+			Exercise:   p.exercise,
 		})
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)

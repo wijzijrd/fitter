@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { create } from "@bufbuild/protobuf";
 import { ActivityMetric, ClauseScope, Comparator } from "../gen/fitter/v1/common_pb";
 import { LeaderboardEntrySchema, LeaderboardGroupSchema } from "../gen/fitter/v1/feed_pb";
-import { amount, gap, lead, myEntries, pickGroup, primary, share, unitClause } from "./standings";
+import { TOGETHER, amount, gap, groupKey, lead, myEntries, peekBand, pickGroup, primary, share, unitClause } from "./standings";
 
 const fmt = (_m: ActivityMetric, v: number) => `${Math.round(v / 1000)} km`;
 const distance = (target: number) => ({
@@ -111,5 +111,73 @@ describe("share", () => {
 
   it("is 0 before anything is pooled", () => {
     expect(share(5, 0)).toBe(0);
+  });
+});
+
+describe("peekBand: the gap on a neighbouring bib is measured against the front bib", () => {
+  const kmFmt = fmt;
+  it("names who the difference is against, so it can't be read as the neighbour's own shortfall", () => {
+    // The beta report: 66% in front, 9% behind, shown as "Behind −57%" with nothing to say against whom.
+    const me = entry("me", "g1", 0.66, 1, [{ scope: ClauseScope.AGGREGATE, metric: ActivityMetric.MOVING_TIME, comparator: Comparator.GTE, value: 1 }]);
+    const anre = entry("anre", "g2", 0.09, 2);
+    expect(peekBand("behind", me, anre, kmFmt, true)).toEqual(["Behind", "−57% vs you"]);
+    expect(peekBand("ahead", anre, me, kmFmt, false)).toEqual(["Ahead", "+57% vs anre"]);
+  });
+  it("uses units only when both bibs chase the same metric and target", () => {
+    const a = entry("me", "g1", 0.7, 1);
+    const b = entry("sam", "g2", 0.2, 2);
+    expect(peekBand("behind", a, b, kmFmt, true)[1]).toBe("−50 km vs you");
+    const other = entry("sam", "g3", 0.2, 2, [distance(200_000)]);
+    expect(peekBand("behind", a, other, kmFmt, true)[1]).toBe("−50% vs you");
+  });
+  it("is Level when both are the same, including two finishers past their goals", () => {
+    const a = entry("me", "g1", 1, 1);
+    const b = entry("sam", "g2", 1, 2);
+    expect(peekBand("behind", a, b, kmFmt, true)).toEqual(["Behind", "Level with you"]);
+    expect(peekBand("ahead", b, a, kmFmt, false)).toEqual(["Ahead", "Level with sam"]);
+  });
+  it("shows one point of difference between 99% and a finisher, never a negative or over-100 figure", () => {
+    const fin = entry("me", "g1", 1, 1);
+    const near = entry("sam", "g2", 0.99, 2, [{ scope: ClauseScope.AGGREGATE, metric: ActivityMetric.MOVING_TIME, comparator: Comparator.GTE, value: 1 }]);
+    expect(peekBand("behind", fin, near, kmFmt, true)[1]).toBe("−1% vs you");
+  });
+});
+
+describe("goals beyond 100%", () => {
+  it("shows the real total in units but the share is capped, so a finisher at 130 km reads 130 km", () => {
+    const over = create(LeaderboardEntrySchema, {
+      userId: "me", userName: "Me", goalId: "g", progressRatio: 1, rank: 1, satisfied: true,
+      clauseDefs: [distance(100_000)], clauses: [{ currentValue: 130_000, progressRatio: 1 }],
+    });
+    expect(primary(over, fmt)).toBe("130 km");
+    const pctOnly = entry("me", "g", 1, 1, [distance(100_000), distance(1)]);
+    expect(primary(pctOnly, fmt)).toBe("100%");
+  });
+  it("two finishers are level, and a finisher alone has nothing left to chase", () => {
+    const g = group("run", entry("a", "g1", 1, 1), entry("me", "g2", 1, 2));
+    expect(gap(g, g.entries[1], fmt)).toEqual({ kind: "level", other: g.entries[0] });
+    const solo = group("run", entry("me", "g3", 1, 1));
+    expect(gap(solo, solo.entries[0], fmt)).toEqual({ kind: "done" });
+  });
+  it("counts a finisher's share as 100 whatever the ratio", () => {
+    expect(share(1, 1)).toBe(100);
+    expect(share(0, 1)).toBe(0);
+    expect(share(5, 0)).toBe(0);
+  });
+});
+
+describe("groupKey", () => {
+  it("tells a sport's habits from its totals, though both are the run group", () => {
+    const total = create(LeaderboardGroupSchema, { sportGroup: "run", goalKind: "total" });
+    const habit = create(LeaderboardGroupSchema, { sportGroup: "run", goalKind: "habit" });
+    expect(groupKey(total)).not.toBe(groupKey(habit));
+    expect(groupKey(total)).toBe(groupKey(create(LeaderboardGroupSchema, { sportGroup: "run", goalKind: "total" })));
+  });
+  it("keeps the all-sports group distinct and tolerates a server that predates kinds", () => {
+    expect(groupKey(create(LeaderboardGroupSchema, { sportGroup: "" }))).toBe("|");
+    expect(groupKey(create(LeaderboardGroupSchema, { sportGroup: "run" }))).toBe("run|");
+  });
+  it("never collides with the pooled bib's key", () => {
+    expect(groupKey(create(LeaderboardGroupSchema, { sportGroup: TOGETHER }))).not.toBe(TOGETHER);
   });
 });

@@ -7,12 +7,155 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/lib/pq"
 )
 
+const banUser = `-- name: BanUser :exec
+UPDATE users SET status = 'banned', ban_reason = $2, banned_by = $3, banned_at = $4 WHERE id = $1
+`
+
+type BanUserParams struct {
+	ID        string         `json:"id"`
+	BanReason string         `json:"ban_reason"`
+	BannedBy  sql.NullString `json:"banned_by"`
+	BannedAt  sql.NullInt64  `json:"banned_at"`
+}
+
+func (q *Queries) BanUser(ctx context.Context, arg BanUserParams) error {
+	_, err := q.db.ExecContext(ctx, banUser,
+		arg.ID,
+		arg.BanReason,
+		arg.BannedBy,
+		arg.BannedAt,
+	)
+	return err
+}
+
+const claimEmailVerification = `-- name: ClaimEmailVerification :one
+INSERT INTO email_verifications (user_id, email, code_hash, attempts, sent_at, expires_at)
+VALUES ($1, $2, $3, 0, $4, $5)
+ON CONFLICT (user_id) DO UPDATE
+SET email = EXCLUDED.email, code_hash = EXCLUDED.code_hash, attempts = 0,
+    sent_at = EXCLUDED.sent_at, expires_at = EXCLUDED.expires_at
+WHERE email_verifications.sent_at <= $6
+RETURNING user_id, email, code_hash, attempts, sent_at, expires_at
+`
+
+type ClaimEmailVerificationParams struct {
+	UserID     string `json:"user_id"`
+	Email      string `json:"email"`
+	CodeHash   string `json:"code_hash"`
+	SentAt     int64  `json:"sent_at"`
+	ExpiresAt  int64  `json:"expires_at"`
+	SentBefore int64  `json:"sent_before"`
+}
+
+// Stores a fresh code unless the last one was sent after sent_before; no row back means "too soon".
+func (q *Queries) ClaimEmailVerification(ctx context.Context, arg ClaimEmailVerificationParams) (EmailVerification, error) {
+	row := q.db.QueryRowContext(ctx, claimEmailVerification,
+		arg.UserID,
+		arg.Email,
+		arg.CodeHash,
+		arg.SentAt,
+		arg.ExpiresAt,
+		arg.SentBefore,
+	)
+	var i EmailVerification
+	err := row.Scan(
+		&i.UserID,
+		&i.Email,
+		&i.CodeHash,
+		&i.Attempts,
+		&i.SentAt,
+		&i.ExpiresAt,
+	)
+	return i, err
+}
+
+const claimUserSync = `-- name: ClaimUserSync :one
+UPDATE users SET last_synced_at = $2 WHERE id = $1 AND last_synced_at <= $3
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email
+`
+
+type ClaimUserSyncParams struct {
+	ID             string `json:"id"`
+	LastSyncedAt   int64  `json:"last_synced_at"`
+	LastSyncedAt_2 int64  `json:"last_synced_at_2"`
+}
+
+// Takes the sync slot unless one was taken since $3; no row back means "too soon".
+func (q *Queries) ClaimUserSync(ctx context.Context, arg ClaimUserSyncParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, claimUserSync, arg.ID, arg.LastSyncedAt, arg.LastSyncedAt_2)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.StravaAthleteID,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.AccessToken,
+		&i.RefreshToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
+	)
+	return i, err
+}
+
+const countActiveAdmins = `-- name: CountActiveAdmins :one
+SELECT COUNT(*) FROM users WHERE role = 'admin' AND status = 'active'
+`
+
+func (q *Queries) CountActiveAdmins(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActiveAdmins)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countEmailVerificationAttempt = `-- name: CountEmailVerificationAttempt :one
+UPDATE email_verifications SET attempts = attempts + 1 WHERE user_id = $1
+RETURNING user_id, email, code_hash, attempts, sent_at, expires_at
+`
+
+// Uses up one try and returns the row as it was checked against.
+func (q *Queries) CountEmailVerificationAttempt(ctx context.Context, userID string) (EmailVerification, error) {
+	row := q.db.QueryRowContext(ctx, countEmailVerificationAttempt, userID)
+	var i EmailVerification
+	err := row.Scan(
+		&i.UserID,
+		&i.Email,
+		&i.CodeHash,
+		&i.Attempts,
+		&i.SentAt,
+		&i.ExpiresAt,
+	)
+	return i, err
+}
+
+const deleteEmailVerification = `-- name: DeleteEmailVerification :exec
+DELETE FROM email_verifications WHERE user_id = $1
+`
+
+func (q *Queries) DeleteEmailVerification(ctx context.Context, userID string) error {
+	_, err := q.db.ExecContext(ctx, deleteEmailVerification, userID)
+	return err
+}
+
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users WHERE id = $1
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
@@ -28,12 +171,23 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
 	)
 	return i, err
 }
 
 const getUserByStravaID = `-- name: GetUserByStravaID :one
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users WHERE strava_athlete_id = $1
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email FROM users WHERE strava_athlete_id = $1
 `
 
 func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) (User, error) {
@@ -49,12 +203,23 @@ func (q *Queries) GetUserByStravaID(ctx context.Context, stravaAthleteID int64) 
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
 	)
 	return i, err
 }
 
 const listAllUsers = `-- name: ListAllUsers :many
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users ORDER BY created_at ASC
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email FROM users ORDER BY created_at ASC
 `
 
 func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
@@ -76,6 +241,17 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
 			&i.Role,
+			&i.Status,
+			&i.BanReason,
+			&i.BannedBy,
+			&i.BannedAt,
+			&i.FeedShowPace,
+			&i.FeedShowPower,
+			&i.FeedShowEffort,
+			&i.FeedShowLifts,
+			&i.WhatsNewSeen,
+			&i.LastSyncedAt,
+			&i.Email,
 		); err != nil {
 			return nil, err
 		}
@@ -91,7 +267,7 @@ func (q *Queries) ListAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const listUsersByIDs = `-- name: ListUsersByIDs :many
-SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role FROM users WHERE id = ANY($1::text[])
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email FROM users WHERE id = ANY($1::text[])
 `
 
 func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, error) {
@@ -113,6 +289,17 @@ func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, err
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
 			&i.Role,
+			&i.Status,
+			&i.BanReason,
+			&i.BannedBy,
+			&i.BannedAt,
+			&i.FeedShowPace,
+			&i.FeedShowPower,
+			&i.FeedShowEffort,
+			&i.FeedShowLifts,
+			&i.WhatsNewSeen,
+			&i.LastSyncedAt,
+			&i.Email,
 		); err != nil {
 			return nil, err
 		}
@@ -125,6 +312,215 @@ func (q *Queries) ListUsersByIDs(ctx context.Context, ids []string) ([]User, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const listUsersByStatus = `-- name: ListUsersByStatus :many
+SELECT id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email FROM users WHERE status = $1 ORDER BY created_at ASC
+`
+
+func (q *Queries) ListUsersByStatus(ctx context.Context, status string) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsersByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.StravaAthleteID,
+			&i.Name,
+			&i.AvatarUrl,
+			&i.AccessToken,
+			&i.RefreshToken,
+			&i.TokenExpiresAt,
+			&i.CreatedAt,
+			&i.Role,
+			&i.Status,
+			&i.BanReason,
+			&i.BannedBy,
+			&i.BannedAt,
+			&i.FeedShowPace,
+			&i.FeedShowPower,
+			&i.FeedShowEffort,
+			&i.FeedShowLifts,
+			&i.WhatsNewSeen,
+			&i.LastSyncedAt,
+			&i.Email,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setUserEmail = `-- name: SetUserEmail :one
+UPDATE users SET email = $2 WHERE id = $1
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email
+`
+
+type SetUserEmailParams struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
+func (q *Queries) SetUserEmail(ctx context.Context, arg SetUserEmailParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, setUserEmail, arg.ID, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.StravaAthleteID,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.AccessToken,
+		&i.RefreshToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
+	)
+	return i, err
+}
+
+const setUserFeedSettings = `-- name: SetUserFeedSettings :one
+UPDATE users SET feed_show_pace = $2, feed_show_power = $3, feed_show_effort = $4, feed_show_lifts = $5
+WHERE id = $1
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email
+`
+
+type SetUserFeedSettingsParams struct {
+	ID             string `json:"id"`
+	FeedShowPace   bool   `json:"feed_show_pace"`
+	FeedShowPower  bool   `json:"feed_show_power"`
+	FeedShowEffort bool   `json:"feed_show_effort"`
+	FeedShowLifts  bool   `json:"feed_show_lifts"`
+}
+
+func (q *Queries) SetUserFeedSettings(ctx context.Context, arg SetUserFeedSettingsParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, setUserFeedSettings,
+		arg.ID,
+		arg.FeedShowPace,
+		arg.FeedShowPower,
+		arg.FeedShowEffort,
+		arg.FeedShowLifts,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.StravaAthleteID,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.AccessToken,
+		&i.RefreshToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
+	)
+	return i, err
+}
+
+const setUserRole = `-- name: SetUserRole :exec
+UPDATE users SET role = $2 WHERE id = $1
+`
+
+type SetUserRoleParams struct {
+	ID   string `json:"id"`
+	Role string `json:"role"`
+}
+
+func (q *Queries) SetUserRole(ctx context.Context, arg SetUserRoleParams) error {
+	_, err := q.db.ExecContext(ctx, setUserRole, arg.ID, arg.Role)
+	return err
+}
+
+const setUserStatus = `-- name: SetUserStatus :exec
+UPDATE users SET status = $2 WHERE id = $1
+`
+
+type SetUserStatusParams struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+}
+
+func (q *Queries) SetUserStatus(ctx context.Context, arg SetUserStatusParams) error {
+	_, err := q.db.ExecContext(ctx, setUserStatus, arg.ID, arg.Status)
+	return err
+}
+
+const setUserWhatsNewSeen = `-- name: SetUserWhatsNewSeen :one
+UPDATE users SET whats_new_seen = $2 WHERE id = $1
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email
+`
+
+type SetUserWhatsNewSeenParams struct {
+	ID           string `json:"id"`
+	WhatsNewSeen string `json:"whats_new_seen"`
+}
+
+func (q *Queries) SetUserWhatsNewSeen(ctx context.Context, arg SetUserWhatsNewSeenParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, setUserWhatsNewSeen, arg.ID, arg.WhatsNewSeen)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.StravaAthleteID,
+		&i.Name,
+		&i.AvatarUrl,
+		&i.AccessToken,
+		&i.RefreshToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
+	)
+	return i, err
+}
+
+const unbanUser = `-- name: UnbanUser :exec
+UPDATE users SET status = 'active', ban_reason = '', banned_by = NULL, banned_at = NULL WHERE id = $1
+`
+
+func (q *Queries) UnbanUser(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, unbanUser, id)
+	return err
 }
 
 const updateUserTokens = `-- name: UpdateUserTokens :exec
@@ -157,7 +553,7 @@ ON CONFLICT (strava_athlete_id) DO UPDATE SET
     access_token = excluded.access_token,
     refresh_token = excluded.refresh_token,
     token_expires_at = excluded.token_expires_at
-RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email
 `
 
 type UpsertUserByStravaIDParams struct {
@@ -198,21 +594,34 @@ func (q *Queries) UpsertUserByStravaID(ctx context.Context, arg UpsertUserByStra
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
 	)
 	return i, err
 }
 
 const upsertUserByStravaIDAsAdmin = `-- name: UpsertUserByStravaIDAsAdmin :one
-INSERT INTO users (id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'admin')
+INSERT INTO users (id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'admin', 'active')
 ON CONFLICT (strava_athlete_id) DO UPDATE SET
     name = excluded.name,
     avatar_url = excluded.avatar_url,
     access_token = excluded.access_token,
     refresh_token = excluded.refresh_token,
     token_expires_at = excluded.token_expires_at,
-    role = 'admin'
-RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role
+    role = 'admin',
+    -- Env admins skip the approval queue, but a ban sticks.
+    status = CASE WHEN users.status = 'pending' THEN 'active' ELSE users.status END
+RETURNING id, strava_athlete_id, name, avatar_url, access_token, refresh_token, token_expires_at, created_at, role, status, ban_reason, banned_by, banned_at, feed_show_pace, feed_show_power, feed_show_effort, feed_show_lifts, whats_new_seen, last_synced_at, email
 `
 
 type UpsertUserByStravaIDAsAdminParams struct {
@@ -255,6 +664,17 @@ func (q *Queries) UpsertUserByStravaIDAsAdmin(ctx context.Context, arg UpsertUse
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.Role,
+		&i.Status,
+		&i.BanReason,
+		&i.BannedBy,
+		&i.BannedAt,
+		&i.FeedShowPace,
+		&i.FeedShowPower,
+		&i.FeedShowEffort,
+		&i.FeedShowLifts,
+		&i.WhatsNewSeen,
+		&i.LastSyncedAt,
+		&i.Email,
 	)
 	return i, err
 }

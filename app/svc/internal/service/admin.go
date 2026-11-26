@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"connectrpc.com/connect"
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -79,6 +82,31 @@ func customMetricToProto(m db.CustomMetric, sportRefs []string) *fitterv1.Custom
 	}
 }
 
+const (
+	maxSportKeyLen   = 64
+	maxSportLabelLen = 60
+)
+
+// validateSportKeyAndLabel returns the label trimmed. A key is matched verbatim against
+// activities' sport_type and shares a namespace with the group keys in custom-metric sport refs,
+// so it must be a clean token that can't shadow a group; a label is display text.
+func validateSportKeyAndLabel(key, label string) (string, error) {
+	label = strings.TrimSpace(label)
+	if label == "" || utf8.RuneCountInString(label) > maxSportLabelLen {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("label is required and at most %d characters", maxSportLabelLen))
+	}
+	if key == "" || utf8.RuneCountInString(key) > maxSportKeyLen {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("key is required and at most %d characters", maxSportKeyLen))
+	}
+	if strings.ContainsFunc(key, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) {
+		return "", connect.NewError(connect.CodeInvalidArgument, errors.New("key can't contain spaces or control characters"))
+	}
+	if sports.ValidGroup(key) {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("key %q is a built-in sport group", key))
+	}
+	return label, nil
+}
+
 func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Request[fitterv1.CreateCustomSportRequest]) (*connect.Response[fitterv1.CreateCustomSportResponse], error) {
 	if err := requireAdmin(ctx); err != nil {
 		return nil, err
@@ -89,9 +117,9 @@ func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Reque
 	}
 
 	key := req.Msg.GetKey()
-	label := req.Msg.GetLabel()
-	if key == "" || label == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("key and label are required"))
+	label, err := validateSportKeyAndLabel(key, req.Msg.GetLabel())
+	if err != nil {
+		return nil, err
 	}
 	if isKnownStravaSportType(key) {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("key %q collides with a real Strava sport_type", key))
@@ -102,7 +130,13 @@ func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Reque
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	row, err := s.Queries.CreateCustomSport(ctx, db.CreateCustomSportParams{
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback()
+	qtx := s.Queries.WithTx(tx)
+	row, err := qtx.CreateCustomSport(ctx, db.CreateCustomSportParams{
 		ID:        uuid.NewString(),
 		Key:       key,
 		Label:     label,
@@ -110,6 +144,12 @@ func (s *AdminService) CreateCustomSport(ctx context.Context, req *connect.Reque
 		CreatedAt: time.Now().Unix(),
 	})
 	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := audit(ctx, qtx, userID, "create_sport", row.ID, key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.CreateCustomSportResponse{Sport: customSportToProto(row)}), nil
@@ -134,12 +174,33 @@ func (s *AdminService) DeleteCustomSport(ctx context.Context, req *connect.Reque
 	if err := requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	if _, err := s.Queries.GetCustomSportByID(ctx, req.Msg.GetId()); errors.Is(err, sql.ErrNoRows) {
+	actor, _ := auth.UserIDFromContext(ctx)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback()
+	qtx := s.Queries.WithTx(tx)
+	sp, err := qtx.GetCustomSportByID(ctx, req.Msg.GetId())
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("custom sport not found"))
 	} else if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.Queries.DeleteCustomSport(ctx, req.Msg.GetId()); err != nil {
+	// No refs means "applies to every sport", so deleting a sport a metric is scoped to would
+	// silently widen that metric. Remove the metric (or its scope) first.
+	if n, err := qtx.CountMetricsScopedToSport(ctx, sp.Key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	} else if n > 0 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("%d custom metric(s) are scoped to this sport; delete them first", n))
+	}
+	if err := qtx.DeleteCustomSport(ctx, sp.ID); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := audit(ctx, qtx, actor, "delete_sport", sp.ID, sp.Key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.DeleteCustomSportResponse{}), nil
@@ -210,6 +271,9 @@ func (s *AdminService) CreateCustomMetric(ctx context.Context, req *connect.Requ
 		}
 	}
 
+	if err := audit(ctx, qtx, userID, "create_metric", row.ID, key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -264,14 +328,28 @@ func (s *AdminService) DeleteCustomMetric(ctx context.Context, req *connect.Requ
 	if err := requireAdmin(ctx); err != nil {
 		return nil, err
 	}
-	if _, err := s.Queries.GetCustomMetricByID(ctx, req.Msg.GetId()); errors.Is(err, sql.ErrNoRows) {
+	actor, _ := auth.UserIDFromContext(ctx)
+	tx, err := s.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback()
+	qtx := s.Queries.WithTx(tx)
+	m, err := qtx.GetCustomMetricByID(ctx, req.Msg.GetId())
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("custom metric not found"))
 	} else if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	// custom_metric_sports rows cascade-delete via their FK's ON DELETE
 	// CASCADE (foreign_keys pragma is on for both the real DB and dbtest).
-	if err := s.Queries.DeleteCustomMetric(ctx, req.Msg.GetId()); err != nil {
+	if err := qtx.DeleteCustomMetric(ctx, m.ID); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := audit(ctx, qtx, actor, "delete_metric", m.ID, m.Key); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := tx.Commit(); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&fitterv1.DeleteCustomMetricResponse{}), nil

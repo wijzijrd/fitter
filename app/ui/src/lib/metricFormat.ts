@@ -33,6 +33,8 @@ export function parseDuration(input: string): number | null {
     return null;
   }
   const nums = parts.map(Number);
+  // Seconds (and minutes under an hour) must be clock values: "45:99" is a typo, not 46:39.
+  if (nums[nums.length - 1] >= 60 || (nums.length === 3 && nums[1] >= 60)) return null;
   let seconds = 0;
   if (nums.length === 3) {
     const [h, m, s] = nums;
@@ -42,6 +44,18 @@ export function parseDuration(input: string): number | null {
     seconds = m * 60 + s;
   }
   return seconds;
+}
+
+// maskDuration turns typed digits into a clock reading that fills from the
+// right, like a phone timer: "435" -> "4:35", "4535" -> "45:35", "13000" ->
+// "1:30:00". Non-digits (including colons the user typed) are dropped, and
+// digits past maxDigits are ignored (4 for mm:ss paces, 6 for h:mm:ss).
+export function maskDuration(input: string, maxDigits = 6): string {
+  const d = input.replace(/\D/g, "").slice(0, maxDigits);
+  const s = d.slice(-2);
+  const m = d.slice(-4, -2);
+  const h = d.slice(0, -4);
+  return [h, m, s].filter((x) => x !== "").join(":");
 }
 
 // isDurationUnit reports whether a metric's base value is a count of
@@ -74,6 +88,8 @@ export function unitSuffix(unit: MetricUnit): string {
       return "";
     case MetricUnit.SCORE:
       return "score";
+    case MetricUnit.KG:
+      return "kg";
     case MetricUnit.METERS_PER_SECOND:
       return "km/h";
     default:

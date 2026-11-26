@@ -12,13 +12,104 @@ import (
 	"github.com/lib/pq"
 )
 
+const countActivitiesForUser = `-- name: CountActivitiesForUser :one
+SELECT COUNT(*) FROM activities WHERE user_id = $1
+`
+
+func (q *Queries) CountActivitiesForUser(ctx context.Context, userID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countActivitiesForUser, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createManualActivity = `-- name: CreateManualActivity :one
+INSERT INTO activities (
+    strava_activity_id, user_id, type, sport_type, name, start_date,
+    distance_m, moving_time_s, elapsed_time_s, source, created_at, updated_at, start_date_local
+)
+VALUES (nextval('manual_activity_id'), $1, $2, $2, $3, $4, $5, $6, $6, 'manual', $7, $7, $8)
+RETURNING strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at, source, start_date_local
+`
+
+type CreateManualActivityParams struct {
+	UserID         string        `json:"user_id"`
+	Type           string        `json:"type"`
+	Name           string        `json:"name"`
+	StartDate      int64         `json:"start_date"`
+	DistanceM      float64       `json:"distance_m"`
+	MovingTimeS    int64         `json:"moving_time_s"`
+	CreatedAt      int64         `json:"created_at"`
+	StartDateLocal sql.NullInt64 `json:"start_date_local"`
+}
+
+func (q *Queries) CreateManualActivity(ctx context.Context, arg CreateManualActivityParams) (Activity, error) {
+	row := q.db.QueryRowContext(ctx, createManualActivity,
+		arg.UserID,
+		arg.Type,
+		arg.Name,
+		arg.StartDate,
+		arg.DistanceM,
+		arg.MovingTimeS,
+		arg.CreatedAt,
+		arg.StartDateLocal,
+	)
+	var i Activity
+	err := row.Scan(
+		&i.StravaActivityID,
+		&i.UserID,
+		&i.Type,
+		&i.SportType,
+		&i.Name,
+		&i.StartDate,
+		&i.DistanceM,
+		&i.ElevationM,
+		&i.MovingTimeS,
+		&i.ElapsedTimeS,
+		&i.AverageSpeedMs,
+		&i.MaxSpeedMs,
+		&i.AverageHeartrate,
+		&i.MaxHeartrate,
+		&i.AverageWatts,
+		&i.WeightedAverageWatts,
+		&i.MaxWatts,
+		&i.DeviceWatts,
+		&i.Kilojoules,
+		&i.Calories,
+		&i.AverageCadence,
+		&i.SufferScore,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Source,
+		&i.StartDateLocal,
+	)
+	return i, err
+}
+
 const deleteActivityByStravaID = `-- name: DeleteActivityByStravaID :exec
-DELETE FROM activities WHERE strava_activity_id = $1
+DELETE FROM activities WHERE strava_activity_id = $1 AND source = 'strava'
 `
 
 func (q *Queries) DeleteActivityByStravaID(ctx context.Context, stravaActivityID int64) error {
 	_, err := q.db.ExecContext(ctx, deleteActivityByStravaID, stravaActivityID)
 	return err
+}
+
+const deleteManualActivity = `-- name: DeleteManualActivity :execrows
+DELETE FROM activities WHERE strava_activity_id = $1 AND user_id = $2 AND source = 'manual'
+`
+
+type DeleteManualActivityParams struct {
+	StravaActivityID int64  `json:"strava_activity_id"`
+	UserID           string `json:"user_id"`
+}
+
+func (q *Queries) DeleteManualActivity(ctx context.Context, arg DeleteManualActivityParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteManualActivity, arg.StravaActivityID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const getLatestActivityStartDateForUser = `-- name: GetLatestActivityStartDateForUser :one
@@ -33,7 +124,7 @@ func (q *Queries) GetLatestActivityStartDateForUser(ctx context.Context, userID 
 }
 
 const listActivitiesForUserInRange = `-- name: ListActivitiesForUserInRange :many
-SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at FROM activities
+SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at, source, start_date_local FROM activities
 WHERE user_id = $1 AND start_date >= $2 AND start_date <= $3
 ORDER BY start_date ASC
 `
@@ -78,6 +169,8 @@ func (q *Queries) ListActivitiesForUserInRange(ctx context.Context, arg ListActi
 			&i.SufferScore,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Source,
+			&i.StartDateLocal,
 		); err != nil {
 			return nil, err
 		}
@@ -93,7 +186,7 @@ func (q *Queries) ListActivitiesForUserInRange(ctx context.Context, arg ListActi
 }
 
 const listActivitiesForUsersInRange = `-- name: ListActivitiesForUsersInRange :many
-SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at FROM activities
+SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at, source, start_date_local FROM activities
 WHERE user_id = ANY($1::text[])
   AND start_date >= $2 AND start_date <= $3
 ORDER BY start_date ASC
@@ -139,6 +232,8 @@ func (q *Queries) ListActivitiesForUsersInRange(ctx context.Context, arg ListAct
 			&i.SufferScore,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Source,
+			&i.StartDateLocal,
 		); err != nil {
 			return nil, err
 		}
@@ -154,10 +249,10 @@ func (q *Queries) ListActivitiesForUsersInRange(ctx context.Context, arg ListAct
 }
 
 const listCampaignFeedActivities = `-- name: ListCampaignFeedActivities :many
-SELECT a.strava_activity_id, a.user_id, a.type, a.sport_type, a.name, a.start_date, a.distance_m, a.elevation_m, a.moving_time_s, a.elapsed_time_s, a.average_speed_ms, a.max_speed_ms, a.average_heartrate, a.max_heartrate, a.average_watts, a.weighted_average_watts, a.max_watts, a.device_watts, a.kilojoules, a.calories, a.average_cadence, a.suffer_score, a.created_at, a.updated_at, u.name AS user_name, u.avatar_url AS user_avatar_url
+SELECT a.strava_activity_id, a.user_id, a.type, a.sport_type, a.name, a.start_date, a.distance_m, a.elevation_m, a.moving_time_s, a.elapsed_time_s, a.average_speed_ms, a.max_speed_ms, a.average_heartrate, a.max_heartrate, a.average_watts, a.weighted_average_watts, a.max_watts, a.device_watts, a.kilojoules, a.calories, a.average_cadence, a.suffer_score, a.created_at, a.updated_at, a.source, a.start_date_local, u.name AS user_name, u.avatar_url AS user_avatar_url
 FROM activities a
 JOIN campaign_members cm ON cm.user_id = a.user_id
-JOIN users u ON u.id = a.user_id
+JOIN users u ON u.id = a.user_id AND u.status <> 'banned'
 WHERE cm.campaign_id = $1 AND a.start_date >= $2 AND a.start_date <= $3
 ORDER BY a.start_date DESC
 LIMIT 100
@@ -194,6 +289,8 @@ type ListCampaignFeedActivitiesRow struct {
 	SufferScore          sql.NullFloat64 `json:"suffer_score"`
 	CreatedAt            int64           `json:"created_at"`
 	UpdatedAt            int64           `json:"updated_at"`
+	Source               string          `json:"source"`
+	StartDateLocal       sql.NullInt64   `json:"start_date_local"`
 	UserName             string          `json:"user_name"`
 	UserAvatarUrl        string          `json:"user_avatar_url"`
 }
@@ -232,6 +329,8 @@ func (q *Queries) ListCampaignFeedActivities(ctx context.Context, arg ListCampai
 			&i.SufferScore,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Source,
+			&i.StartDateLocal,
 			&i.UserName,
 			&i.UserAvatarUrl,
 		); err != nil {
@@ -248,20 +347,138 @@ func (q *Queries) ListCampaignFeedActivities(ctx context.Context, arg ListCampai
 	return items, nil
 }
 
+const listManualActivitiesForUser = `-- name: ListManualActivitiesForUser :many
+SELECT strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at, source, start_date_local FROM activities WHERE user_id = $1 AND source = 'manual' ORDER BY start_date DESC LIMIT 200
+`
+
+func (q *Queries) ListManualActivitiesForUser(ctx context.Context, userID string) ([]Activity, error) {
+	rows, err := q.db.QueryContext(ctx, listManualActivitiesForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Activity
+	for rows.Next() {
+		var i Activity
+		if err := rows.Scan(
+			&i.StravaActivityID,
+			&i.UserID,
+			&i.Type,
+			&i.SportType,
+			&i.Name,
+			&i.StartDate,
+			&i.DistanceM,
+			&i.ElevationM,
+			&i.MovingTimeS,
+			&i.ElapsedTimeS,
+			&i.AverageSpeedMs,
+			&i.MaxSpeedMs,
+			&i.AverageHeartrate,
+			&i.MaxHeartrate,
+			&i.AverageWatts,
+			&i.WeightedAverageWatts,
+			&i.MaxWatts,
+			&i.DeviceWatts,
+			&i.Kilojoules,
+			&i.Calories,
+			&i.AverageCadence,
+			&i.SufferScore,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Source,
+			&i.StartDateLocal,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateManualActivity = `-- name: UpdateManualActivity :one
+UPDATE activities
+SET type = $3, sport_type = $3, name = $4, start_date = $5, distance_m = $6,
+    moving_time_s = $7, elapsed_time_s = $7, updated_at = $8, start_date_local = $9
+WHERE strava_activity_id = $1 AND user_id = $2 AND source = 'manual'
+RETURNING strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at, source, start_date_local
+`
+
+type UpdateManualActivityParams struct {
+	StravaActivityID int64         `json:"strava_activity_id"`
+	UserID           string        `json:"user_id"`
+	Type             string        `json:"type"`
+	Name             string        `json:"name"`
+	StartDate        int64         `json:"start_date"`
+	DistanceM        float64       `json:"distance_m"`
+	MovingTimeS      int64         `json:"moving_time_s"`
+	UpdatedAt        int64         `json:"updated_at"`
+	StartDateLocal   sql.NullInt64 `json:"start_date_local"`
+}
+
+func (q *Queries) UpdateManualActivity(ctx context.Context, arg UpdateManualActivityParams) (Activity, error) {
+	row := q.db.QueryRowContext(ctx, updateManualActivity,
+		arg.StravaActivityID,
+		arg.UserID,
+		arg.Type,
+		arg.Name,
+		arg.StartDate,
+		arg.DistanceM,
+		arg.MovingTimeS,
+		arg.UpdatedAt,
+		arg.StartDateLocal,
+	)
+	var i Activity
+	err := row.Scan(
+		&i.StravaActivityID,
+		&i.UserID,
+		&i.Type,
+		&i.SportType,
+		&i.Name,
+		&i.StartDate,
+		&i.DistanceM,
+		&i.ElevationM,
+		&i.MovingTimeS,
+		&i.ElapsedTimeS,
+		&i.AverageSpeedMs,
+		&i.MaxSpeedMs,
+		&i.AverageHeartrate,
+		&i.MaxHeartrate,
+		&i.AverageWatts,
+		&i.WeightedAverageWatts,
+		&i.MaxWatts,
+		&i.DeviceWatts,
+		&i.Kilojoules,
+		&i.Calories,
+		&i.AverageCadence,
+		&i.SufferScore,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Source,
+		&i.StartDateLocal,
+	)
+	return i, err
+}
+
 const upsertActivity = `-- name: UpsertActivity :one
 INSERT INTO activities (
     strava_activity_id, user_id, type, sport_type, name, start_date,
     distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms,
     average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts,
     device_watts, kilojoules, calories, average_cadence, suffer_score,
-    created_at, updated_at
+    created_at, updated_at, start_date_local
 )
 VALUES (
     $1, $2, $3, $4, $5, $6,
     $7, $8, $9, $10, $11, $12,
     $13, $14, $15, $16, $17,
     $18, $19, $20, $21, $22,
-    $23, $24
+    $23, $24, $25
 )
 ON CONFLICT (strava_activity_id) DO UPDATE SET
     user_id                = excluded.user_id,
@@ -285,8 +502,9 @@ ON CONFLICT (strava_activity_id) DO UPDATE SET
     calories               = COALESCE(excluded.calories, activities.calories),
     average_cadence        = COALESCE(excluded.average_cadence, activities.average_cadence),
     suffer_score           = COALESCE(excluded.suffer_score, activities.suffer_score),
-    updated_at             = excluded.updated_at
-RETURNING strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at
+    updated_at             = excluded.updated_at,
+    start_date_local       = COALESCE(excluded.start_date_local, activities.start_date_local)
+RETURNING strava_activity_id, user_id, type, sport_type, name, start_date, distance_m, elevation_m, moving_time_s, elapsed_time_s, average_speed_ms, max_speed_ms, average_heartrate, max_heartrate, average_watts, weighted_average_watts, max_watts, device_watts, kilojoules, calories, average_cadence, suffer_score, created_at, updated_at, source, start_date_local
 `
 
 type UpsertActivityParams struct {
@@ -314,6 +532,7 @@ type UpsertActivityParams struct {
 	SufferScore          sql.NullFloat64 `json:"suffer_score"`
 	CreatedAt            int64           `json:"created_at"`
 	UpdatedAt            int64           `json:"updated_at"`
+	StartDateLocal       sql.NullInt64   `json:"start_date_local"`
 }
 
 func (q *Queries) UpsertActivity(ctx context.Context, arg UpsertActivityParams) (Activity, error) {
@@ -342,6 +561,7 @@ func (q *Queries) UpsertActivity(ctx context.Context, arg UpsertActivityParams) 
 		arg.SufferScore,
 		arg.CreatedAt,
 		arg.UpdatedAt,
+		arg.StartDateLocal,
 	)
 	var i Activity
 	err := row.Scan(
@@ -369,6 +589,8 @@ func (q *Queries) UpsertActivity(ctx context.Context, arg UpsertActivityParams) 
 		&i.SufferScore,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Source,
+		&i.StartDateLocal,
 	)
 	return i, err
 }

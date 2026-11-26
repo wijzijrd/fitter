@@ -2,7 +2,9 @@ package service
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	fitterv1 "github.com/fitter/svc/gen/fitter/v1"
@@ -32,6 +34,8 @@ var metricKeyByProto = map[fitterv1.ActivityMetric]metrics.Key{
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_CALORIES:               metrics.Calories,
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_AVERAGE_CADENCE:        metrics.AverageCadence,
 	fitterv1.ActivityMetric_ACTIVITY_METRIC_SUFFER_SCORE:           metrics.SufferScore,
+	fitterv1.ActivityMetric_ACTIVITY_METRIC_MAX_WEIGHT_KG:          metrics.MaxWeightKg,
+	fitterv1.ActivityMetric_ACTIVITY_METRIC_ACTIVE_DAYS:            metrics.ActiveDays,
 }
 
 var protoByMetricKey = func() map[metrics.Key]fitterv1.ActivityMetric {
@@ -139,6 +143,8 @@ func unitToProto(u metrics.Unit) fitterv1.MetricUnit {
 		return fitterv1.MetricUnit_METRIC_UNIT_COUNT
 	case metrics.UnitScore:
 		return fitterv1.MetricUnit_METRIC_UNIT_SCORE
+	case metrics.UnitKilograms:
+		return fitterv1.MetricUnit_METRIC_UNIT_KG
 	default:
 		return fitterv1.MetricUnit_METRIC_UNIT_UNSPECIFIED
 	}
@@ -180,6 +186,11 @@ func sportSelectorToDB(sel *fitterv1.SportSelector) (sportGroup, sportType sql.N
 		}
 		return sql.NullString{String: v.Group, Valid: true}, sql.NullString{}, nil
 	case *fitterv1.SportSelector_SportType:
+		// An empty exact type would match every activity (sports.Selector's zero value) while
+		// being filed under "Other"; padding could never match a real sport_type.
+		if v.SportType == "" || strings.TrimSpace(v.SportType) != v.SportType {
+			return sql.NullString{}, sql.NullString{}, errors.New("sport_type must be a non-empty sport type without surrounding spaces")
+		}
 		return sql.NullString{}, sql.NullString{String: v.SportType, Valid: true}, nil
 	default:
 		return sql.NullString{}, sql.NullString{}, nil

@@ -42,6 +42,13 @@ func UpsertActivity(ctx context.Context, q *db.Queries, userID string, a strava.
 		sportType = a.Type
 	}
 
+	// Strava's start_date_local carries the wall clock with a bogus "Z";
+	// reading it as UTC yields the local-clock-as-unix-seconds we store.
+	var startLocal sql.NullInt64
+	if t, perr := time.Parse(time.RFC3339, a.StartDateLocal); perr == nil {
+		startLocal = sql.NullInt64{Int64: t.Unix(), Valid: true}
+	}
+
 	now := time.Now().Unix()
 	_, err = q.UpsertActivity(ctx, db.UpsertActivityParams{
 		StravaActivityID:     a.ID,
@@ -68,6 +75,7 @@ func UpsertActivity(ctx context.Context, q *db.Queries, userID string, a strava.
 		SufferScore:          nullF(a.SufferScore),
 		CreatedAt:            now,
 		UpdatedAt:            now,
+		StartDateLocal:       startLocal,
 	})
 	return err
 }
@@ -132,6 +140,14 @@ func Backfill(ctx context.Context, q *db.Queries, c *strava.Client, u db.User, a
 func EnsureFreshAccessToken(ctx context.Context, q *db.Queries, c *strava.Client, u db.User) (string, error) {
 	if time.Now().Add(refreshBuffer).Before(time.Unix(u.TokenExpiresAt, 0)) {
 		return u.AccessToken, nil
+	}
+	// Re-read: a concurrent webhook/backfill may have rotated the refresh
+	// token since u was loaded, and Strava invalidates the old one.
+	if fresh, err := q.GetUserByID(ctx, u.ID); err == nil {
+		u = fresh
+		if time.Now().Add(refreshBuffer).Before(time.Unix(u.TokenExpiresAt, 0)) {
+			return u.AccessToken, nil
+		}
 	}
 	tok, err := c.RefreshAccessToken(ctx, u.RefreshToken)
 	if err != nil {

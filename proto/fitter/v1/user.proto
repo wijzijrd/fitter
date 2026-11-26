@@ -2,11 +2,66 @@ syntax = "proto3";
 
 package fitter.v1;
 
+// FeedSettings is what a member chooses to see under each activity in a campaign feed.
+// A viewer preference only: it doesn't change what anyone else sees of them.
+message FeedSettings {
+  bool show_pace = 1;   // pace for runs and walks, speed for rides
+  bool show_power = 2;  // average watts
+  bool show_effort = 3; // Strava's suffer score
+  bool show_lifts = 4;  // the exercises of a manual session
+}
+
 message User {
   string id = 1;
   string name = 2;
   string avatar_url = 3;
+  string role = 4;   // "member" | "admin"; UX gate only, server enforces
+  string status = 5; // "pending" | "active" | "banned"
+  FeedSettings feed_settings = 6;
+  string whats_new_seen = 7; // release id of the last what's-new splash dismissed; "" = none yet
+  string email = 8;          // verified address that feedback replies go to; "" = not verified
 }
+
+message UpdateFeedSettingsRequest {
+  FeedSettings feed_settings = 1; // all four are replaced
+}
+
+message UpdateFeedSettingsResponse {
+  User user = 1;
+}
+
+message MarkWhatsNewSeenRequest {
+  string release = 1; // the UI's release id, 1 to 32 characters
+}
+
+message MarkWhatsNewSeenResponse {
+  User user = 1;
+}
+
+// SendEmailCodeRequest emails a 6-digit code to the address; one request a minute.
+message SendEmailCodeRequest {
+  string email = 1;
+}
+
+message SendEmailCodeResponse {}
+
+// VerifyEmailRequest checks the code from the last SendEmailCode; five tries, 15 minutes.
+message VerifyEmailRequest {
+  string code = 1;
+}
+
+message VerifyEmailResponse {
+  User user = 1;
+}
+
+// SubmitFeedbackRequest emails the developer; the caller must have a verified email.
+message SubmitFeedbackRequest {
+  string kind = 1;    // "bug" | "idea" | "other"
+  string message = 2; // 1 to 4000 characters
+  string release = 3; // the UI's release id, for context
+}
+
+message SubmitFeedbackResponse {}
 
 message GetCurrentUserRequest {}
 
@@ -16,4 +71,9 @@ message GetCurrentUserResponse {
 
 service UserService {
   rpc GetCurrentUser(GetCurrentUserRequest) returns (GetCurrentUserResponse);
+  rpc UpdateFeedSettings(UpdateFeedSettingsRequest) returns (UpdateFeedSettingsResponse);
+  rpc MarkWhatsNewSeen(MarkWhatsNewSeenRequest) returns (MarkWhatsNewSeenResponse);
+  rpc SendEmailCode(SendEmailCodeRequest) returns (SendEmailCodeResponse);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+  rpc SubmitFeedback(SubmitFeedbackRequest) returns (SubmitFeedbackResponse);
 }

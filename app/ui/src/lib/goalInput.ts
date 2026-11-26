@@ -1,10 +1,11 @@
-import { ActivityMetric, ClauseScope, Comparator, MetricUnit } from "../gen/fitter/v1/common_pb";
+import { ActivityMetric, ClauseScope, Comparator, MetricUnit, Recurrence } from "../gen/fitter/v1/common_pb";
 import type { ClauseInput } from "./clauses";
 import { additiveMetrics } from "./clauses";
 import { baseValueToEditString, editStringToBaseValue } from "./metricFormat";
 import type { SportSelectorValue } from "./sportSelector";
 import { sportSelectorInit } from "./sportSelector";
 import { fromDate } from "./timestamp";
+import { normalizeExercise } from "./exercises";
 
 // GoalFormInput is the shared shape edited by the personal-goal create form
 // and the join-campaign flow's per-goal sub-form — both collect a name, a
@@ -15,6 +16,7 @@ export interface GoalFormInput {
   periodStart?: Date;
   periodEnd?: Date;
   clauses: ClauseInput[];
+  recurrence?: Recurrence;
 }
 
 // toCreateGoalInit builds the plain init object CreateGoal/JoinCampaign
@@ -29,6 +31,7 @@ export function toCreateGoalInit(input: GoalFormInput, campaignId?: string) {
     periodStart: input.periodStart ? fromDate(input.periodStart) : undefined,
     periodEnd: input.periodEnd ? fromDate(input.periodEnd) : undefined,
     clauses: input.clauses,
+    recurrence: input.recurrence,
   };
 }
 
@@ -41,12 +44,14 @@ export interface ClauseDraft {
   metric: ActivityMetric;
   comparator: Comparator;
   valueText: string;
+  exercise: string; // only used by MAX_WEIGHT_KG
 }
 
 export interface GoalDraft {
   name: string;
   sport: SportSelectorValue;
   clauses: ClauseDraft[];
+  recurrence: Recurrence;
 }
 
 type UnitOf = (metric: ActivityMetric) => MetricUnit;
@@ -54,11 +59,11 @@ type UnitOf = (metric: ActivityMetric) => MetricUnit;
 let nextKey = 0;
 
 export function blankClause(metric = ActivityMetric.DISTANCE): ClauseDraft {
-  return { key: nextKey++, scope: ClauseScope.AGGREGATE, metric, comparator: Comparator.GTE, valueText: "" };
+  return { key: nextKey++, scope: ClauseScope.AGGREGATE, metric, comparator: Comparator.GTE, valueText: "", exercise: "" };
 }
 
 export function blankDraft(): GoalDraft {
-  return { name: "", sport: { case: undefined }, clauses: [blankClause()] };
+  return { name: "", sport: { case: undefined }, clauses: [blankClause()], recurrence: Recurrence.NONE };
 }
 
 export function clauseValue(c: ClauseDraft, unitOf: UnitOf): number | null {
@@ -69,6 +74,7 @@ export function clauseValue(c: ClauseDraft, unitOf: UnitOf): number | null {
 export function draftErrors(d: GoalDraft, unitOf: UnitOf): { name: string; clauses: string[]; any: boolean } {
   const name = d.name.trim() ? "" : "Name the goal.";
   const clauses = d.clauses.map((c) => {
+    if (c.metric === ActivityMetric.MAX_WEIGHT_KG && !normalizeExercise(c.exercise)) return "Pick an exercise.";
     if (!c.valueText.trim()) return "Enter a value.";
     const v = clauseValue(c, unitOf);
     return v === null || !(v > 0) ? "Enter a value above zero." : "";
@@ -80,11 +86,13 @@ export function draftToInput(d: GoalDraft, unitOf: UnitOf): GoalFormInput {
   return {
     name: d.name.trim(),
     sport: d.sport,
+    recurrence: d.recurrence,
     clauses: d.clauses.map((c) => ({
       scope: c.scope,
       metric: c.metric,
       comparator: c.comparator,
       value: clauseValue(c, unitOf) ?? 0,
+      exercise: c.metric === ActivityMetric.MAX_WEIGHT_KG ? normalizeExercise(c.exercise) : undefined,
     })),
   };
 }
@@ -92,18 +100,20 @@ export function draftToInput(d: GoalDraft, unitOf: UnitOf): GoalFormInput {
 // inputToDraft starts a draft from an existing goal (editing, or copying a
 // friend's goal off the leaderboard).
 export function inputToDraft(
-  g: { name: string; sport: SportSelectorValue; clauses: ClauseInput[] },
+  g: { name: string; sport: SportSelectorValue; clauses: ClauseInput[]; recurrence?: Recurrence },
   unitOf: UnitOf,
 ): GoalDraft {
   return {
     name: g.name,
     sport: g.sport,
+    recurrence: g.recurrence ?? Recurrence.NONE,
     clauses: g.clauses.map((c) => ({
       key: nextKey++,
       scope: c.scope,
       metric: c.metric,
       comparator: c.comparator,
       valueText: baseValueToEditString(unitOf(c.metric), c.value),
+      exercise: c.exercise ?? "",
     })),
   };
 }
@@ -119,3 +129,35 @@ export function unitDraft(d: GoalDraft): ClauseDraft | undefined {
     ? only
     : undefined;
 }
+
+// Presets for new goals. "Habit" repeats a small target every week; "Stretch"
+// is a one-shot single-activity target over a long personal window.
+// days = suggested length of the goal's period.
+export function habitPreset(): { draft: GoalDraft; days: number } {
+  const c = blankClause(ActivityMetric.ACTIVE_DAYS);
+  c.valueText = "3";
+  return { draft: { name: "Move 3 days a week", sport: { case: undefined }, clauses: [c], recurrence: Recurrence.WEEKLY }, days: 12 * 7 };
+}
+
+export function stretchPreset(): { draft: GoalDraft; days: number } {
+  const c = blankClause(ActivityMetric.DISTANCE);
+  c.scope = ClauseScope.SINGLE;
+  c.valueText = "5";
+  return { draft: { name: "Run a 5K", sport: { case: "group", value: "run" }, clauses: [c], recurrence: Recurrence.NONE }, days: 180 };
+}
+
+export const recurrenceLabels: Record<Recurrence, string> = {
+  [Recurrence.UNSPECIFIED]: "Once",
+  [Recurrence.NONE]: "Once",
+  [Recurrence.DAILY]: "Every day",
+  [Recurrence.WEEKLY]: "Every week",
+  [Recurrence.MONTHLY]: "Every month",
+};
+
+export const recurrenceUnit: Record<Recurrence, string> = {
+  [Recurrence.UNSPECIFIED]: "",
+  [Recurrence.NONE]: "",
+  [Recurrence.DAILY]: "days",
+  [Recurrence.WEEKLY]: "weeks",
+  [Recurrence.MONTHLY]: "months",
+};

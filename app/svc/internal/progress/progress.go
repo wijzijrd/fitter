@@ -77,6 +77,11 @@ type Goal struct {
 	PeriodStart int64 // unix seconds, inclusive
 	PeriodEnd   int64 // unix seconds, inclusive
 	Clauses     []Clause
+	// Recurrence != RecurNone evaluates the clauses per bucket (see
+	// evaluateRecurring). Now (unix seconds, 0 = period end) says which bucket
+	// is still running.
+	Recurrence Recurrence
+	Now        int64
 }
 
 // ClauseResult is one Clause's evaluated outcome.
@@ -100,6 +105,9 @@ type Result struct {
 	ConsideredCount       int
 	QualifyingActivityID  int64 // 0 = none; set when every SINGLE clause is met by one activity
 	BestAttemptActivityID int64 // 0 = none; set when SINGLE clauses exist but none fully qualifies
+	SatisfiedAt           int64 // unix seconds of the activity that first satisfied the goal; 0 = not satisfied
+	// Recurring goals only: buckets hit / elapsed (running one counts once hit) / in the whole period.
+	PeriodsHit, PeriodsElapsed, PeriodsTotal int
 }
 
 // Evaluate assumes nothing about acts beyond it being the caller's full
@@ -111,6 +119,9 @@ type Result struct {
 // is an accepted, documented assumption: Task 7's CreateGoal will require at
 // least one clause, so this package does not guard against it.
 func Evaluate(g Goal, acts []metrics.Activity) Result {
+	if g.Recurrence != RecurNone {
+		return evaluateRecurring(g, acts)
+	}
 	filtered := make([]metrics.Activity, 0, len(acts))
 	for _, a := range acts {
 		if sports.Matches(g.Sport, a.SportType, a.Type) &&
@@ -118,6 +129,22 @@ func Evaluate(g Goal, acts []metrics.Activity) Result {
 			filtered = append(filtered, a)
 		}
 	}
+	res := evaluateFiltered(g, filtered)
+	if res.Satisfied {
+		// shortcut: O(n²) prefix replay; fine at hundreds of activities per goal, switch to incremental accumulators if slow.
+		sort.SliceStable(filtered, func(i, j int) bool { return filtered[i].StartDate < filtered[j].StartDate })
+		for n := 1; n <= len(filtered); n++ {
+			if evaluateFiltered(g, filtered[:n]).Satisfied {
+				res.SatisfiedAt = filtered[n-1].StartDate
+				break
+			}
+		}
+	}
+	return res
+}
+
+// evaluateFiltered evaluates g over activities already filtered to its sport and period.
+func evaluateFiltered(g Goal, filtered []metrics.Activity) Result {
 	considered := len(filtered)
 
 	var (

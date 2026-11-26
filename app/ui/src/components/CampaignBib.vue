@@ -46,7 +46,7 @@ defineProps<{
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--ink);
+  border: 2px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
   background: var(--paper);
@@ -61,8 +61,8 @@ defineProps<{
 .band {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.3rem 0.75rem;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-4);
   background: var(--tangerine);
   font: 400 0.75rem/1.3 var(--font-display);
   text-transform: uppercase;
@@ -81,10 +81,11 @@ defineProps<{
 .name {
   color: inherit;
 }
-.name:focus-visible {
+/* Stretched link: the campaign name carries the accessible name, the bib carries the hit area.
+   The ring moves to the bib's edge (below), so the link's own outline is dropped. */
+.rbib--link .name:focus-visible {
   outline: none;
 }
-/* Stretched link: the campaign name carries the accessible name, the bib carries the hit area. */
 .rbib--link .name::after {
   content: "";
   position: absolute;
@@ -101,9 +102,9 @@ defineProps<{
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--space-4);
   min-height: 7rem;
-  padding: 0.6rem 0.9rem 0.55rem;
+  padding: var(--space-3) var(--bib-inset) var(--space-3);
 }
 .numeral {
   font: 400 clamp(4rem, 20vw, 5.5rem) / 0.85 var(--font-display);
@@ -141,10 +142,10 @@ defineProps<{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  border-top: 2px dashed var(--ink);
+  gap: var(--space-3);
+  border-top: 2px dashed var(--line);
   background: var(--cool-blue);
-  padding: 0.5rem 0.9rem;
+  padding: var(--space-3) var(--bib-inset);
   font-weight: 700;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ import (
 	"github.com/fitter/svc/internal/db"
 	"github.com/fitter/svc/internal/handler"
 	"github.com/fitter/svc/internal/httpmw"
+	"github.com/fitter/svc/internal/mail"
 	"github.com/fitter/svc/internal/service"
 	"github.com/fitter/svc/internal/strava"
 	"github.com/pressly/goose/v3"
@@ -67,6 +69,10 @@ func main() {
 		Strava:    stravaClient,
 		JWTSecret: cfg.jwtSecret,
 		JWTTTL:    cfg.jwtTTL,
+
+		Mail:       cfg.mail,
+		FeedbackTo: cfg.feedbackTo,
+		AppEnv:     cfg.appEnv,
 	}
 	handlerDeps := &handler.Deps{
 		Queries:               queries,
@@ -88,6 +94,8 @@ func main() {
 	registerService(fitterv1connect.NewGoalServiceHandler(service.NewGoalService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewFeedServiceHandler(service.NewFeedService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewCatalogServiceHandler(service.NewCatalogService(svcDeps), connectOpts))
+	registerService(fitterv1connect.NewActivityServiceHandler(service.NewActivityService(svcDeps), connectOpts))
+	registerService(fitterv1connect.NewExerciseServiceHandler(service.NewExerciseService(svcDeps), connectOpts))
 	registerService(fitterv1connect.NewAdminServiceHandler(service.NewAdminService(svcDeps), connectOpts))
 
 	api.HandleFunc("/auth/strava/login", handlerDeps.Login)
@@ -169,6 +177,9 @@ type config struct {
 	corsOrigin               string
 	originSharedSecret       string
 	adminStravaAthleteIDs    []int64
+	appEnv                   string
+	mail                     mail.Sender
+	feedbackTo               string
 }
 
 func loadConfig() config {
@@ -181,6 +192,27 @@ func loadConfig() config {
 	if os.Getenv("APP_ENV") != "" && originSharedSecret == "" {
 		slog.Error("ORIGIN_SHARED_SECRET is required when APP_ENV is set")
 		os.Exit(1)
+	}
+
+	// Deployed envs send through the infra repo's SES mailer (its SSM parameters arrive as
+	// SES_*); the IAM policy only allows the env's identity domain and fitter-<env> config set.
+	// Locally mail is only logged, so no credentials are needed.
+	appEnv := os.Getenv("APP_ENV")
+	sender, feedbackTo := mail.Sender(mail.Log), os.Getenv("FEEDBACK_TO")
+	if appEnv != "" {
+		site, err := url.Parse(frontendURL)
+		if err != nil || site.Hostname() == "" {
+			slog.Error("FRONTEND_URL has no host", "value", frontendURL)
+			os.Exit(1)
+		}
+		sender = mail.SMTP(
+			envOr("SES_SMTP_HOST", "email-smtp.eu-west-1.amazonaws.com"),
+			mustEnv("SES_ACCESS_KEY_ID"),
+			mustEnv("SES_SMTP_PASSWORD"),
+			envOr("MAIL_FROM", "Kombeweeg <no-reply@"+site.Hostname()+">"),
+			"fitter-"+appEnv,
+		)
+		feedbackTo = mustEnv("FEEDBACK_TO")
 	}
 
 	return config{
@@ -197,6 +229,9 @@ func loadConfig() config {
 		corsOrigin:               envOr("CORS_ORIGIN", frontendURL),
 		originSharedSecret:       originSharedSecret,
 		adminStravaAthleteIDs:    parseInt64CSV("ADMIN_STRAVA_ATHLETE_IDS", os.Getenv("ADMIN_STRAVA_ATHLETE_IDS")),
+		appEnv:                   appEnv,
+		mail:                     sender,
+		feedbackTo:               feedbackTo,
 	}
 }
 
@@ -207,13 +242,29 @@ func envOr(key, fallback string) string {
 	return fallback
 }
 
+// ssmPlaceholder is the value infrastructure-template writes into every
+// hand-issued SSM parameter until `make ssm-set` replaces it. Starting with it
+// would, for JWT_SECRET, sign sessions with a publicly known key.
+const ssmPlaceholder = "PLACEHOLDER_SET_BY_HAND"
+
 func mustEnv(key string) string {
 	v := os.Getenv(key)
-	if v == "" {
-		slog.Error("missing required env var", "key", key)
+	if err := checkEnvValue(key, v); err != nil {
+		slog.Error("invalid required env var", "key", key, "error", err)
 		os.Exit(1)
 	}
 	return v
+}
+
+// checkEnvValue rejects an unset value and the unreplaced SSM placeholder.
+func checkEnvValue(key, v string) error {
+	switch v {
+	case "":
+		return fmt.Errorf("%s is not set", key)
+	case ssmPlaceholder:
+		return fmt.Errorf("%s is still the SSM placeholder; run `make ssm-set` in the infra repo", key)
+	}
+	return nil
 }
 
 // parseInt64CSV parses a comma-separated list of int64s, e.g.

@@ -25,15 +25,15 @@ Strava Clubs and Challenges can't offer three things Fitter does:
 ## Operating Context
 
 - Sign-in is Strava OAuth only; there are no Fitter-specific accounts.
-- Activity data flows in passively from Strava webhooks. Users don't enter activities in Fitter.
-- Core surfaces: campaigns list, campaign detail (feed, leaderboard, timeline), personal goals, login.
+- Activity data flows in passively from Strava webhooks. "Log activity" exists only for what Strava doesn't record (such as a gym session with lifts); it never asks for anything Strava already has.
+- Core surfaces: campaigns list, campaign detail (feed, leaderboard, timeline), campaign create and join, personal goals, log activity, login, settings. New accounts wait on a pending-approval screen until an admin approves them; admins also get an admin view.
 - Users check progress on a phone during the day or after a workout, and set up campaigns and goals on whichever device is at hand.
 
 ## Capabilities and Constraints
 
 - **Campaigns:** name, description, metric (distance, elevation, time, count), target value, start/end dates, mode `pooled` or `per_member`. Members join and leave, and in per-member mode a member may override the target for themselves.
 - **Goals:** private, per-user target on a metric over a period, with computed progress.
-- **In progress** (branch `campaign-goal-restructure`, unmerged): a catalog of metrics and sport groups (units, aggregation, lower-is-better, single vs aggregate scope), admin-managed custom sports and custom metrics, and an admin role gated server-side.
+- **Catalog and admin:** a catalog of metrics and sport groups (units, aggregation, lower-is-better, single vs aggregate scope), admin-managed custom sports and custom metrics, and an admin role gated server-side.
 - **Stack:** Vue 3 + Vite + Pinia + ECharts UI, Go ConnectRPC backend, Postgres. The proto definitions in `proto/fitter/v1` are the source of truth for domain terms.
 - Strava allows one webhook subscription per API app, so staging and prod need separate Strava apps.
 

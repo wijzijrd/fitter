@@ -12,6 +12,8 @@ message GoalClause {
   ActivityMetric metric = 4;
   Comparator comparator = 5;
   double value = 6;
+  // Required for max_weight_kg (normalised lower-case exercise name); ignored otherwise.
+  optional string exercise = 7;
 }
 
 message ClauseProgress {
@@ -32,6 +34,13 @@ message GoalProgress {
   int32 considered_activity_count = 4;
   optional int64 qualifying_activity_id = 5;
   optional int64 best_attempt_activity_id = 6;
+  // Recurring goals only (Goal.recurrence != NONE): `satisfied` means every
+  // bucket in the period was hit, `progress_ratio` is periods_hit /
+  // periods_elapsed (the running bucket counts only once hit), and `clauses`
+  // are the running bucket's live progress.
+  int32 periods_hit = 7;
+  int32 periods_elapsed = 8;
+  int32 periods_total = 9;
 }
 
 // Goal is a private, personal fitness target — never shared with other
@@ -47,6 +56,7 @@ message Goal {
   repeated GoalClause clauses = 7;
   GoalProgress progress = 8;
   google.protobuf.Timestamp created_at = 9;
+  Recurrence recurrence = 10;
 }
 
 message CreateGoalRequest {
@@ -56,6 +66,7 @@ message CreateGoalRequest {
   google.protobuf.Timestamp period_start = 4;
   google.protobuf.Timestamp period_end = 5;
   repeated GoalClause clauses = 6;
+  Recurrence recurrence = 7;
 }
 
 message CreateGoalResponse {
@@ -64,6 +75,7 @@ message CreateGoalResponse {
 
 message ListGoalsRequest {
   optional string campaign_id = 1; // unset = personal goals only
+  bool all = 2; // personal goals plus every campaign goal of the caller; campaign_id is ignored
 }
 
 message ListGoalsResponse {
@@ -77,6 +89,9 @@ message UpdateGoalRequest {
   google.protobuf.Timestamp period_start = 4;
   google.protobuf.Timestamp period_end = 5;
   repeated GoalClause clauses = 6; // full replacement, not a patch
+  // unset = keep; "" = make personal; an id = move to that campaign (caller must be a member; period is forced to its window)
+  optional string campaign_id = 7;
+  Recurrence recurrence = 8;
 }
 
 message UpdateGoalResponse {

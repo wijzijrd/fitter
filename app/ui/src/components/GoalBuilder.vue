@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useCatalogStore } from "../stores/catalog";
-import { ClauseScope, Comparator, MetricUnit } from "../gen/fitter/v1/common_pb";
+import { ClauseScope, Comparator, MetricUnit, Recurrence } from "../gen/fitter/v1/common_pb";
 import type { ActivityMetric } from "../gen/fitter/v1/common_pb";
 import type { ClauseDraft, GoalDraft } from "../lib/goalInput";
 import { blankClause, draftErrors } from "../lib/goalInput";
 import { comparatorLabels, fasterLabels, scopeLabels } from "../lib/labels";
-import { editUnitHint, isDurationUnit } from "../lib/metricFormat";
+import { editUnitHint, isDurationUnit, maskDuration } from "../lib/metricFormat";
+import { useExerciseStore } from "../stores/exercises";
+import { recurrenceLabels } from "../lib/goalInput";
+import { ActivityMetric as Metric } from "../gen/fitter/v1/common_pb";
 
 const draft = defineModel<GoalDraft>({ required: true });
 const props = defineProps<{
@@ -17,7 +20,11 @@ const props = defineProps<{
 }>();
 
 const catalog = useCatalogStore();
-onMounted(() => catalog.ensureLoaded().catch(() => {}));
+const exerciseStore = useExerciseStore();
+onMounted(() => {
+  catalog.ensureLoaded().catch(() => {});
+  exerciseStore.ensureLoaded().catch(() => {}); // suggestions only: a name typed by hand still works
+});
 
 const id = (s: string) => `${props.idPrefix}-${s}`;
 const errors = computed(() => draftErrors(draft.value, catalog.unitOf));
@@ -81,6 +88,10 @@ const isDuration = (c: ClauseDraft) => isDurationUnit(catalog.unitOf(c.metric));
 const isPace = (c: ClauseDraft) => catalog.unitOf(c.metric) === MetricUnit.SECONDS_PER_KM;
 // Durations are typed as clock times, so the format goes in the placeholder and the unit stays beside the field.
 const placeholder = (c: ClauseDraft) => (isPace(c) ? "m:ss" : isDuration(c) ? "h:mm:ss" : "");
+// Times are typed as digits only; the colons are added as you go ("4535" -> "45:35").
+function onValue(c: ClauseDraft, raw: string): void {
+  c.valueText = isDuration(c) ? maskDuration(raw, isPace(c) ? 4 : 6) : raw;
+}
 const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : editUnitHint(catalog.unitOf(c.metric)));
 </script>
 
@@ -98,7 +109,17 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
         :aria-invalid="showErrors && !!errors.name"
         :aria-describedby="id('name-error')"
       />
-      <span :id="id('name-error')" class="field-error" role="alert">{{ showErrors ? errors.name : "" }}</span>
+      <span :id="id('name-error')" class="field-error">{{ showErrors ? errors.name : "" }}</span>
+    </div>
+
+    <div class="rb-field">
+      <label :for="id('repeats')">Repeats</label>
+      <select :id="id('repeats')" v-model="draft.recurrence" class="input">
+        <option v-for="r in [Recurrence.NONE, Recurrence.DAILY, Recurrence.WEEKLY, Recurrence.MONTHLY]" :key="r" :value="r">
+          {{ recurrenceLabels[r] }}
+        </option>
+      </select>
+      <small v-if="draft.recurrence !== Recurrence.NONE">The conditions must hold in each period. Your score is the share of periods hit.</small>
     </div>
 
     <div class="rb-field">
@@ -140,6 +161,19 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
             </button>
           </div>
 
+          <div v-if="c.metric === Metric.MAX_WEIGHT_KG" class="rb-field">
+            <label :for="id(`exercise-${c.key}`)">Exercise</label>
+            <input
+              :id="id(`exercise-${c.key}`)"
+              v-model="c.exercise"
+              class="input"
+              list="gb-exercises"
+              autocomplete="off"
+              placeholder="bench press"
+              :aria-invalid="showErrors && !c.exercise.trim()"
+            />
+          </div>
+
           <div class="clause-rules">
             <div v-if="scopesFor(c.metric).length > 1" class="seg" role="radiogroup" :aria-label="`Condition ${i + 1} scope`">
               <label v-for="s in scopesFor(c.metric)" :key="s" class="choice choice--pill">
@@ -160,10 +194,11 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
               <label :for="id(`value-${c.key}`)" class="visually-hidden">Condition {{ i + 1 }} value</label>
               <input
                 :id="id(`value-${c.key}`)"
-                v-model="c.valueText"
+                :value="c.valueText"
                 class="input input--value"
+                @input="onValue(c, ($event.target as HTMLInputElement).value)"
                 autocomplete="off"
-                :inputmode="isDuration(c) ? 'text' : 'decimal'"
+                :inputmode="isDuration(c) ? 'numeric' : 'decimal'"
                 :placeholder="placeholder(c)"
                 :aria-invalid="showErrors && !!errors.clauses[i]"
                 :aria-describedby="id(`value-${c.key}-error`)"
@@ -171,7 +206,8 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
               <span v-if="unitText(c)" class="unit" aria-hidden="true">{{ unitText(c) }}</span>
             </span>
           </div>
-          <span :id="id(`value-${c.key}-error`)" class="field-error" role="alert">{{ showErrors ? errors.clauses[i] : "" }}</span>
+          <small v-if="isDuration(c)" class="time-hint">Type digits only, the colons fill in: {{ isPace(c) ? "435 becomes 4:35" : "13000 becomes 1:30:00" }}.</small>
+          <span :id="id(`value-${c.key}-error`)" class="field-error">{{ showErrors ? errors.clauses[i] : "" }}</span>
         </li>
       </ol>
       <button v-if="catalog.loaded" type="button" class="pill add" @click="add">
@@ -179,6 +215,7 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
       </button>
       <small v-if="draft.clauses.length > 1">All conditions must be met.</small>
     </fieldset>
+  <datalist id="gb-exercises"><option v-for="e in exerciseStore.weightBearing" :key="e.id" :value="e.key" /></datalist>
   </div>
 </template>
 
@@ -189,26 +226,26 @@ const unitText = (c: ClauseDraft) => (isPace(c) ? "/km" : isDuration(c) ? "" : e
   padding: 0;
 }
 legend {
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 }
 .rows {
   list-style: none;
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-4);
   padding: 0;
 }
 .clause {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.8rem 0;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
   border-bottom: 1px solid var(--hairline);
 }
 .clause:first-child {
-  padding-top: 0.4rem;
+  padding-top: var(--space-2);
 }
 .clause-head {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 .clause-head select {
   flex: 1;
@@ -218,11 +255,11 @@ legend {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
+  gap: var(--space-3) var(--space-4);
 }
 .seg {
   display: flex;
-  gap: 0.35rem;
+  gap: var(--space-2);
 }
 .fixed {
   font-weight: 700;
@@ -232,11 +269,17 @@ legend {
   flex-basis: 100%;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 .input--value {
   width: 7.5rem;
   font: 400 1.25rem/1.1 var(--font-display);
+}
+.time-hint {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
 }
 .unit {
   font-weight: 700;
@@ -247,7 +290,7 @@ legend {
 }
 .quiet {
   color: var(--ink-muted);
-  margin: 0.25rem 0 0.75rem;
+  margin: var(--space-1) 0 var(--space-4);
 }
 svg {
   width: 1rem;

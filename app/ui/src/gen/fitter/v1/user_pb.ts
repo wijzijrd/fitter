@@ -10,7 +10,50 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/user.proto.
  */
 export const file_fitter_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChRmaXR0ZXIvdjEvdXNlci5wcm90bxIJZml0dGVyLnYxIjQKBFVzZXISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRISCgphdmF0YXJfdXJsGAMgASgJIhcKFUdldEN1cnJlbnRVc2VyUmVxdWVzdCI3ChZHZXRDdXJyZW50VXNlclJlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlcjJkCgtVc2VyU2VydmljZRJVCg5HZXRDdXJyZW50VXNlchIgLmZpdHRlci52MS5HZXRDdXJyZW50VXNlclJlcXVlc3QaIS5maXR0ZXIudjEuR2V0Q3VycmVudFVzZXJSZXNwb25zZUKNAQoNY29tLmZpdHRlci52MUIJVXNlclByb3RvUAFaLGdpdGh1Yi5jb20vZml0dGVyL3N2Yy9nZW4vZml0dGVyL3YxO2ZpdHRlcnYxogIDRlhYqgIJRml0dGVyLlYxygIJRml0dGVyXFYx4gIVRml0dGVyXFYxXEdQQk1ldGFkYXRh6gIKRml0dGVyOjpWMWIGcHJvdG8z");
+  fileDesc("ChRmaXR0ZXIvdjEvdXNlci5wcm90bxIJZml0dGVyLnYxIl4KDEZlZWRTZXR0aW5ncxIRCglzaG93X3BhY2UYASABKAgSEgoKc2hvd19wb3dlchgCIAEoCBITCgtzaG93X2VmZm9ydBgDIAEoCBISCgpzaG93X2xpZnRzGAQgASgIIqkBCgRVc2VyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKYXZhdGFyX3VybBgDIAEoCRIMCgRyb2xlGAQgASgJEg4KBnN0YXR1cxgFIAEoCRIuCg1mZWVkX3NldHRpbmdzGAYgASgLMhcuZml0dGVyLnYxLkZlZWRTZXR0aW5ncxIWCg53aGF0c19uZXdfc2VlbhgHIAEoCRINCgVlbWFpbBgIIAEoCSJLChlVcGRhdGVGZWVkU2V0dGluZ3NSZXF1ZXN0Ei4KDWZlZWRfc2V0dGluZ3MYASABKAsyFy5maXR0ZXIudjEuRmVlZFNldHRpbmdzIjsKGlVwZGF0ZUZlZWRTZXR0aW5nc1Jlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlciIqChdNYXJrV2hhdHNOZXdTZWVuUmVxdWVzdBIPCgdyZWxlYXNlGAEgASgJIjkKGE1hcmtXaGF0c05ld1NlZW5SZXNwb25zZRIdCgR1c2VyGAEgASgLMg8uZml0dGVyLnYxLlVzZXIiJQoUU2VuZEVtYWlsQ29kZVJlcXVlc3QSDQoFZW1haWwYASABKAkiFwoVU2VuZEVtYWlsQ29kZVJlc3BvbnNlIiIKElZlcmlmeUVtYWlsUmVxdWVzdBIMCgRjb2RlGAEgASgJIjQKE1ZlcmlmeUVtYWlsUmVzcG9uc2USHQoEdXNlchgBIAEoCzIPLmZpdHRlci52MS5Vc2VyIkcKFVN1Ym1pdEZlZWRiYWNrUmVxdWVzdBIMCgRraW5kGAEgASgJEg8KB21lc3NhZ2UYAiABKAkSDwoHcmVsZWFzZRgDIAEoCSIYChZTdWJtaXRGZWVkYmFja1Jlc3BvbnNlIhcKFUdldEN1cnJlbnRVc2VyUmVxdWVzdCI3ChZHZXRDdXJyZW50VXNlclJlc3BvbnNlEh0KBHVzZXIYASABKAsyDy5maXR0ZXIudjEuVXNlcjKdBAoLVXNlclNlcnZpY2USVQoOR2V0Q3VycmVudFVzZXISIC5maXR0ZXIudjEuR2V0Q3VycmVudFVzZXJSZXF1ZXN0GiEuZml0dGVyLnYxLkdldEN1cnJlbnRVc2VyUmVzcG9uc2USYQoSVXBkYXRlRmVlZFNldHRpbmdzEiQuZml0dGVyLnYxLlVwZGF0ZUZlZWRTZXR0aW5nc1JlcXVlc3QaJS5maXR0ZXIudjEuVXBkYXRlRmVlZFNldHRpbmdzUmVzcG9uc2USWwoQTWFya1doYXRzTmV3U2VlbhIiLmZpdHRlci52MS5NYXJrV2hhdHNOZXdTZWVuUmVxdWVzdBojLmZpdHRlci52MS5NYXJrV2hhdHNOZXdTZWVuUmVzcG9uc2USUgoNU2VuZEVtYWlsQ29kZRIfLmZpdHRlci52MS5TZW5kRW1haWxDb2RlUmVxdWVzdBogLmZpdHRlci52MS5TZW5kRW1haWxDb2RlUmVzcG9uc2USTAoLVmVyaWZ5RW1haWwSHS5maXR0ZXIudjEuVmVyaWZ5RW1haWxSZXF1ZXN0Gh4uZml0dGVyLnYxLlZlcmlmeUVtYWlsUmVzcG9uc2USVQoOU3VibWl0RmVlZGJhY2sSIC5maXR0ZXIudjEuU3VibWl0RmVlZGJhY2tSZXF1ZXN0GiEuZml0dGVyLnYxLlN1Ym1pdEZlZWRiYWNrUmVzcG9uc2VCjQEKDWNvbS5maXR0ZXIudjFCCVVzZXJQcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw");
+
+/**
+ * FeedSettings is what a member chooses to see under each activity in a campaign feed.
+ * A viewer preference only: it doesn't change what anyone else sees of them.
+ *
+ * @generated from message fitter.v1.FeedSettings
+ */
+export type FeedSettings = Message<"fitter.v1.FeedSettings"> & {
+  /**
+   * pace for runs and walks, speed for rides
+   *
+   * @generated from field: bool show_pace = 1;
+   */
+  showPace: boolean;
+
+  /**
+   * average watts
+   *
+   * @generated from field: bool show_power = 2;
+   */
+  showPower: boolean;
+
+  /**
+   * Strava's suffer score
+   *
+   * @generated from field: bool show_effort = 3;
+   */
+  showEffort: boolean;
+
+  /**
+   * the exercises of a manual session
+   *
+   * @generated from field: bool show_lifts = 4;
+   */
+  showLifts: boolean;
+};
+
+/**
+ * Describes the message fitter.v1.FeedSettings.
+ * Use `create(FeedSettingsSchema)` to create a new message.
+ */
+export const FeedSettingsSchema: GenMessage<FeedSettings> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 0);
 
 /**
  * @generated from message fitter.v1.User
@@ -30,6 +73,39 @@ export type User = Message<"fitter.v1.User"> & {
    * @generated from field: string avatar_url = 3;
    */
   avatarUrl: string;
+
+  /**
+   * "member" | "admin"; UX gate only, server enforces
+   *
+   * @generated from field: string role = 4;
+   */
+  role: string;
+
+  /**
+   * "pending" | "active" | "banned"
+   *
+   * @generated from field: string status = 5;
+   */
+  status: string;
+
+  /**
+   * @generated from field: fitter.v1.FeedSettings feed_settings = 6;
+   */
+  feedSettings?: FeedSettings | undefined;
+
+  /**
+   * release id of the last what's-new splash dismissed; "" = none yet
+   *
+   * @generated from field: string whats_new_seen = 7;
+   */
+  whatsNewSeen: string;
+
+  /**
+   * verified address that feedback replies go to; "" = not verified
+   *
+   * @generated from field: string email = 8;
+   */
+  email: string;
 };
 
 /**
@@ -37,7 +113,195 @@ export type User = Message<"fitter.v1.User"> & {
  * Use `create(UserSchema)` to create a new message.
  */
 export const UserSchema: GenMessage<User> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 0);
+  messageDesc(file_fitter_v1_user, 1);
+
+/**
+ * @generated from message fitter.v1.UpdateFeedSettingsRequest
+ */
+export type UpdateFeedSettingsRequest = Message<"fitter.v1.UpdateFeedSettingsRequest"> & {
+  /**
+   * all four are replaced
+   *
+   * @generated from field: fitter.v1.FeedSettings feed_settings = 1;
+   */
+  feedSettings?: FeedSettings | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.UpdateFeedSettingsRequest.
+ * Use `create(UpdateFeedSettingsRequestSchema)` to create a new message.
+ */
+export const UpdateFeedSettingsRequestSchema: GenMessage<UpdateFeedSettingsRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 2);
+
+/**
+ * @generated from message fitter.v1.UpdateFeedSettingsResponse
+ */
+export type UpdateFeedSettingsResponse = Message<"fitter.v1.UpdateFeedSettingsResponse"> & {
+  /**
+   * @generated from field: fitter.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.UpdateFeedSettingsResponse.
+ * Use `create(UpdateFeedSettingsResponseSchema)` to create a new message.
+ */
+export const UpdateFeedSettingsResponseSchema: GenMessage<UpdateFeedSettingsResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 3);
+
+/**
+ * @generated from message fitter.v1.MarkWhatsNewSeenRequest
+ */
+export type MarkWhatsNewSeenRequest = Message<"fitter.v1.MarkWhatsNewSeenRequest"> & {
+  /**
+   * the UI's release id, 1 to 32 characters
+   *
+   * @generated from field: string release = 1;
+   */
+  release: string;
+};
+
+/**
+ * Describes the message fitter.v1.MarkWhatsNewSeenRequest.
+ * Use `create(MarkWhatsNewSeenRequestSchema)` to create a new message.
+ */
+export const MarkWhatsNewSeenRequestSchema: GenMessage<MarkWhatsNewSeenRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 4);
+
+/**
+ * @generated from message fitter.v1.MarkWhatsNewSeenResponse
+ */
+export type MarkWhatsNewSeenResponse = Message<"fitter.v1.MarkWhatsNewSeenResponse"> & {
+  /**
+   * @generated from field: fitter.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.MarkWhatsNewSeenResponse.
+ * Use `create(MarkWhatsNewSeenResponseSchema)` to create a new message.
+ */
+export const MarkWhatsNewSeenResponseSchema: GenMessage<MarkWhatsNewSeenResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 5);
+
+/**
+ * SendEmailCodeRequest emails a 6-digit code to the address; one request a minute.
+ *
+ * @generated from message fitter.v1.SendEmailCodeRequest
+ */
+export type SendEmailCodeRequest = Message<"fitter.v1.SendEmailCodeRequest"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+};
+
+/**
+ * Describes the message fitter.v1.SendEmailCodeRequest.
+ * Use `create(SendEmailCodeRequestSchema)` to create a new message.
+ */
+export const SendEmailCodeRequestSchema: GenMessage<SendEmailCodeRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 6);
+
+/**
+ * @generated from message fitter.v1.SendEmailCodeResponse
+ */
+export type SendEmailCodeResponse = Message<"fitter.v1.SendEmailCodeResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.SendEmailCodeResponse.
+ * Use `create(SendEmailCodeResponseSchema)` to create a new message.
+ */
+export const SendEmailCodeResponseSchema: GenMessage<SendEmailCodeResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 7);
+
+/**
+ * VerifyEmailRequest checks the code from the last SendEmailCode; five tries, 15 minutes.
+ *
+ * @generated from message fitter.v1.VerifyEmailRequest
+ */
+export type VerifyEmailRequest = Message<"fitter.v1.VerifyEmailRequest"> & {
+  /**
+   * @generated from field: string code = 1;
+   */
+  code: string;
+};
+
+/**
+ * Describes the message fitter.v1.VerifyEmailRequest.
+ * Use `create(VerifyEmailRequestSchema)` to create a new message.
+ */
+export const VerifyEmailRequestSchema: GenMessage<VerifyEmailRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 8);
+
+/**
+ * @generated from message fitter.v1.VerifyEmailResponse
+ */
+export type VerifyEmailResponse = Message<"fitter.v1.VerifyEmailResponse"> & {
+  /**
+   * @generated from field: fitter.v1.User user = 1;
+   */
+  user?: User | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.VerifyEmailResponse.
+ * Use `create(VerifyEmailResponseSchema)` to create a new message.
+ */
+export const VerifyEmailResponseSchema: GenMessage<VerifyEmailResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 9);
+
+/**
+ * SubmitFeedbackRequest emails the developer; the caller must have a verified email.
+ *
+ * @generated from message fitter.v1.SubmitFeedbackRequest
+ */
+export type SubmitFeedbackRequest = Message<"fitter.v1.SubmitFeedbackRequest"> & {
+  /**
+   * "bug" | "idea" | "other"
+   *
+   * @generated from field: string kind = 1;
+   */
+  kind: string;
+
+  /**
+   * 1 to 4000 characters
+   *
+   * @generated from field: string message = 2;
+   */
+  message: string;
+
+  /**
+   * the UI's release id, for context
+   *
+   * @generated from field: string release = 3;
+   */
+  release: string;
+};
+
+/**
+ * Describes the message fitter.v1.SubmitFeedbackRequest.
+ * Use `create(SubmitFeedbackRequestSchema)` to create a new message.
+ */
+export const SubmitFeedbackRequestSchema: GenMessage<SubmitFeedbackRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 10);
+
+/**
+ * @generated from message fitter.v1.SubmitFeedbackResponse
+ */
+export type SubmitFeedbackResponse = Message<"fitter.v1.SubmitFeedbackResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.SubmitFeedbackResponse.
+ * Use `create(SubmitFeedbackResponseSchema)` to create a new message.
+ */
+export const SubmitFeedbackResponseSchema: GenMessage<SubmitFeedbackResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_user, 11);
 
 /**
  * @generated from message fitter.v1.GetCurrentUserRequest
@@ -50,7 +314,7 @@ export type GetCurrentUserRequest = Message<"fitter.v1.GetCurrentUserRequest"> &
  * Use `create(GetCurrentUserRequestSchema)` to create a new message.
  */
 export const GetCurrentUserRequestSchema: GenMessage<GetCurrentUserRequest> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 1);
+  messageDesc(file_fitter_v1_user, 12);
 
 /**
  * @generated from message fitter.v1.GetCurrentUserResponse
@@ -67,7 +331,7 @@ export type GetCurrentUserResponse = Message<"fitter.v1.GetCurrentUserResponse">
  * Use `create(GetCurrentUserResponseSchema)` to create a new message.
  */
 export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> = /*@__PURE__*/
-  messageDesc(file_fitter_v1_user, 2);
+  messageDesc(file_fitter_v1_user, 13);
 
 /**
  * @generated from service fitter.v1.UserService
@@ -80,6 +344,46 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof GetCurrentUserRequestSchema;
     output: typeof GetCurrentUserResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.UpdateFeedSettings
+   */
+  updateFeedSettings: {
+    methodKind: "unary";
+    input: typeof UpdateFeedSettingsRequestSchema;
+    output: typeof UpdateFeedSettingsResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.MarkWhatsNewSeen
+   */
+  markWhatsNewSeen: {
+    methodKind: "unary";
+    input: typeof MarkWhatsNewSeenRequestSchema;
+    output: typeof MarkWhatsNewSeenResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.SendEmailCode
+   */
+  sendEmailCode: {
+    methodKind: "unary";
+    input: typeof SendEmailCodeRequestSchema;
+    output: typeof SendEmailCodeResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.VerifyEmail
+   */
+  verifyEmail: {
+    methodKind: "unary";
+    input: typeof VerifyEmailRequestSchema;
+    output: typeof VerifyEmailResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.UserService.SubmitFeedback
+   */
+  submitFeedback: {
+    methodKind: "unary";
+    input: typeof SubmitFeedbackRequestSchema;
+    output: typeof SubmitFeedbackResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_fitter_v1_user, 0);

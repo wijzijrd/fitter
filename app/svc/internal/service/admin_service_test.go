@@ -266,8 +266,8 @@ func TestListMetrics_IncludesAdminCreatedCustomMetric(t *testing.T) {
 		t.Fatalf("ListMetrics: %v", err)
 	}
 	metrics := resp.Msg.GetMetrics()
-	if len(metrics) != 18 { // 17 built-in + 1 custom
-		t.Fatalf("ListMetrics: got %d metrics, want 18", len(metrics))
+	if len(metrics) != 20 { // 19 built-in + 1 custom
+		t.Fatalf("ListMetrics: got %d metrics, want 20", len(metrics))
 	}
 	var found *fitterv1.MetricInfo
 	for _, m := range metrics {

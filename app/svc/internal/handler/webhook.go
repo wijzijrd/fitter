@@ -75,6 +75,10 @@ func (d *Deps) processActivityEvent(ownerID, activityID int64, aspectType string
 		return
 	}
 
+	if u.Status == "banned" {
+		return // banned users' data is not ingested; deletes above still run
+	}
+
 	accessToken, err := ingest.EnsureFreshAccessToken(ctx, d.Queries, d.Strava, u)
 	if err != nil {
 		slog.Error("webhook refresh token failed", "user_id", u.ID, "err", err)

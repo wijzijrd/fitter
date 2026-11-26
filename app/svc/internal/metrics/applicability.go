@@ -32,6 +32,7 @@ var builtinApplicability = map[Key][]string{
 	MovingTime:       nil,
 	ElapsedTime:      nil,
 	ActivityCount:    nil,
+	ActiveDays:       nil,
 	AverageHeartrate: nil,
 	MaxHeartrate:     nil,
 	Calories:         nil,
@@ -43,6 +44,7 @@ var builtinApplicability = map[Key][]string{
 	WeightedAverageWatts: {"ride"},
 	MaxWatts:             {"ride"},
 	Kilojoules:           {"ride"}, // always paired with a power meter reading, same family as watts
+	MaxWeightKg:          {"strength", "circuits"},
 	AverageCadence:       {"ride"}, // Strava also reports running cadence, but this taxonomy curates it as cycling-primary
 }
 

@@ -36,11 +36,30 @@ const (
 	// UserServiceGetCurrentUserProcedure is the fully-qualified name of the UserService's
 	// GetCurrentUser RPC.
 	UserServiceGetCurrentUserProcedure = "/fitter.v1.UserService/GetCurrentUser"
+	// UserServiceUpdateFeedSettingsProcedure is the fully-qualified name of the UserService's
+	// UpdateFeedSettings RPC.
+	UserServiceUpdateFeedSettingsProcedure = "/fitter.v1.UserService/UpdateFeedSettings"
+	// UserServiceMarkWhatsNewSeenProcedure is the fully-qualified name of the UserService's
+	// MarkWhatsNewSeen RPC.
+	UserServiceMarkWhatsNewSeenProcedure = "/fitter.v1.UserService/MarkWhatsNewSeen"
+	// UserServiceSendEmailCodeProcedure is the fully-qualified name of the UserService's SendEmailCode
+	// RPC.
+	UserServiceSendEmailCodeProcedure = "/fitter.v1.UserService/SendEmailCode"
+	// UserServiceVerifyEmailProcedure is the fully-qualified name of the UserService's VerifyEmail RPC.
+	UserServiceVerifyEmailProcedure = "/fitter.v1.UserService/VerifyEmail"
+	// UserServiceSubmitFeedbackProcedure is the fully-qualified name of the UserService's
+	// SubmitFeedback RPC.
+	UserServiceSubmitFeedbackProcedure = "/fitter.v1.UserService/SubmitFeedback"
 )
 
 // UserServiceClient is a client for the fitter.v1.UserService service.
 type UserServiceClient interface {
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
+	UpdateFeedSettings(context.Context, *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error)
+	MarkWhatsNewSeen(context.Context, *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error)
+	SendEmailCode(context.Context, *connect.Request[v1.SendEmailCodeRequest]) (*connect.Response[v1.SendEmailCodeResponse], error)
+	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
+	SubmitFeedback(context.Context, *connect.Request[v1.SubmitFeedbackRequest]) (*connect.Response[v1.SubmitFeedbackResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the fitter.v1.UserService service. By default, it
@@ -60,12 +79,47 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("GetCurrentUser")),
 			connect.WithClientOptions(opts...),
 		),
+		updateFeedSettings: connect.NewClient[v1.UpdateFeedSettingsRequest, v1.UpdateFeedSettingsResponse](
+			httpClient,
+			baseURL+UserServiceUpdateFeedSettingsProcedure,
+			connect.WithSchema(userServiceMethods.ByName("UpdateFeedSettings")),
+			connect.WithClientOptions(opts...),
+		),
+		markWhatsNewSeen: connect.NewClient[v1.MarkWhatsNewSeenRequest, v1.MarkWhatsNewSeenResponse](
+			httpClient,
+			baseURL+UserServiceMarkWhatsNewSeenProcedure,
+			connect.WithSchema(userServiceMethods.ByName("MarkWhatsNewSeen")),
+			connect.WithClientOptions(opts...),
+		),
+		sendEmailCode: connect.NewClient[v1.SendEmailCodeRequest, v1.SendEmailCodeResponse](
+			httpClient,
+			baseURL+UserServiceSendEmailCodeProcedure,
+			connect.WithSchema(userServiceMethods.ByName("SendEmailCode")),
+			connect.WithClientOptions(opts...),
+		),
+		verifyEmail: connect.NewClient[v1.VerifyEmailRequest, v1.VerifyEmailResponse](
+			httpClient,
+			baseURL+UserServiceVerifyEmailProcedure,
+			connect.WithSchema(userServiceMethods.ByName("VerifyEmail")),
+			connect.WithClientOptions(opts...),
+		),
+		submitFeedback: connect.NewClient[v1.SubmitFeedbackRequest, v1.SubmitFeedbackResponse](
+			httpClient,
+			baseURL+UserServiceSubmitFeedbackProcedure,
+			connect.WithSchema(userServiceMethods.ByName("SubmitFeedback")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	getCurrentUser *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
+	getCurrentUser     *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
+	updateFeedSettings *connect.Client[v1.UpdateFeedSettingsRequest, v1.UpdateFeedSettingsResponse]
+	markWhatsNewSeen   *connect.Client[v1.MarkWhatsNewSeenRequest, v1.MarkWhatsNewSeenResponse]
+	sendEmailCode      *connect.Client[v1.SendEmailCodeRequest, v1.SendEmailCodeResponse]
+	verifyEmail        *connect.Client[v1.VerifyEmailRequest, v1.VerifyEmailResponse]
+	submitFeedback     *connect.Client[v1.SubmitFeedbackRequest, v1.SubmitFeedbackResponse]
 }
 
 // GetCurrentUser calls fitter.v1.UserService.GetCurrentUser.
@@ -73,9 +127,39 @@ func (c *userServiceClient) GetCurrentUser(ctx context.Context, req *connect.Req
 	return c.getCurrentUser.CallUnary(ctx, req)
 }
 
+// UpdateFeedSettings calls fitter.v1.UserService.UpdateFeedSettings.
+func (c *userServiceClient) UpdateFeedSettings(ctx context.Context, req *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error) {
+	return c.updateFeedSettings.CallUnary(ctx, req)
+}
+
+// MarkWhatsNewSeen calls fitter.v1.UserService.MarkWhatsNewSeen.
+func (c *userServiceClient) MarkWhatsNewSeen(ctx context.Context, req *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error) {
+	return c.markWhatsNewSeen.CallUnary(ctx, req)
+}
+
+// SendEmailCode calls fitter.v1.UserService.SendEmailCode.
+func (c *userServiceClient) SendEmailCode(ctx context.Context, req *connect.Request[v1.SendEmailCodeRequest]) (*connect.Response[v1.SendEmailCodeResponse], error) {
+	return c.sendEmailCode.CallUnary(ctx, req)
+}
+
+// VerifyEmail calls fitter.v1.UserService.VerifyEmail.
+func (c *userServiceClient) VerifyEmail(ctx context.Context, req *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
+	return c.verifyEmail.CallUnary(ctx, req)
+}
+
+// SubmitFeedback calls fitter.v1.UserService.SubmitFeedback.
+func (c *userServiceClient) SubmitFeedback(ctx context.Context, req *connect.Request[v1.SubmitFeedbackRequest]) (*connect.Response[v1.SubmitFeedbackResponse], error) {
+	return c.submitFeedback.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the fitter.v1.UserService service.
 type UserServiceHandler interface {
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
+	UpdateFeedSettings(context.Context, *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error)
+	MarkWhatsNewSeen(context.Context, *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error)
+	SendEmailCode(context.Context, *connect.Request[v1.SendEmailCodeRequest]) (*connect.Response[v1.SendEmailCodeResponse], error)
+	VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error)
+	SubmitFeedback(context.Context, *connect.Request[v1.SubmitFeedbackRequest]) (*connect.Response[v1.SubmitFeedbackResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -91,10 +175,50 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("GetCurrentUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceUpdateFeedSettingsHandler := connect.NewUnaryHandler(
+		UserServiceUpdateFeedSettingsProcedure,
+		svc.UpdateFeedSettings,
+		connect.WithSchema(userServiceMethods.ByName("UpdateFeedSettings")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceMarkWhatsNewSeenHandler := connect.NewUnaryHandler(
+		UserServiceMarkWhatsNewSeenProcedure,
+		svc.MarkWhatsNewSeen,
+		connect.WithSchema(userServiceMethods.ByName("MarkWhatsNewSeen")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceSendEmailCodeHandler := connect.NewUnaryHandler(
+		UserServiceSendEmailCodeProcedure,
+		svc.SendEmailCode,
+		connect.WithSchema(userServiceMethods.ByName("SendEmailCode")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceVerifyEmailHandler := connect.NewUnaryHandler(
+		UserServiceVerifyEmailProcedure,
+		svc.VerifyEmail,
+		connect.WithSchema(userServiceMethods.ByName("VerifyEmail")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceSubmitFeedbackHandler := connect.NewUnaryHandler(
+		UserServiceSubmitFeedbackProcedure,
+		svc.SubmitFeedback,
+		connect.WithSchema(userServiceMethods.ByName("SubmitFeedback")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/fitter.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceGetCurrentUserProcedure:
 			userServiceGetCurrentUserHandler.ServeHTTP(w, r)
+		case UserServiceUpdateFeedSettingsProcedure:
+			userServiceUpdateFeedSettingsHandler.ServeHTTP(w, r)
+		case UserServiceMarkWhatsNewSeenProcedure:
+			userServiceMarkWhatsNewSeenHandler.ServeHTTP(w, r)
+		case UserServiceSendEmailCodeProcedure:
+			userServiceSendEmailCodeHandler.ServeHTTP(w, r)
+		case UserServiceVerifyEmailProcedure:
+			userServiceVerifyEmailHandler.ServeHTTP(w, r)
+		case UserServiceSubmitFeedbackProcedure:
+			userServiceSubmitFeedbackHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -106,4 +230,24 @@ type UnimplementedUserServiceHandler struct{}
 
 func (UnimplementedUserServiceHandler) GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.GetCurrentUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) UpdateFeedSettings(context.Context, *connect.Request[v1.UpdateFeedSettingsRequest]) (*connect.Response[v1.UpdateFeedSettingsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.UpdateFeedSettings is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) MarkWhatsNewSeen(context.Context, *connect.Request[v1.MarkWhatsNewSeenRequest]) (*connect.Response[v1.MarkWhatsNewSeenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.MarkWhatsNewSeen is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) SendEmailCode(context.Context, *connect.Request[v1.SendEmailCodeRequest]) (*connect.Response[v1.SendEmailCodeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.SendEmailCode is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) VerifyEmail(context.Context, *connect.Request[v1.VerifyEmailRequest]) (*connect.Response[v1.VerifyEmailResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.VerifyEmail is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) SubmitFeedback(context.Context, *connect.Request[v1.SubmitFeedbackRequest]) (*connect.Response[v1.SubmitFeedbackResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("fitter.v1.UserService.SubmitFeedback is not implemented"))
 }

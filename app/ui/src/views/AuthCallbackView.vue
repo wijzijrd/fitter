@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Code, ConnectError } from "@connectrpc/connect";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
@@ -23,9 +24,9 @@ onMounted(async () => {
   try {
     await auth.fetchCurrentUser();
     router.replace(takeReturnTo() ?? { name: "campaigns" });
-  } catch {
-    // The token is already stored; drop it so /login isn't bounced back to the app.
-    auth.logout();
+  } catch (err) {
+    // Drop the token only when the server rejected it; a transient failure keeps the session.
+    if (ConnectError.from(err).code === Code.Unauthenticated) auth.logout();
     error.value = "Strava connected, but we couldn't load your profile. Try connecting again.";
   }
 });
@@ -57,8 +58,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding-block: 0.5rem 0.4rem;
+  gap: var(--space-3);
+  padding-block: var(--space-3) var(--space-2);
 }
 h2 {
   margin: 0;
@@ -68,7 +69,7 @@ h2 {
   text-wrap: balance;
 }
 .claim p {
-  margin: 0 0 0.6rem;
+  margin: 0 0 var(--space-3);
   max-width: 32ch;
   overflow-wrap: anywhere;
   font-size: 1.0625rem;

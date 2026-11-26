@@ -4,6 +4,8 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Exercise, ExerciseMeasure, Muscle } from "./exercise_pb";
+import { file_fitter_v1_exercise } from "./exercise_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file fitter/v1/admin.proto.
  */
 export const file_fitter_v1_admin: GenFile = /*@__PURE__*/
-  fileDesc("ChVmaXR0ZXIvdjEvYWRtaW4ucHJvdG8SCWZpdHRlci52MSJ5CgtDdXN0b21TcG9ydBIKCgJpZBgBIAEoCRILCgNrZXkYAiABKAkSDQoFbGFiZWwYAyABKAkSEgoKY3JlYXRlZF9ieRgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKoAgoMQ3VzdG9tTWV0cmljEgoKAmlkGAEgASgJEgsKA2tleRgCIAEoCRINCgVsYWJlbBgDIAEoCRIMCgR1bml0GAQgASgJEhMKC2FnZ3JlZ2F0aW9uGAUgASgJEhAKCG51bGxhYmxlGAYgASgIEhcKD2xvd2VyX2lzX2JldHRlchgHIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYCCABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAkgASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgKIAMoCRISCgpjcmVhdGVkX2J5GAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjYKGENyZWF0ZUN1c3RvbVNwb3J0UmVxdWVzdBILCgNrZXkYASABKAkSDQoFbGFiZWwYAiABKAkiQgoZQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRIlCgVzcG9ydBgBIAEoCzIWLmZpdHRlci52MS5DdXN0b21TcG9ydCIZChdMaXN0Q3VzdG9tU3BvcnRzUmVxdWVzdCJCChhMaXN0Q3VzdG9tU3BvcnRzUmVzcG9uc2USJgoGc3BvcnRzGAEgAygLMhYuZml0dGVyLnYxLkN1c3RvbVNwb3J0IiYKGERlbGV0ZUN1c3RvbVNwb3J0UmVxdWVzdBIKCgJpZBgBIAEoCSIbChlEZWxldGVDdXN0b21TcG9ydFJlc3BvbnNlIuUBChlDcmVhdGVDdXN0b21NZXRyaWNSZXF1ZXN0EgsKA2tleRgBIAEoCRINCgVsYWJlbBgCIAEoCRIMCgR1bml0GAMgASgJEhMKC2FnZ3JlZ2F0aW9uGAQgASgJEhAKCG51bGxhYmxlGAUgASgIEhcKD2xvd2VyX2lzX2JldHRlchgGIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYByABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAggASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgJIAMoCSJFChpDcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRInCgZtZXRyaWMYASABKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIhoKGExpc3RDdXN0b21NZXRyaWNzUmVxdWVzdCJFChlMaXN0Q3VzdG9tTWV0cmljc1Jlc3BvbnNlEigKB21ldHJpY3MYASADKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIicKGURlbGV0ZUN1c3RvbU1ldHJpY1JlcXVlc3QSCgoCaWQYASABKAkiHAoaRGVsZXRlQ3VzdG9tTWV0cmljUmVzcG9uc2Uy0QQKDEFkbWluU2VydmljZRJeChFDcmVhdGVDdXN0b21TcG9ydBIjLmZpdHRlci52MS5DcmVhdGVDdXN0b21TcG9ydFJlcXVlc3QaJC5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRJbChBMaXN0Q3VzdG9tU3BvcnRzEiIuZml0dGVyLnYxLkxpc3RDdXN0b21TcG9ydHNSZXF1ZXN0GiMuZml0dGVyLnYxLkxpc3RDdXN0b21TcG9ydHNSZXNwb25zZRJeChFEZWxldGVDdXN0b21TcG9ydBIjLmZpdHRlci52MS5EZWxldGVDdXN0b21TcG9ydFJlcXVlc3QaJC5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tU3BvcnRSZXNwb25zZRJhChJDcmVhdGVDdXN0b21NZXRyaWMSJC5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tTWV0cmljUmVxdWVzdBolLmZpdHRlci52MS5DcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRJeChFMaXN0Q3VzdG9tTWV0cmljcxIjLmZpdHRlci52MS5MaXN0Q3VzdG9tTWV0cmljc1JlcXVlc3QaJC5maXR0ZXIudjEuTGlzdEN1c3RvbU1ldHJpY3NSZXNwb25zZRJhChJEZWxldGVDdXN0b21NZXRyaWMSJC5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tTWV0cmljUmVxdWVzdBolLmZpdHRlci52MS5EZWxldGVDdXN0b21NZXRyaWNSZXNwb25zZUKOAQoNY29tLmZpdHRlci52MUIKQWRtaW5Qcm90b1ABWixnaXRodWIuY29tL2ZpdHRlci9zdmMvZ2VuL2ZpdHRlci92MTtmaXR0ZXJ2MaICA0ZYWKoCCUZpdHRlci5WMcoCCUZpdHRlclxWMeICFUZpdHRlclxWMVxHUEJNZXRhZGF0YeoCCkZpdHRlcjo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChVmaXR0ZXIvdjEvYWRtaW4ucHJvdG8SCWZpdHRlci52MSJ5CgtDdXN0b21TcG9ydBIKCgJpZBgBIAEoCRILCgNrZXkYAiABKAkSDQoFbGFiZWwYAyABKAkSEgoKY3JlYXRlZF9ieRgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKoAgoMQ3VzdG9tTWV0cmljEgoKAmlkGAEgASgJEgsKA2tleRgCIAEoCRINCgVsYWJlbBgDIAEoCRIMCgR1bml0GAQgASgJEhMKC2FnZ3JlZ2F0aW9uGAUgASgJEhAKCG51bGxhYmxlGAYgASgIEhcKD2xvd2VyX2lzX2JldHRlchgHIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYCCABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAkgASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgKIAMoCRISCgpjcmVhdGVkX2J5GAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjYKGENyZWF0ZUN1c3RvbVNwb3J0UmVxdWVzdBILCgNrZXkYASABKAkSDQoFbGFiZWwYAiABKAkiQgoZQ3JlYXRlQ3VzdG9tU3BvcnRSZXNwb25zZRIlCgVzcG9ydBgBIAEoCzIWLmZpdHRlci52MS5DdXN0b21TcG9ydCIZChdMaXN0Q3VzdG9tU3BvcnRzUmVxdWVzdCJCChhMaXN0Q3VzdG9tU3BvcnRzUmVzcG9uc2USJgoGc3BvcnRzGAEgAygLMhYuZml0dGVyLnYxLkN1c3RvbVNwb3J0IiYKGERlbGV0ZUN1c3RvbVNwb3J0UmVxdWVzdBIKCgJpZBgBIAEoCSIbChlEZWxldGVDdXN0b21TcG9ydFJlc3BvbnNlIuUBChlDcmVhdGVDdXN0b21NZXRyaWNSZXF1ZXN0EgsKA2tleRgBIAEoCRINCgVsYWJlbBgCIAEoCRIMCgR1bml0GAMgASgJEhMKC2FnZ3JlZ2F0aW9uGAQgASgJEhAKCG51bGxhYmxlGAUgASgIEhcKD2xvd2VyX2lzX2JldHRlchgGIAEoCBIdChVzdXBwb3J0c19zaW5nbGVfc2NvcGUYByABKAgSIAoYc3VwcG9ydHNfYWdncmVnYXRlX3Njb3BlGAggASgIEh0KFWFwcGxpY2FibGVfc3BvcnRfcmVmcxgJIAMoCSJFChpDcmVhdGVDdXN0b21NZXRyaWNSZXNwb25zZRInCgZtZXRyaWMYASABKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIhoKGExpc3RDdXN0b21NZXRyaWNzUmVxdWVzdCJFChlMaXN0Q3VzdG9tTWV0cmljc1Jlc3BvbnNlEigKB21ldHJpY3MYASADKAsyFy5maXR0ZXIudjEuQ3VzdG9tTWV0cmljIicKGURlbGV0ZUN1c3RvbU1ldHJpY1JlcXVlc3QSCgoCaWQYASABKAkiHAoaRGVsZXRlQ3VzdG9tTWV0cmljUmVzcG9uc2Ui+AEKCUFkbWluVXNlchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEhIKCmF2YXRhcl91cmwYAyABKAkSGQoRc3RyYXZhX2F0aGxldGVfaWQYBCABKAMSDAoEcm9sZRgFIAEoCRIOCgZzdGF0dXMYBiABKAkSEgoKYmFuX3JlYXNvbhgHIAEoCRIRCgliYW5uZWRfYnkYCCABKAkSLQoJYmFubmVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKiAQoLQWRtaW5BY3Rpb24SCgoCaWQYASABKAkSEAoIYWN0b3JfaWQYAiABKAkSEgoKYWN0b3JfbmFtZRgDIAEoCRIOCgZhY3Rpb24YBCABKAkSEQoJdGFyZ2V0X2lkGAUgASgJEg4KBmRldGFpbBgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIiChBMaXN0VXNlcnNSZXF1ZXN0Eg4KBnN0YXR1cxgBIAEoCSI4ChFMaXN0VXNlcnNSZXNwb25zZRIjCgV1c2VycxgBIAMoCzIULmZpdHRlci52MS5BZG1pblVzZXIiIAoSQXBwcm92ZVVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0FwcHJvdmVVc2VyUmVzcG9uc2UiLAoOQmFuVXNlclJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIhEKD0JhblVzZXJSZXNwb25zZSIeChBVbmJhblVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhMKEVVuYmFuVXNlclJlc3BvbnNlIi4KElNldFVzZXJSb2xlUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRyb2xlGAIgASgJIhUKE1NldFVzZXJSb2xlUmVzcG9uc2UiKAoXTGlzdEFkbWluQWN0aW9uc1JlcXVlc3QSDQoFbGltaXQYASABKAUiQwoYTGlzdEFkbWluQWN0aW9uc1Jlc3BvbnNlEicKB2FjdGlvbnMYASADKAsyFi5maXR0ZXIudjEuQWRtaW5BY3Rpb24ikgEKFVVwZGF0ZUV4ZXJjaXNlUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEisKB21lYXN1cmUYAyABKA4yGi5maXR0ZXIudjEuRXhlcmNpc2VNZWFzdXJlEg4KBmxvYWRlZBgEIAEoCBIiCgdtdXNjbGVzGAUgAygOMhEuZml0dGVyLnYxLk11c2NsZSI/ChZVcGRhdGVFeGVyY2lzZVJlc3BvbnNlEiUKCGV4ZXJjaXNlGAEgASgLMhMuZml0dGVyLnYxLkV4ZXJjaXNlIiMKFURlbGV0ZUV4ZXJjaXNlUmVxdWVzdBIKCgJpZBgBIAEoCSIYChZEZWxldGVFeGVyY2lzZVJlc3BvbnNlIj0KFU1lcmdlRXhlcmNpc2VzUmVxdWVzdBIRCglzb3VyY2VfaWQYASABKAkSEQoJdGFyZ2V0X2lkGAIgASgJIj8KFk1lcmdlRXhlcmNpc2VzUmVzcG9uc2USJQoIZXhlcmNpc2UYASABKAsyEy5maXR0ZXIudjEuRXhlcmNpc2UiOgoaU2V0RXhlcmNpc2VBcmNoaXZlZFJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiRAobU2V0RXhlcmNpc2VBcmNoaXZlZFJlc3BvbnNlEiUKCGV4ZXJjaXNlGAEgASgLMhMuZml0dGVyLnYxLkV4ZXJjaXNlMocLCgxBZG1pblNlcnZpY2USRgoJTGlzdFVzZXJzEhsuZml0dGVyLnYxLkxpc3RVc2Vyc1JlcXVlc3QaHC5maXR0ZXIudjEuTGlzdFVzZXJzUmVzcG9uc2USTAoLQXBwcm92ZVVzZXISHS5maXR0ZXIudjEuQXBwcm92ZVVzZXJSZXF1ZXN0Gh4uZml0dGVyLnYxLkFwcHJvdmVVc2VyUmVzcG9uc2USQAoHQmFuVXNlchIZLmZpdHRlci52MS5CYW5Vc2VyUmVxdWVzdBoaLmZpdHRlci52MS5CYW5Vc2VyUmVzcG9uc2USRgoJVW5iYW5Vc2VyEhsuZml0dGVyLnYxLlVuYmFuVXNlclJlcXVlc3QaHC5maXR0ZXIudjEuVW5iYW5Vc2VyUmVzcG9uc2USTAoLU2V0VXNlclJvbGUSHS5maXR0ZXIudjEuU2V0VXNlclJvbGVSZXF1ZXN0Gh4uZml0dGVyLnYxLlNldFVzZXJSb2xlUmVzcG9uc2USWwoQTGlzdEFkbWluQWN0aW9ucxIiLmZpdHRlci52MS5MaXN0QWRtaW5BY3Rpb25zUmVxdWVzdBojLmZpdHRlci52MS5MaXN0QWRtaW5BY3Rpb25zUmVzcG9uc2USXgoRQ3JlYXRlQ3VzdG9tU3BvcnQSIy5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tU3BvcnRSZXF1ZXN0GiQuZml0dGVyLnYxLkNyZWF0ZUN1c3RvbVNwb3J0UmVzcG9uc2USWwoQTGlzdEN1c3RvbVNwb3J0cxIiLmZpdHRlci52MS5MaXN0Q3VzdG9tU3BvcnRzUmVxdWVzdBojLmZpdHRlci52MS5MaXN0Q3VzdG9tU3BvcnRzUmVzcG9uc2USXgoRRGVsZXRlQ3VzdG9tU3BvcnQSIy5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tU3BvcnRSZXF1ZXN0GiQuZml0dGVyLnYxLkRlbGV0ZUN1c3RvbVNwb3J0UmVzcG9uc2USYQoSQ3JlYXRlQ3VzdG9tTWV0cmljEiQuZml0dGVyLnYxLkNyZWF0ZUN1c3RvbU1ldHJpY1JlcXVlc3QaJS5maXR0ZXIudjEuQ3JlYXRlQ3VzdG9tTWV0cmljUmVzcG9uc2USXgoRTGlzdEN1c3RvbU1ldHJpY3MSIy5maXR0ZXIudjEuTGlzdEN1c3RvbU1ldHJpY3NSZXF1ZXN0GiQuZml0dGVyLnYxLkxpc3RDdXN0b21NZXRyaWNzUmVzcG9uc2USYQoSRGVsZXRlQ3VzdG9tTWV0cmljEiQuZml0dGVyLnYxLkRlbGV0ZUN1c3RvbU1ldHJpY1JlcXVlc3QaJS5maXR0ZXIudjEuRGVsZXRlQ3VzdG9tTWV0cmljUmVzcG9uc2USVQoOVXBkYXRlRXhlcmNpc2USIC5maXR0ZXIudjEuVXBkYXRlRXhlcmNpc2VSZXF1ZXN0GiEuZml0dGVyLnYxLlVwZGF0ZUV4ZXJjaXNlUmVzcG9uc2USVQoORGVsZXRlRXhlcmNpc2USIC5maXR0ZXIudjEuRGVsZXRlRXhlcmNpc2VSZXF1ZXN0GiEuZml0dGVyLnYxLkRlbGV0ZUV4ZXJjaXNlUmVzcG9uc2USVQoOTWVyZ2VFeGVyY2lzZXMSIC5maXR0ZXIudjEuTWVyZ2VFeGVyY2lzZXNSZXF1ZXN0GiEuZml0dGVyLnYxLk1lcmdlRXhlcmNpc2VzUmVzcG9uc2USZAoTU2V0RXhlcmNpc2VBcmNoaXZlZBIlLmZpdHRlci52MS5TZXRFeGVyY2lzZUFyY2hpdmVkUmVxdWVzdBomLmZpdHRlci52MS5TZXRFeGVyY2lzZUFyY2hpdmVkUmVzcG9uc2VCjgEKDWNvbS5maXR0ZXIudjFCCkFkbWluUHJvdG9QAVosZ2l0aHViLmNvbS9maXR0ZXIvc3ZjL2dlbi9maXR0ZXIvdjE7Zml0dGVydjGiAgNGWFiqAglGaXR0ZXIuVjHKAglGaXR0ZXJcVjHiAhVGaXR0ZXJcVjFcR1BCTWV0YWRhdGHqAgpGaXR0ZXI6OlYxYgZwcm90bzM", [file_fitter_v1_exercise, file_google_protobuf_timestamp]);
 
 /**
  * AdminService manages the custom-sport/custom-metric taxonomy an admin can
@@ -378,9 +380,546 @@ export const DeleteCustomMetricResponseSchema: GenMessage<DeleteCustomMetricResp
   messageDesc(file_fitter_v1_admin, 13);
 
 /**
+ * @generated from message fitter.v1.AdminUser
+ */
+export type AdminUser = Message<"fitter.v1.AdminUser"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string avatar_url = 3;
+   */
+  avatarUrl: string;
+
+  /**
+   * @generated from field: int64 strava_athlete_id = 4;
+   */
+  stravaAthleteId: bigint;
+
+  /**
+   * @generated from field: string role = 5;
+   */
+  role: string;
+
+  /**
+   * @generated from field: string status = 6;
+   */
+  status: string;
+
+  /**
+   * @generated from field: string ban_reason = 7;
+   */
+  banReason: string;
+
+  /**
+   * @generated from field: string banned_by = 8;
+   */
+  bannedBy: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp banned_at = 9;
+   */
+  bannedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 10;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.AdminUser.
+ * Use `create(AdminUserSchema)` to create a new message.
+ */
+export const AdminUserSchema: GenMessage<AdminUser> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 14);
+
+/**
+ * @generated from message fitter.v1.AdminAction
+ */
+export type AdminAction = Message<"fitter.v1.AdminAction"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string actor_id = 2;
+   */
+  actorId: string;
+
+  /**
+   * @generated from field: string actor_name = 3;
+   */
+  actorName: string;
+
+  /**
+   * @generated from field: string action = 4;
+   */
+  action: string;
+
+  /**
+   * @generated from field: string target_id = 5;
+   */
+  targetId: string;
+
+  /**
+   * @generated from field: string detail = 6;
+   */
+  detail: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 7;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.AdminAction.
+ * Use `create(AdminActionSchema)` to create a new message.
+ */
+export const AdminActionSchema: GenMessage<AdminAction> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 15);
+
+/**
+ * @generated from message fitter.v1.ListUsersRequest
+ */
+export type ListUsersRequest = Message<"fitter.v1.ListUsersRequest"> & {
+  /**
+   * empty = all
+   *
+   * @generated from field: string status = 1;
+   */
+  status: string;
+};
+
+/**
+ * Describes the message fitter.v1.ListUsersRequest.
+ * Use `create(ListUsersRequestSchema)` to create a new message.
+ */
+export const ListUsersRequestSchema: GenMessage<ListUsersRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 16);
+
+/**
+ * @generated from message fitter.v1.ListUsersResponse
+ */
+export type ListUsersResponse = Message<"fitter.v1.ListUsersResponse"> & {
+  /**
+   * @generated from field: repeated fitter.v1.AdminUser users = 1;
+   */
+  users: AdminUser[];
+};
+
+/**
+ * Describes the message fitter.v1.ListUsersResponse.
+ * Use `create(ListUsersResponseSchema)` to create a new message.
+ */
+export const ListUsersResponseSchema: GenMessage<ListUsersResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 17);
+
+/**
+ * @generated from message fitter.v1.ApproveUserRequest
+ */
+export type ApproveUserRequest = Message<"fitter.v1.ApproveUserRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message fitter.v1.ApproveUserRequest.
+ * Use `create(ApproveUserRequestSchema)` to create a new message.
+ */
+export const ApproveUserRequestSchema: GenMessage<ApproveUserRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 18);
+
+/**
+ * @generated from message fitter.v1.ApproveUserResponse
+ */
+export type ApproveUserResponse = Message<"fitter.v1.ApproveUserResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.ApproveUserResponse.
+ * Use `create(ApproveUserResponseSchema)` to create a new message.
+ */
+export const ApproveUserResponseSchema: GenMessage<ApproveUserResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 19);
+
+/**
+ * @generated from message fitter.v1.BanUserRequest
+ */
+export type BanUserRequest = Message<"fitter.v1.BanUserRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * required, max 500 chars
+   *
+   * @generated from field: string reason = 2;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message fitter.v1.BanUserRequest.
+ * Use `create(BanUserRequestSchema)` to create a new message.
+ */
+export const BanUserRequestSchema: GenMessage<BanUserRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 20);
+
+/**
+ * @generated from message fitter.v1.BanUserResponse
+ */
+export type BanUserResponse = Message<"fitter.v1.BanUserResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.BanUserResponse.
+ * Use `create(BanUserResponseSchema)` to create a new message.
+ */
+export const BanUserResponseSchema: GenMessage<BanUserResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 21);
+
+/**
+ * @generated from message fitter.v1.UnbanUserRequest
+ */
+export type UnbanUserRequest = Message<"fitter.v1.UnbanUserRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message fitter.v1.UnbanUserRequest.
+ * Use `create(UnbanUserRequestSchema)` to create a new message.
+ */
+export const UnbanUserRequestSchema: GenMessage<UnbanUserRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 22);
+
+/**
+ * @generated from message fitter.v1.UnbanUserResponse
+ */
+export type UnbanUserResponse = Message<"fitter.v1.UnbanUserResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.UnbanUserResponse.
+ * Use `create(UnbanUserResponseSchema)` to create a new message.
+ */
+export const UnbanUserResponseSchema: GenMessage<UnbanUserResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 23);
+
+/**
+ * @generated from message fitter.v1.SetUserRoleRequest
+ */
+export type SetUserRoleRequest = Message<"fitter.v1.SetUserRoleRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * "member" | "admin"
+   *
+   * @generated from field: string role = 2;
+   */
+  role: string;
+};
+
+/**
+ * Describes the message fitter.v1.SetUserRoleRequest.
+ * Use `create(SetUserRoleRequestSchema)` to create a new message.
+ */
+export const SetUserRoleRequestSchema: GenMessage<SetUserRoleRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 24);
+
+/**
+ * @generated from message fitter.v1.SetUserRoleResponse
+ */
+export type SetUserRoleResponse = Message<"fitter.v1.SetUserRoleResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.SetUserRoleResponse.
+ * Use `create(SetUserRoleResponseSchema)` to create a new message.
+ */
+export const SetUserRoleResponseSchema: GenMessage<SetUserRoleResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 25);
+
+/**
+ * @generated from message fitter.v1.ListAdminActionsRequest
+ */
+export type ListAdminActionsRequest = Message<"fitter.v1.ListAdminActionsRequest"> & {
+  /**
+   * default 100, max 500
+   *
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+};
+
+/**
+ * Describes the message fitter.v1.ListAdminActionsRequest.
+ * Use `create(ListAdminActionsRequestSchema)` to create a new message.
+ */
+export const ListAdminActionsRequestSchema: GenMessage<ListAdminActionsRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 26);
+
+/**
+ * @generated from message fitter.v1.ListAdminActionsResponse
+ */
+export type ListAdminActionsResponse = Message<"fitter.v1.ListAdminActionsResponse"> & {
+  /**
+   * @generated from field: repeated fitter.v1.AdminAction actions = 1;
+   */
+  actions: AdminAction[];
+};
+
+/**
+ * Describes the message fitter.v1.ListAdminActionsResponse.
+ * Use `create(ListAdminActionsResponseSchema)` to create a new message.
+ */
+export const ListAdminActionsResponseSchema: GenMessage<ListAdminActionsResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 27);
+
+/**
+ * @generated from message fitter.v1.UpdateExerciseRequest
+ */
+export type UpdateExerciseRequest = Message<"fitter.v1.UpdateExerciseRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * may differ from the stored one only while the exercise is unused
+   *
+   * @generated from field: fitter.v1.ExerciseMeasure measure = 3;
+   */
+  measure: ExerciseMeasure;
+
+  /**
+   * @generated from field: bool loaded = 4;
+   */
+  loaded: boolean;
+
+  /**
+   * @generated from field: repeated fitter.v1.Muscle muscles = 5;
+   */
+  muscles: Muscle[];
+};
+
+/**
+ * Describes the message fitter.v1.UpdateExerciseRequest.
+ * Use `create(UpdateExerciseRequestSchema)` to create a new message.
+ */
+export const UpdateExerciseRequestSchema: GenMessage<UpdateExerciseRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 28);
+
+/**
+ * @generated from message fitter.v1.UpdateExerciseResponse
+ */
+export type UpdateExerciseResponse = Message<"fitter.v1.UpdateExerciseResponse"> & {
+  /**
+   * @generated from field: fitter.v1.Exercise exercise = 1;
+   */
+  exercise?: Exercise | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.UpdateExerciseResponse.
+ * Use `create(UpdateExerciseResponseSchema)` to create a new message.
+ */
+export const UpdateExerciseResponseSchema: GenMessage<UpdateExerciseResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 29);
+
+/**
+ * @generated from message fitter.v1.DeleteExerciseRequest
+ */
+export type DeleteExerciseRequest = Message<"fitter.v1.DeleteExerciseRequest"> & {
+  /**
+   * refused while any station uses it; merge instead
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message fitter.v1.DeleteExerciseRequest.
+ * Use `create(DeleteExerciseRequestSchema)` to create a new message.
+ */
+export const DeleteExerciseRequestSchema: GenMessage<DeleteExerciseRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 30);
+
+/**
+ * @generated from message fitter.v1.DeleteExerciseResponse
+ */
+export type DeleteExerciseResponse = Message<"fitter.v1.DeleteExerciseResponse"> & {
+};
+
+/**
+ * Describes the message fitter.v1.DeleteExerciseResponse.
+ * Use `create(DeleteExerciseResponseSchema)` to create a new message.
+ */
+export const DeleteExerciseResponseSchema: GenMessage<DeleteExerciseResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 31);
+
+/**
+ * MergeExercisesRequest moves every station, goal clause and legacy lift from
+ * source to target, then removes source.
+ *
+ * @generated from message fitter.v1.MergeExercisesRequest
+ */
+export type MergeExercisesRequest = Message<"fitter.v1.MergeExercisesRequest"> & {
+  /**
+   * @generated from field: string source_id = 1;
+   */
+  sourceId: string;
+
+  /**
+   * @generated from field: string target_id = 2;
+   */
+  targetId: string;
+};
+
+/**
+ * Describes the message fitter.v1.MergeExercisesRequest.
+ * Use `create(MergeExercisesRequestSchema)` to create a new message.
+ */
+export const MergeExercisesRequestSchema: GenMessage<MergeExercisesRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 32);
+
+/**
+ * @generated from message fitter.v1.MergeExercisesResponse
+ */
+export type MergeExercisesResponse = Message<"fitter.v1.MergeExercisesResponse"> & {
+  /**
+   * the target
+   *
+   * @generated from field: fitter.v1.Exercise exercise = 1;
+   */
+  exercise?: Exercise | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.MergeExercisesResponse.
+ * Use `create(MergeExercisesResponseSchema)` to create a new message.
+ */
+export const MergeExercisesResponseSchema: GenMessage<MergeExercisesResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 33);
+
+/**
+ * SetExerciseArchived retires an exercise (hidden from new logs and goal suggestions, history
+ * keeps it) or restores one. Used exercises are archived instead of deleted.
+ *
+ * @generated from message fitter.v1.SetExerciseArchivedRequest
+ */
+export type SetExerciseArchivedRequest = Message<"fitter.v1.SetExerciseArchivedRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: bool archived = 2;
+   */
+  archived: boolean;
+};
+
+/**
+ * Describes the message fitter.v1.SetExerciseArchivedRequest.
+ * Use `create(SetExerciseArchivedRequestSchema)` to create a new message.
+ */
+export const SetExerciseArchivedRequestSchema: GenMessage<SetExerciseArchivedRequest> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 34);
+
+/**
+ * @generated from message fitter.v1.SetExerciseArchivedResponse
+ */
+export type SetExerciseArchivedResponse = Message<"fitter.v1.SetExerciseArchivedResponse"> & {
+  /**
+   * @generated from field: fitter.v1.Exercise exercise = 1;
+   */
+  exercise?: Exercise | undefined;
+};
+
+/**
+ * Describes the message fitter.v1.SetExerciseArchivedResponse.
+ * Use `create(SetExerciseArchivedResponseSchema)` to create a new message.
+ */
+export const SetExerciseArchivedResponseSchema: GenMessage<SetExerciseArchivedResponse> = /*@__PURE__*/
+  messageDesc(file_fitter_v1_admin, 35);
+
+/**
  * @generated from service fitter.v1.AdminService
  */
 export const AdminService: GenService<{
+  /**
+   * @generated from rpc fitter.v1.AdminService.ListUsers
+   */
+  listUsers: {
+    methodKind: "unary";
+    input: typeof ListUsersRequestSchema;
+    output: typeof ListUsersResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.ApproveUser
+   */
+  approveUser: {
+    methodKind: "unary";
+    input: typeof ApproveUserRequestSchema;
+    output: typeof ApproveUserResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.BanUser
+   */
+  banUser: {
+    methodKind: "unary";
+    input: typeof BanUserRequestSchema;
+    output: typeof BanUserResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.UnbanUser
+   */
+  unbanUser: {
+    methodKind: "unary";
+    input: typeof UnbanUserRequestSchema;
+    output: typeof UnbanUserResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.SetUserRole
+   */
+  setUserRole: {
+    methodKind: "unary";
+    input: typeof SetUserRoleRequestSchema;
+    output: typeof SetUserRoleResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.ListAdminActions
+   */
+  listAdminActions: {
+    methodKind: "unary";
+    input: typeof ListAdminActionsRequestSchema;
+    output: typeof ListAdminActionsResponseSchema;
+  },
   /**
    * @generated from rpc fitter.v1.AdminService.CreateCustomSport
    */
@@ -428,6 +967,38 @@ export const AdminService: GenService<{
     methodKind: "unary";
     input: typeof DeleteCustomMetricRequestSchema;
     output: typeof DeleteCustomMetricResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.UpdateExercise
+   */
+  updateExercise: {
+    methodKind: "unary";
+    input: typeof UpdateExerciseRequestSchema;
+    output: typeof UpdateExerciseResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.DeleteExercise
+   */
+  deleteExercise: {
+    methodKind: "unary";
+    input: typeof DeleteExerciseRequestSchema;
+    output: typeof DeleteExerciseResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.MergeExercises
+   */
+  mergeExercises: {
+    methodKind: "unary";
+    input: typeof MergeExercisesRequestSchema;
+    output: typeof MergeExercisesResponseSchema;
+  },
+  /**
+   * @generated from rpc fitter.v1.AdminService.SetExerciseArchived
+   */
+  setExerciseArchived: {
+    methodKind: "unary";
+    input: typeof SetExerciseArchivedRequestSchema;
+    output: typeof SetExerciseArchivedResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_fitter_v1_admin, 0);

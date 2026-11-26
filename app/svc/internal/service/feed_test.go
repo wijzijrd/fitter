@@ -224,3 +224,67 @@ func TestGetCampaignTimeline_GroupsBySportGroupAndMetric(t *testing.T) {
 		t.Errorf("both series share metric %v, want different metrics (that's the point of the test)", allSeries[0].GetMetric())
 	}
 }
+
+// A week board pro-rates sum targets, keeps single-activity targets whole, and
+// drops a goal with nothing to judge in that week.
+func TestGetCampaignLeaderboard_WeekWindow(t *testing.T) {
+	deps := newDeps(t)
+	alice := seedUser(t, deps.Queries, "alice")
+	bob := seedUser(t, deps.Queries, "bob")
+	campaignSvc := service.NewCampaignService(deps)
+	goalSvc := service.NewGoalService(deps)
+	feedSvc := service.NewFeedService(deps)
+
+	start := time.Now().Add(-14 * 24 * time.Hour).Unix()
+	end := time.Now().Add(14 * 24 * time.Hour).Unix() // 28 days
+	c, err := campaignSvc.CreateCampaign(ctxAs(alice.ID), connect.NewRequest(baseCreateCampaignRequest(start, end)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cid := c.Msg.GetCampaign().GetId()
+	goal := func(scope fitterv1.ClauseScope, value float64) *fitterv1.CreateGoalRequest {
+		return &fitterv1.CreateGoalRequest{
+			Name: "g", Sport: &fitterv1.SportSelector{Selector: &fitterv1.SportSelector_Group{Group: "run"}},
+			Clauses: []*fitterv1.GoalClause{{Metric: fitterv1.ActivityMetric_ACTIVITY_METRIC_DISTANCE, Scope: scope, Comparator: fitterv1.Comparator_COMPARATOR_GTE, Value: value}},
+		}
+	}
+	a := goal(fitterv1.ClauseScope_CLAUSE_SCOPE_AGGREGATE, 280000)
+	a.CampaignId = &cid
+	if _, err := goalSvc.CreateGoal(ctxAs(alice.ID), connect.NewRequest(a)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := campaignSvc.JoinCampaign(ctxAs(bob.ID), connect.NewRequest(&fitterv1.JoinCampaignRequest{
+		CampaignId: cid, Goals: []*fitterv1.CreateGoalRequest{goal(fitterv1.ClauseScope_CLAUSE_SCOPE_SINGLE, 5000)},
+	})); err != nil {
+		t.Fatal(err)
+	}
+	seedActivity(t, deps.Queries, 9001, alice.ID, "Run", time.Now().Add(-time.Minute).Unix(), 35000)
+
+	board := func(w fitterv1.LeaderboardWindow) *fitterv1.GetCampaignLeaderboardResponse {
+		r, err := feedSvc.GetCampaignLeaderboard(ctxAs(alice.ID), connect.NewRequest(&fitterv1.GetCampaignLeaderboardRequest{CampaignId: cid, Window: w}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r.Msg
+	}
+
+	whole := board(fitterv1.LeaderboardWindow_LEADERBOARD_WINDOW_CAMPAIGN)
+	if len(whole.GetPeople()) != 2 || whole.WindowStart != nil {
+		t.Fatalf("campaign board: %d people, window=%v", len(whole.GetPeople()), whole.WindowStart)
+	}
+
+	week := board(fitterv1.LeaderboardWindow_LEADERBOARD_WINDOW_WEEK)
+	if week.WindowStart == nil || week.WindowEnd == nil {
+		t.Fatal("window bounds missing")
+	}
+	if len(week.GetPeople()) != 1 || week.GetPeople()[0].GetUserName() != "alice" {
+		t.Fatalf("week board people = %v, want only alice (bob has nothing in the week)", week.GetPeople())
+	}
+	e := week.GetGroups()[0].GetEntries()[0]
+	if got := e.GetProgressRatio(); got < 0.45 || got > 0.55 { // 35 km of a ~70 km weekly pace
+		t.Fatalf("week ratio = %v, want ~0.5", got)
+	}
+	if got := e.GetClauseDefs()[0].GetValue(); got < 60000 || got > 80000 {
+		t.Fatalf("windowed target = %v, want ~70000 (pro-rated)", got)
+	}
+}

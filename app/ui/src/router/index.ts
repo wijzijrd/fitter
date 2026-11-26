@@ -3,6 +3,7 @@ import { useAuthStore } from "../stores/auth";
 import LoginView from "../views/LoginView.vue";
 import AuthCallbackView from "../views/AuthCallbackView.vue";
 import { saveReturnTo } from "../lib/returnTo";
+import { feedbackEnabled } from "../lib/config";
 
 // Login and callback stay in the entry chunk; every signed-in view (and ECharts)
 // loads on demand so a first-time visitor only downloads the sign-in screen.
@@ -27,11 +28,35 @@ const router = createRouter({
       meta: { requiresAuth: true, title: "Campaign" },
       props: true,
     },
+    { path: "/activities/new", name: "activity-new", component: () => import("../views/ActivityLogView.vue"), meta: { requiresAuth: true, title: "Log activity" } },
+    { path: "/settings", name: "settings", component: () => import("../views/SettingsView.vue"), meta: { requiresAuth: true, title: "Settings" } },
+    {
+      path: "/settings/permissions",
+      name: "settings-permissions",
+      component: () => import("../views/SettingsPermissionsView.vue"),
+      meta: { requiresAuth: true, title: "App permissions" },
+    },
+    {
+      path: "/settings/feedback",
+      name: "settings-feedback",
+      component: () => import("../views/SettingsFeedbackView.vue"),
+      meta: { requiresAuth: true, title: "Developer feedback" },
+      beforeEnter: () => feedbackEnabled || { name: "settings" },
+    },
+    {
+      path: "/settings/release-notes",
+      name: "settings-release-notes",
+      component: () => import("../views/SettingsReleaseNotesView.vue"),
+      meta: { requiresAuth: true, title: "Release notes" },
+    },
+    { path: "/pending", name: "pending", component: () => import("../views/PendingView.vue"), meta: { requiresAuth: true, title: "Waiting for approval" } },
+    { path: "/admin", name: "admin", component: () => import("../views/AdminView.vue"), meta: { requiresAuth: true, requiresAdmin: true, title: "Admin" } },
+    { path: "/goals/new", name: "goal-new", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "New goal" } },
     { path: "/goals", name: "goals", component: () => import("../views/GoalsView.vue"), meta: { requiresAuth: true, title: "Goals" } },
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     saveReturnTo(to.fullPath);
@@ -39,6 +64,19 @@ router.beforeEach((to) => {
   }
   if (to.name === "login" && auth.isAuthenticated) {
     return { name: "campaigns" };
+  }
+  // Role and status are a UX gate only; the server enforces both on every call.
+  if (to.meta.requiresAuth && to.name !== "auth-callback") {
+    if (!auth.user) {
+      try {
+        await auth.fetchCurrentUser();
+      } catch {
+        return; // let the view surface its own load error
+      }
+    }
+    if (auth.isPending && to.name !== "pending") return { name: "pending" };
+    if (!auth.isPending && to.name === "pending") return { name: "campaigns" };
+    if (to.meta.requiresAdmin && !auth.isAdmin) return { name: "campaigns" };
   }
 });
 
@@ -63,7 +101,7 @@ router.afterEach((to) => {
   } catch {
     // No storage: the one-reload guard just can't reset.
   }
-  document.title = typeof to.meta.title === "string" ? `${to.meta.title} · Fitter` : "Fitter";
+  document.title = typeof to.meta.title === "string" ? `${to.meta.title} · Kombeweeg` : "Kombeweeg";
 });
 
 export default router;

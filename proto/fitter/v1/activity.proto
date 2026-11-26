@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package fitter.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Deprecated: superseded by Block and Station. Still filled on reads (heaviest
+// weight per exercise) and accepted on writes (as one 1-round block per lift)
+// so the previous release keeps working while old and new containers overlap.
+message Lift {
+  string exercise = 1;
+  double weight_kg = 2;
+  int32 reps = 3;
+}
+
+// One exercise within a block. Which result fields are set follows the
+// exercise's measure: weight_reps (weight_kg, reps), reps (reps), distance
+// (distance_m, weight_kg when the exercise is loaded) or time (duration_s,
+// weight_kg when loaded).
+message Station {
+  string exercise_id = 1;
+  string exercise_name = 2; // output only
+  optional double weight_kg = 3;
+  optional int32 reps = 4;
+  optional double distance_m = 5;
+  optional int64 duration_s = 6;
+}
+
+// A block repeats its stations, in order, for `rounds`. A superset is two
+// stations; straight sets are one station with rounds = number of sets.
+message Block {
+  int32 rounds = 1; // >= 1
+  repeated Station stations = 2;
+}
+
+message ManualActivity {
+  int64 id = 1; // negative, server-assigned
+  string sport_type = 2;
+  string name = 3;
+  google.protobuf.Timestamp start_date = 4;
+  int64 moving_time_s = 5;
+  optional double distance_m = 6;
+  repeated Lift lifts = 7 [deprecated = true]; // see Lift
+  // Browser UTC offset (minutes east of UTC) at start_date, so day/week goals
+  // bucket by the user's local day. Unset = treat as UTC.
+  optional int32 utc_offset_minutes = 8;
+  repeated Block blocks = 9; // strength and circuits sports only
+}
+
+message CreateManualActivityRequest {
+  ManualActivity activity = 1; // id ignored
+}
+message CreateManualActivityResponse {
+  ManualActivity activity = 1;
+}
+
+message UpdateManualActivityRequest {
+  ManualActivity activity = 1; // full replacement
+}
+message UpdateManualActivityResponse {
+  ManualActivity activity = 1;
+}
+
+message DeleteManualActivityRequest {
+  int64 id = 1;
+}
+message DeleteManualActivityResponse {}
+
+message ListManualActivitiesRequest {}
+message ListManualActivitiesResponse {
+  repeated ManualActivity activities = 1;
+}
+
+// ActivityService manages the caller's own manually-logged activities.
+message SyncActivitiesRequest {}
+message SyncActivitiesResponse {
+  int32 imported = 1;   // activities that were not stored before this call
+  bool throttled = 2;   // a sync ran recently, so nothing was fetched
+}
+
+service ActivityService {
+  rpc CreateManualActivity(CreateManualActivityRequest) returns (CreateManualActivityResponse);
+  rpc UpdateManualActivity(UpdateManualActivityRequest) returns (UpdateManualActivityResponse);
+  rpc DeleteManualActivity(DeleteManualActivityRequest) returns (DeleteManualActivityResponse);
+  rpc ListManualActivities(ListManualActivitiesRequest) returns (ListManualActivitiesResponse);
+  // SyncActivities pulls the caller's recent Strava activities now, at most once every five minutes.
+  // It backs up the webhook, which only helps once its subscription exists and doesn't replay misses.
+  rpc SyncActivities(SyncActivitiesRequest) returns (SyncActivitiesResponse);
+}

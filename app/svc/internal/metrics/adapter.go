@@ -26,6 +26,7 @@ func FromDB(a db.Activity) Activity {
 		Type:             a.Type,
 		SportType:        a.SportType,
 		StartDate:        a.StartDate,
+		StartDateLocal:   a.StartDateLocal.Int64,
 		DistanceM:        a.DistanceM,
 		ElevationM:       a.ElevationM,
 		MovingTimeS:      float64(a.MovingTimeS),
